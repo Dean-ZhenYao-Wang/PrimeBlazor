@@ -1,0 +1,224 @@
+﻿@typeparam TItem
+@* @inject ObjectUtilsJsInterop ObjectUtils *@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="p-listbox p-inputtext p-component">
+    <div class="p-listbox-list-wrapper">
+        <ul class="p-listbox-list">
+            @for(int index=0;index<options.Count;index++)
+            {
+                var option = options[index];
+                var label = optionLabels[index];
+                <li tabindex="0" class="'p-listbox-item @(async()=>await isSelected(option)?"p-highlight":string.Empty)"
+                    @key="@(label)" @onclick="async(e)=>await onOptionClick(e, option)" @ontouchend="onOptionTouchEnd">
+                    @(label)
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    [Parameter] public TItem? value { get; set; }
+    [Parameter] public EventCallback<TItem> valueChanged { get; set; }
+    [Parameter] public List<TItem> options { get; set; } = new List<TItem>();
+    [Parameter] public List<TItem> values { get; set; } = new List<TItem>();
+    [Parameter] public EventCallback<List<TItem>> valuesChanged{ get; set; }
+    [Parameter] public string? dataKey { get; set; } = null;
+    [Parameter] public bool multiple { get; set; }
+    [Parameter] public bool metaKeySelection { get; set; }
+    [Parameter] public bool filter { get; set; }
+    [Parameter] public string? optionLabel { get; set; } = null;
+    [Parameter] public string? optionValue { get; set; } = null;
+    [Parameter] public bool disabled{ get; set; }
+    private string label = string.Empty;
+    private bool optionTouched = false;
+    private IJSObjectReference? module;
+
+    private List<string> optionLabels = new List<string>();
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        List<TItem> opts= parameters.GetValueOrDefault<List<TItem>>(nameof(options));
+        for(int i = 0; i < opts.Count; i++)
+        {
+            optionLabels.Add(Guid.NewGuid().ToString());
+        }
+        return base.SetParametersAsync(parameters);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        module = await JS.InvokeAsync<IJSObjectReference>("import","./_content/PrimeBlazor/ObjectUtils.js");
+        for(int i = 0; i < options.Count; i++)
+        {
+            string label = await getOptionLabel(options[i]);
+            optionLabels[i] = label;
+        }
+    }
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)
+    //     {
+    //         module = await JS.InvokeAsync<IJSObjectReference>("import",
+    //             "./_content/PrimeBlazor/ObjectUtils.js");
+    //     }
+    // }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+    private async ValueTask<string> getOptionLabel(TItem option)
+    {
+        return await module.InvokeAsync<string>("resolveFieldData",option, this.optionLabel);
+    }
+    private async Task<TItem> getOptionValue(TItem option)
+    {
+        if( !string.IsNullOrWhiteSpace(this.optionValue)){
+            return await module.InvokeAsync<TItem>("resolveFieldData",option, this.optionValue);
+        }
+        else
+        {
+            return option;            
+        }
+    }
+    private async Task onOptionClick(MouseEventArgs eventArgs,TItem option) {
+        if (this.disabled) {
+            return;
+        }
+
+        if(this.multiple)
+            await this.onOptionClickMultiple(eventArgs, option);
+        else
+            await this.onOptionClickSingle(eventArgs, option);
+
+        this.optionTouched = false;
+    }
+    private void  onOptionTouchEnd() {
+        if (this.disabled) {
+            return;
+        }
+
+        this.optionTouched = true;
+    }
+    private async Task onOptionClickSingle(MouseEventArgs eventArgs,TItem option) {
+        bool selected = await this.isSelected(option);
+        var valueChanged = false;
+        dynamic? value = null;
+        var metaSelection = this.optionTouched ? false : this.metaKeySelection;
+
+        if (metaSelection) {
+            bool metaKey = (eventArgs.MetaKey || eventArgs.CtrlKey);
+
+            if (selected) {
+                if (metaKey) {
+                    value = null;
+                    valueChanged = true;
+                }
+            }
+            else {
+                value = this.getOptionValue(option);
+                valueChanged = true;
+            }
+        }
+        else {
+            value = selected ? null : this.getOptionValue(option);
+            valueChanged = true;
+        }
+
+        if (valueChanged) {
+            this.updateModel(eventArgs, value);
+        }
+    }
+    private async Task onOptionClickMultiple(MouseEventArgs eventArgs,TItem option) {        
+        bool selected = await this.isSelected(option);
+        bool valueChanged = false;
+        List<TItem> value = null;
+        bool metaSelection = this.optionTouched ? false : this.metaKeySelection;
+
+        if (metaSelection) {
+            bool metaKey = (eventArgs.MetaKey || eventArgs.CtrlKey);
+
+            if (selected) {
+                if(metaKey)
+                    value =await this.removeOption(option);
+                else
+                    value = new List<TItem>() { await this.getOptionValue(option) };
+
+                valueChanged = true;
+            }
+            else {
+                value = (metaKey) ? this.values == null ? new List<TItem>() : this.values : new List<TItem>();
+                value.Add(await this.getOptionValue(option));
+                valueChanged = true;
+            }
+        }
+        else {
+            if (selected)
+                value =await this.removeOption(option);
+            else
+            {
+                if (this.values == null )
+                {
+                    value = new List<TItem>();
+                }
+                else
+                {
+                    value = this.values;
+                }
+                value.Add(await this.getOptionValue(option));
+            }
+
+
+            valueChanged = true;
+        }
+
+        if(valueChanged) {
+            this.updateModel(eventArgs, value);
+        }
+    }
+
+    private async ValueTask<bool> isSelected(TItem option) {
+        bool selected = false;
+        TItem optionValue =await this.getOptionValue(option);
+
+        if (this.multiple) {
+            if (this.value!=null) {
+                var type = this.value.GetType();
+                var properties = type.GetProperties();
+                foreach (var val in properties) {
+                    bool tif = await module.InvokeAsync<bool>("equals", val.GetValue(this.value), optionValue, this.dataKey);
+                    if (tif) {
+                        selected = true;
+                        break;
+                    }
+                }
+            }
+        }
+        else {
+            selected = await module.InvokeAsync<bool>("equals",this.value,optionValue,this.dataKey);
+        }
+
+        return selected;
+    }
+    private async Task<List<TItem>> removeOption(TItem option) {
+        List<TItem> returnValue = new List<TItem>();
+        foreach(var val in this.values)
+        {
+            bool tif = await module.InvokeAsync<bool>("equals", val, await this.getOptionValue(option), this.dataKey);
+            if (!tif)
+            {
+                returnValue.Add(val);
+            }
+        }
+        return returnValue;
+    }
+    private async Task updateModel(MouseEventArgs eventArgs,TItem value) {
+        await valueChanged.InvokeAsync(value);
+    }
+     private async Task updateModel(MouseEventArgs eventArgs,List<TItem> values) {
+        await valuesChanged.InvokeAsync(values);
+    }
+}

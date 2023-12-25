@@ -9,8 +9,8 @@
         </a>
         <div class="@(activeMenuIndex!=0?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/inputtext">&#9679; InputText</router-link>
-
+                <NavLink href="/inputtext">&#9679; InputText</NavLink>
+                <NavLink href="/listbox">&#9679; ListBox</NavLink>
             </div>
 
         </div>
@@ -24,7 +24,7 @@
         </a>
         <div class="@(activeMenuIndex!=1?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/button">&#9679; Button</router-link>
+                <NavLink href="/button">&#9679; Button</NavLink>
             </div>
         </div>
         <a @onclick="((e)=>toogleMenu(e,2))" :class="@(activeMenuIndex==2?"active-menuitem":string.Empty)">
@@ -34,7 +34,7 @@
         </a>
         <div class="@(activeMenuIndex!=2?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/">&#9679; Link</router-link>
+                <NavLink href="/">&#9679; Link</NavLink>
             </div>
         </div>
 
@@ -45,7 +45,7 @@
         </a>
         <div class="@(activeMenuIndex!=3?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/">&#9679; Link</router-link>
+                <NavLink href="/">&#9679; Link</NavLink>
             </div>
         </div>
 
@@ -56,7 +56,7 @@
         </a>
         <div class="@(activeMenuIndex!=4?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/">&#9679; Link</router-link>
+                <NavLink href="/">&#9679; Link</NavLink>
             </div>
         </div>
 
@@ -67,7 +67,7 @@
         </a>
         <div class="@(activeMenuIndex!=5?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/">&#9679; Link</router-link>
+                <NavLink href="/">&#9679; Link</NavLink>
             </div>
         </div>
 
@@ -78,7 +78,7 @@
         </a>
         <div class="@(activeMenuIndex!=6?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/">&#9679; Link</router-link>
+                <NavLink href="/">&#9679; Link</NavLink>
             </div>
         </div>
 
@@ -89,7 +89,7 @@
         </a>
         <div class="@(activeMenuIndex!=7?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/">&#9679; Link</router-link>
+                <NavLink href="/">&#9679; Link</NavLink>
             </div>
         </div>
 
@@ -100,7 +100,7 @@
         </a>
         <div class="@(activeMenuIndex!=8?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/">&#9679; Link</router-link>
+                <NavLink href="/">&#9679; Link</NavLink>
             </div>
         </div>
 
@@ -111,7 +111,7 @@
         </a>
         <div class="@(activeMenuIndex!=9?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/">&#9679; Link</router-link>
+                <NavLink href="/">&#9679; Link</NavLink>
             </div>
         </div>
 
@@ -122,7 +122,7 @@
         </a>
         <div class="@(activeMenuIndex!=10?"submenuhide":"submenushow")">
             <div>
-                <router-link to="/">&#9679; Link</router-link>
+                <NavLink href="/">&#9679; Link</NavLink>
             </div>
         </div>
     </div>
