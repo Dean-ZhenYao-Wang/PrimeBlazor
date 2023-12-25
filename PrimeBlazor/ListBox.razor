@@ -1,9 +1,9 @@
 ﻿@typeparam TItem
-@* @inject ObjectUtilsJsInterop ObjectUtils *@
+@using System.Diagnostics.CodeAnalysis
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 <div class="p-listbox p-inputtext p-component">
-    <div class="p-listbox-list-wrapper">
+    <div class="p-listbox-list-wrapper" style="@style ; @listStyle">
         <ul class="p-listbox-list">
             @for(int index=0;index<options.Count;index++)
             {
@@ -11,7 +11,14 @@
                 var label = optionLabels[index];
                 <li tabindex="0" class="'p-listbox-item @(async()=>await isSelected(option)?"p-highlight":string.Empty)"
                     @key="@(label)" @onclick="async(e)=>await onOptionClick(e, option)" @ontouchend="onOptionTouchEnd">
-                    @(label)
+                    @if (Template is not null)
+                    {
+                        @Template(option)                        
+                    }
+                    else
+                    {
+                        @label
+                    }
                 </li>
             }
         </ul>
@@ -22,7 +29,7 @@
     [Parameter] public TItem? value { get; set; }
     [Parameter] public EventCallback<TItem> valueChanged { get; set; }
     [Parameter] public List<TItem> options { get; set; } = new List<TItem>();
-    [Parameter] public List<TItem> values { get; set; } = new List<TItem>();
+    [Parameter, AllowNull] public List<TItem> values { get; set; } = new List<TItem>();
     [Parameter] public EventCallback<List<TItem>> valuesChanged{ get; set; }
     [Parameter] public string? dataKey { get; set; } = null;
     [Parameter] public bool multiple { get; set; }
@@ -31,6 +38,9 @@
     [Parameter] public string? optionLabel { get; set; } = null;
     [Parameter] public string? optionValue { get; set; } = null;
     [Parameter] public bool disabled{ get; set; }
+    [Parameter] public string listStyle{ get; set; }
+    [Parameter] public string style{ get; set; }
+    [Parameter] public RenderFragment<TItem>? Template { get; set; }
     private string label = string.Empty;
     private bool optionTouched = false;
     private IJSObjectReference? module;
