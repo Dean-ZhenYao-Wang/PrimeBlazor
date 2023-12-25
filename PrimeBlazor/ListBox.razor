@@ -17,7 +17,7 @@
             @for(int index=0;index<visibleOptions.Count;index++)
             {
                 var option = visibleOptions[index];
-                <li tabindex="0" class="'p-listbox-item @(isSelected(option) ?"p-highlight":string.Empty)"
+                <li tabindex="@(isOptionDisabled(option)?null:"0")" class="'p-listbox-item @(isSelected(option) ?"p-highlight":null) @(isOptionDisabled(option)?"p-disabled":null)"
                     area-label="@getOptionLabel(option)"
                     key="@(getOptionLabel(option))" @onclick="async(e)=>await onOptionSelect(e, option)" @ontouchend="onOptionTouchEnd"
                     @onkeydown="@((e)=>onOptionKeyDown(e,option))" @onkeydown:stopPropagation>
@@ -47,6 +47,7 @@
     [Parameter] public bool filter { get; set; }
     [Parameter] public string? optionLabel { get; set; } = null;
     [Parameter] public string? optionValue { get; set; } = null;
+    [Parameter] public string? optionDisabled { get; set; } = null;
     [Parameter] public bool disabled{ get; set; }
     [Parameter] public string listStyle { get; set; } = string.Empty;
     [Parameter] public string style { get; set; } = string.Empty;
@@ -105,9 +106,13 @@
             return option;            
         }
     }
+    private bool isOptionDisabled(TItem option)
+    {
+        return !string.IsNullOrWhiteSpace(this.optionDisabled) ? (bool)ObjectUtils.ResolveFieldData(option, this.optionDisabled) : false;
+    }
     [JSInvokable]
-    private async Task onOptionSelect(MouseEventArgs eventArgs,TItem option) {
-        if (this.disabled) {
+    public async Task onOptionSelect(MouseEventArgs eventArgs,TItem option) {
+        if (this.disabled||this.isOptionDisabled(option)) {
             return;
         }
 
