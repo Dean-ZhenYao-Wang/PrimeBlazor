@@ -3,21 +3,29 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 <div class="p-listbox p-inputtext p-component">
-    <div class="p-listbox-list-wrapper" style="@style ; @listStyle">
+    @if (filter)
+    {        
+        <div class="p-listbox-header">
+            <div class="p-listbox-filter-container">
+                <input type="text" role="textbox" class="p-inputtext p-component" @bind="filterValue">
+                <span class="p-listbox-filter-icon pi pi-search"></span>
+            </div>
+        </div>
+    }
+    <div class="p-listbox-list-wrapper" style="@(style);@listStyle">
         <ul class="p-listbox-list">
-            @for(int index=0;index<options.Count;index++)
+            @for(int index=0;index<visibleOptions.Count;index++)
             {
-                var option = options[index];
-                var label = optionLabels[index];
+                var option = visibleOptions[index];
                 <li tabindex="0" class="'p-listbox-item @(async()=>await isSelected(option)?"p-highlight":string.Empty)"
-                    @key="@(label)" @onclick="async(e)=>await onOptionClick(e, option)" @ontouchend="onOptionTouchEnd">
+                    @key="@(getOptionLabel(option))" @onclick="async(e)=>await onOptionClick(e, option)" @ontouchend="onOptionTouchEnd">
                     @if (Template is not null)
                     {
                         @Template(option)                        
                     }
                     else
                     {
-                        @label
+                        @getOptionLabel(option)
                     }
                 </li>
             }
@@ -45,34 +53,31 @@
     private bool optionTouched = false;
     private IJSObjectReference? module;
 
-    private List<string> optionLabels = new List<string>();
-    public override Task SetParametersAsync(ParameterView parameters)
+    private string filterValue;
+
+    private List<TItem> visibleOptions
     {
-        List<TItem> opts= parameters.GetValueOrDefault<List<TItem>>(nameof(options));
-        for(int i = 0; i < opts.Count; i++)
+        get
         {
-            optionLabels.Add(Guid.NewGuid().ToString());
-        }
-        return base.SetParametersAsync(parameters);
-    }
-    protected override async Task OnInitializedAsync()
-    {
-        module = await JS.InvokeAsync<IJSObjectReference>("import","./_content/PrimeBlazor/ObjectUtils.js");
-        for(int i = 0; i < options.Count; i++)
-        {
-            string label = await getOptionLabel(options[i]);
-            optionLabels[i] = label;
+            if (!string.IsNullOrWhiteSpace(this.filterValue))
+            {
+                return this.options.Where(option => getOptionLabel(option).ToLower().Contains(this.filterValue.ToLower())).ToList();
+            }
+            else
+            {
+                return this.options;
+            }
         }
     }
 
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     if (firstRender)
-    //     {
-    //         module = await JS.InvokeAsync<IJSObjectReference>("import",
-    //             "./_content/PrimeBlazor/ObjectUtils.js");
-    //     }
-    // }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./_content/PrimeBlazor/ObjectUtils.js");
+        }
+    }
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         if (module is not null)
@@ -80,9 +85,9 @@
             await module.DisposeAsync();
         }
     }
-    private async ValueTask<string> getOptionLabel(TItem option)
+    private string getOptionLabel(TItem option)
     {
-        return await module.InvokeAsync<string>("resolveFieldData",option, this.optionLabel);
+        return ObjectUtils.resolveFieldStringData(option, this.optionLabel);
     }
     private async Task<TItem> getOptionValue(TItem option)
     {
@@ -116,7 +121,7 @@
     private async Task onOptionClickSingle(MouseEventArgs eventArgs,TItem option) {
         bool selected = await this.isSelected(option);
         var valueChanged = false;
-        dynamic? value = null;
+        TItem? value = default(TItem);
         var metaSelection = this.optionTouched ? false : this.metaKeySelection;
 
         if (metaSelection) {
@@ -124,17 +129,17 @@
 
             if (selected) {
                 if (metaKey) {
-                    value = null;
+                    value = default(TItem);
                     valueChanged = true;
                 }
             }
             else {
-                value = this.getOptionValue(option);
+                value =await this.getOptionValue(option);
                 valueChanged = true;
             }
         }
         else {
-            value = selected ? null : this.getOptionValue(option);
+            value = selected ? default(TItem) :await this.getOptionValue(option);
             valueChanged = true;
         }
 
@@ -186,7 +191,7 @@
         }
 
         if(valueChanged) {
-            this.updateModel(eventArgs, value);
+            this.updateModels(eventArgs, value);
         }
     }
 
@@ -228,7 +233,7 @@
     private async Task updateModel(MouseEventArgs eventArgs,TItem value) {
         await valueChanged.InvokeAsync(value);
     }
-     private async Task updateModel(MouseEventArgs eventArgs,List<TItem> values) {
+     private async Task updateModels(MouseEventArgs eventArgs,List<TItem> values) {
         await valuesChanged.InvokeAsync(values);
     }
 }
