@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "primeflex@3.3.1",
+      "destination": "wwwroot/primeflex/"
+    },
+    {
+      "library": "primeicons@6.0.1",
+      "destination": "wwwroot/primeicons/"
+    }
+  ]
+}
