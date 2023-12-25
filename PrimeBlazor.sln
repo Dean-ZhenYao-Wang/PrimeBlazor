@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34407.89
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrimeBlazorDoc", "PrimeBlazorDoc\PrimeBlazorDoc.csproj", "{78584F7F-D5C3-4581-9EFB-267EB03F2130}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrimeBlazor", "PrimeBlazor\PrimeBlazor.csproj", "{60E3E888-704E-4E83-8C4D-C1C09128CCAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{78584F7F-D5C3-4581-9EFB-267EB03F2130}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78584F7F-D5C3-4581-9EFB-267EB03F2130}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78584F7F-D5C3-4581-9EFB-267EB03F2130}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60E3E888-704E-4E83-8C4D-C1C09128CCAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60E3E888-704E-4E83-8C4D-C1C09128CCAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60E3E888-704E-4E83-8C4D-C1C09128CCAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60E3E888-704E-4E83-8C4D-C1C09128CCAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

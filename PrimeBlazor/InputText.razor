@@ -1,0 +1,17 @@
+﻿<input class="p-inputtext p-component @CssClass" id="@Id" disabled="@disabled" value="@value" @oninput="(async(e)=>await onInputEvent(e))" />
+@code {
+    [Parameter]
+    public string Id{ get; set; }
+    [Parameter]
+    public string CssClass{ get; set; }
+    [Parameter]
+    public string value{ get; set; }
+    [Parameter]
+    public bool disabled{ get; set; }
+    [Parameter]
+    public EventCallback<string> valueChanged { get; set; }
+    private async Task onInputEvent(ChangeEventArgs eventArgs)
+    {
+        await valueChanged.InvokeAsync(eventArgs.Value?.ToString());
+    }
+}
