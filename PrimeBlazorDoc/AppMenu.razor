@@ -1,2 +1,41 @@
 ﻿<div class="layout-sidebar">
+    <div class="layout-menu">
+        <a @onclick="((e)=>toogleMenu(e,0))"
+           class="@(activeMenuIndex==0?"active-menuitem":string.Empty)">
+            <img alt="input" class="layout-menu-icon-inactive" src="./assets/images/menu/input.svg" />
+            <img alt="input" class="layout-menu-icon-active" src="./assets/images/menu/input-active.svg" />
+            <span>Input</span>
+
+        </a>
+        <div class="@(activeMenuIndex!=0?"submenuhide":"submenushow")">
+            <div>
+                <router-link to="/inputtext">&#9679; InputText</router-link>
+
+            </div>
+
+        </div>
+
+        <a @onclick="((e)=>toogleMenu(e,1))"
+           class="@(activeMenuIndex==1?"active-menuitem":string.Empty)">
+            <img alt="button" class="layout-menu-icon-inactive" src="./assets/images/menu/button.svg" />
+            <img alt="button" class="layout-menu-icon-active" src="./assets/images/menu/button-active.svg" />
+            <span>Button</span>
+
+        </a>
+        <div :class="@(activeMenuIndex!=1?"submenuhide":"submenushow")">
+            <div>
+                <router-link to="/button">&#9679; Button</router-link>
+
+            </div>
+
+        </div>
+
+    </div>
 </div>
+@code {
+    private int activeMenuIndex = 0;
+    private void toogleMenu(MouseEventArgs eventArgs, int index)
+    {
+        this.activeMenuIndex = index;
+    }
+}
