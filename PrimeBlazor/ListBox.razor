@@ -17,7 +17,7 @@
             @for(int index=0;index<visibleOptions.Count;index++)
             {
                 var option = visibleOptions[index];
-                <li tabindex="0" class="'p-listbox-item @(async()=>await isSelected(option)?"p-highlight":string.Empty)"
+                <li tabindex="0" class="'p-listbox-item @(isSelected(option) ?"p-highlight":string.Empty)"
                     area-label="@getOptionLabel(option)"
                     key="@(getOptionLabel(option))" @onclick="async(e)=>await onOptionSelect(e, option)" @ontouchend="onOptionTouchEnd"
                     @onkeydown="@((e)=>onOptionKeyDown(e,option))" @onkeydown:stopPropagation>
@@ -93,12 +93,12 @@
     }
     private string getOptionLabel(TItem option)
     {
-        return ObjectUtils.resolveFieldStringData(option, this.optionLabel);
+        return ObjectUtils.resolveFieldData(option, this.optionLabel).ToString();
     }
-    private async Task<TItem> getOptionValue(TItem option)
+    private object getOptionValue(TItem option)
     {
         if( !string.IsNullOrWhiteSpace(this.optionValue)){
-            return await module.InvokeAsync<TItem>("resolveFieldData",option, this.optionValue);
+            return ObjectUtils.resolveFieldData(option, this.optionValue);
         }
         else
         {
@@ -112,7 +112,7 @@
         }
 
         if(this.multiple)
-            await this.onOptionSelectMultiple(eventArgs, option);
+           await this.onOptionSelectMultiple(eventArgs, option);
         else
             await this.onOptionSelectSingle(eventArgs, option);
 
@@ -126,7 +126,7 @@
         this.optionTouched = true;
     }
     private async Task onOptionSelectSingle(MouseEventArgs eventArgs,TItem option) {
-        bool selected = await this.isSelected(option);
+        bool selected = this.isSelected(option);
         var valueChanged = false;
         TItem? value = default(TItem);
         var metaSelection = this.optionTouched ? false : this.metaKeySelection;
@@ -141,21 +141,21 @@
                 }
             }
             else {
-                value =await this.getOptionValue(option);
+                value =(TItem)this.getOptionValue(option);
                 valueChanged = true;
             }
         }
         else {
-            value = selected ? default(TItem) :await this.getOptionValue(option);
+            value = selected ? default(TItem) :(TItem)this.getOptionValue(option);
             valueChanged = true;
         }
 
         if (valueChanged) {
-            this.updateModel(eventArgs, value);
+           await this.updateModel(eventArgs, value);
         }
     }
     private async Task onOptionSelectMultiple(MouseEventArgs eventArgs,TItem option) {        
-        bool selected = await this.isSelected(option);
+        bool selected = this.isSelected(option);
         bool valueChanged = false;
         List<TItem> value = null;
         bool metaSelection = this.optionTouched ? false : this.metaKeySelection;
@@ -165,21 +165,21 @@
 
             if (selected) {
                 if(metaKey)
-                    value =await this.removeOption(option);
+                    value =this.removeOption(option);
                 else
-                    value = new List<TItem>() { await this.getOptionValue(option) };
+                    value = new List<TItem>() { (TItem)this.getOptionValue(option) };
 
                 valueChanged = true;
             }
             else {
                 value = (metaKey) ? this.values == null ? new List<TItem>() : this.values : new List<TItem>();
-                value.Add(await this.getOptionValue(option));
+                value.Add((TItem)this.getOptionValue(option));
                 valueChanged = true;
             }
         }
         else {
             if (selected)
-                value =await this.removeOption(option);
+                value =this.removeOption(option);
             else
             {
                 if (this.values == null )
@@ -190,7 +190,7 @@
                 {
                     value = this.values;
                 }
-                value.Add(await this.getOptionValue(option));
+                value.Add((TItem)this.getOptionValue(option));
             }
 
 
@@ -198,20 +198,20 @@
         }
 
         if(valueChanged) {
-            this.updateModels(eventArgs, value);
+            await  this.updateModels(eventArgs, value);
         }
     }
 
-    private async ValueTask<bool> isSelected(TItem option) {
+    private bool isSelected(TItem option) {
         bool selected = false;
-        TItem optionValue =await this.getOptionValue(option);
+        TItem optionValue =(TItem)this.getOptionValue(option);
 
         if (this.multiple) {
             if (this.value!=null) {
                 var type = this.value.GetType();
                 var properties = type.GetProperties();
                 foreach (var val in properties) {
-                    bool tif = await module.InvokeAsync<bool>("equals", val.GetValue(this.value), optionValue, this.dataKey);
+                    bool tif = ObjectUtils.equals(val.GetValue(this.value), optionValue, this.dataKey);
                     if (tif) {
                         selected = true;
                         break;
@@ -220,16 +220,16 @@
             }
         }
         else {
-            selected = await module.InvokeAsync<bool>("equals",this.value,optionValue,this.dataKey);
+            selected = ObjectUtils.equals(this.value,optionValue,this.dataKey);
         }
 
         return selected;
     }
-    private async Task<List<TItem>> removeOption(TItem option) {
+    private List<TItem> removeOption(TItem option) {
         List<TItem> returnValue = new List<TItem>();
         foreach(var val in this.values)
         {
-            bool tif = await module.InvokeAsync<bool>("equals", val, await this.getOptionValue(option), this.dataKey);
+            bool tif =  ObjectUtils.equals(val, this.getOptionValue(option), this.dataKey);
             if (!tif)
             {
                 returnValue.Add(val);

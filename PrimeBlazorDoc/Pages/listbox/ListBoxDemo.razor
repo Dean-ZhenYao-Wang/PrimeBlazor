@@ -11,10 +11,8 @@
         <h3 class="first">Single</h3>
         <ListBox @bind-value="selectedCity" options="cities" optionLabel="name" TItem="Models.City" />@selectedCity?.name
 
-        <h3>Multiple</h3>
-        <ListBox multiple="true" @bind-values="selectedCities" options="cities" optionLabel="name" TItem="Models.City" />
-        <h3>Advanced with Templating and Filtering</h3>
-        <ListBox @bind-value="selectedCar" options="cars" filter optionLabel="brand" listStyle="max-height:250px" style="width:15em" TItem="Models.Car" Context="option">
+        <h3>Advanced with Templating, Filtering and Multiple Selection</h3>
+        <ListBox @bind-value="selectedCars" multiple options="cars" filter optionLabel="brand" listStyle="max-height:250px" style="width:15em" TItem="Models.Car" Context="option">
             <Template>
                 <div className="p-clearfix">
                     <img alt="@option.brand" src="/demo/images/car/@(option.brand).png" style="display:inline-block;margin:5px 0 0 5px;width:48px" />
@@ -26,8 +24,7 @@
 </div>
 @code {
     private Models.City selectedCity = null;
-    private List<Models.City> selectedCities = null;
-    private Models.Car selectedCar = null;
+    private Models.Car selectedCars = null;
     private List<Models.City> cities = new List<Models.City>()
     {
         new Models.City{name="New York",code="NY" },
