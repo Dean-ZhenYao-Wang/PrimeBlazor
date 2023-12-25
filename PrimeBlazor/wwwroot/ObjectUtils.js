@@ -1,4 +1,5 @@
-﻿export function equals(obj1, obj2, field) {
+﻿import { hasClass } from './DomHandler.js'
+export function equals(obj1, obj2, field) {
     if (field)
         return (this.resolveFieldData(obj1, field) === this.resolveFieldData(obj2, field));
     else
@@ -115,84 +116,131 @@ export function findIndexInList(value, list) {
     return index;
 }
 
-export default class filterConstraints {
+export async function optionKeyDown(dotNetHelper, event, option) {
+    let item = event.currentTarget;
 
-    startsWith(value, filter) {
-        if (filter === undefined || filter === null || filter.trim() === '') {
-            return true;
-        }
+    switch (event.which) {
+        //up arrow
+        case 40:
+            let nextItem = this.findNextItem(item);
+            if (nextItem) {
+                nextItem.focus();
+            }
 
-        if (value === undefined || value === null) {
-            return false;
-        }
+            event.preventDefault();
+            break;
 
-        let filterValue = filter.toLowerCase();
-        return value.toString().toLowerCase().slice(0, filterValue.length) === filterValue;
-    }
+        //down arrow
+        case 38:
+            let prevItem = this.findPrevItem(item);
+            if (prevItem) {
+                prevItem.focus();
+            }
 
-    contains(value, filter) {
-        if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
-            return true;
-        }
+            event.preventDefault();
+            break;
 
-        if (value === undefined || value === null) {
-            return false;
-        }
-
-        return value.toString().toLowerCase().indexOf(filter.toLowerCase()) !== -1;
-    }
-
-    endsWith(value, filter) {
-        if (filter === undefined || filter === null || filter.trim() === '') {
-            return true;
-        }
-
-        if (value === undefined || value === null) {
-            return false;
-        }
-
-        let filterValue = filter.toString().toLowerCase();
-        return value.toString().toLowerCase().indexOf(filterValue, value.toString().length - filterValue.length) !== -1;
-    }
-
-    equals(value, filter) {
-        if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
-            return true;
-        }
-
-        if (value === undefined || value === null) {
-            return false;
-        }
-
-        return value.toString().toLowerCase() === filter.toString().toLowerCase();
-    }
-
-    notEquals(value, filter) {
-        if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
-            return false;
-        }
-
-        if (value === undefined || value === null) {
-            return true;
-        }
-
-        return value.toString().toLowerCase() !== filter.toString().toLowerCase();
-    }
-
-    in(value, filter) {
-        if (filter === undefined || filter === null || filter.length === 0) {
-            return true;
-        }
-
-        if (value === undefined || value === null) {
-            return false;
-        }
-
-        for (let i = 0; i < filter.length; i++) {
-            if (filter[i] === value)
-                return true;
-        }
-
-        return false;
+        //enter
+        case 13:
+            await dotNetHelper.invokeMethodAsync('onOptionSelect',event, option);
+            event.preventDefault();
+            break;
     }
 }
+export function findNextItem(item) {
+    let nextItem = item.nextElementSibling;
+
+    if (nextItem)
+        return hasClass(nextItem, 'p-disabled') ? this.findNextOption(nextItem) : nextItem;
+    else
+        return null;
+}
+export function findPrevItem(item) {
+    let prevItem = item.previousElementSibling;
+
+    if (prevItem)
+        return hasClass(prevItem, 'p-disabled') ? this.findPrevItem(prevItem) : prevItem;
+    else
+        return null;
+}
+//export default class filterConstraints {
+
+//    startsWith(value, filter) {
+//        if (filter === undefined || filter === null || filter.trim() === '') {
+//            return true;
+//        }
+
+//        if (value === undefined || value === null) {
+//            return false;
+//        }
+
+//        let filterValue = filter.toLowerCase();
+//        return value.toString().toLowerCase().slice(0, filterValue.length) === filterValue;
+//    }
+
+//    contains(value, filter) {
+//        if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
+//            return true;
+//        }
+
+//        if (value === undefined || value === null) {
+//            return false;
+//        }
+
+//        return value.toString().toLowerCase().indexOf(filter.toLowerCase()) !== -1;
+//    }
+
+//    endsWith(value, filter) {
+//        if (filter === undefined || filter === null || filter.trim() === '') {
+//            return true;
+//        }
+
+//        if (value === undefined || value === null) {
+//            return false;
+//        }
+
+//        let filterValue = filter.toString().toLowerCase();
+//        return value.toString().toLowerCase().indexOf(filterValue, value.toString().length - filterValue.length) !== -1;
+//    }
+
+//    equals(value, filter) {
+//        if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
+//            return true;
+//        }
+
+//        if (value === undefined || value === null) {
+//            return false;
+//        }
+
+//        return value.toString().toLowerCase() === filter.toString().toLowerCase();
+//    }
+
+//    notEquals(value, filter) {
+//        if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
+//            return false;
+//        }
+
+//        if (value === undefined || value === null) {
+//            return true;
+//        }
+
+//        return value.toString().toLowerCase() !== filter.toString().toLowerCase();
+//    }
+
+//    in(value, filter) {
+//        if (filter === undefined || filter === null || filter.length === 0) {
+//            return true;
+//        }
+
+//        if (value === undefined || value === null) {
+//            return false;
+//        }
+
+//        for (let i = 0; i < filter.length; i++) {
+//            if (filter[i] === value)
+//                return true;
+//        }
+
+//        return false;
+//    }
+//}

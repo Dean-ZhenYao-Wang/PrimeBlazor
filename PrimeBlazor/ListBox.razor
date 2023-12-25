@@ -18,7 +18,9 @@
             {
                 var option = visibleOptions[index];
                 <li tabindex="0" class="'p-listbox-item @(async()=>await isSelected(option)?"p-highlight":string.Empty)"
-                    @key="@(getOptionLabel(option))" @onclick="async(e)=>await onOptionClick(e, option)" @ontouchend="onOptionTouchEnd">
+                    area-label="@getOptionLabel(option)"
+                    key="@(getOptionLabel(option))" @onclick="async(e)=>await onOptionSelect(e, option)" @ontouchend="onOptionTouchEnd"
+                    @onkeydown="@((e)=>onOptionKeyDown(e,option))" @onkeydown:stopPropagation>
                     @if (Template is not null)
                     {
                         @Template(option)                        
@@ -70,10 +72,13 @@
         }
     }
 
+    private DotNetObjectReference<ListBox<TItem>>? dotNetHelper;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            dotNetHelper = DotNetObjectReference.Create(this);
             module = await JS.InvokeAsync<IJSObjectReference>("import",
                 "./_content/PrimeBlazor/ObjectUtils.js");
         }
@@ -84,6 +89,7 @@
         {
             await module.DisposeAsync();
         }
+        dotNetHelper?.Dispose();
     }
     private string getOptionLabel(TItem option)
     {
@@ -99,15 +105,16 @@
             return option;            
         }
     }
-    private async Task onOptionClick(MouseEventArgs eventArgs,TItem option) {
+    [JSInvokable]
+    private async Task onOptionSelect(MouseEventArgs eventArgs,TItem option) {
         if (this.disabled) {
             return;
         }
 
         if(this.multiple)
-            await this.onOptionClickMultiple(eventArgs, option);
+            await this.onOptionSelectMultiple(eventArgs, option);
         else
-            await this.onOptionClickSingle(eventArgs, option);
+            await this.onOptionSelectSingle(eventArgs, option);
 
         this.optionTouched = false;
     }
@@ -118,7 +125,7 @@
 
         this.optionTouched = true;
     }
-    private async Task onOptionClickSingle(MouseEventArgs eventArgs,TItem option) {
+    private async Task onOptionSelectSingle(MouseEventArgs eventArgs,TItem option) {
         bool selected = await this.isSelected(option);
         var valueChanged = false;
         TItem? value = default(TItem);
@@ -147,7 +154,7 @@
             this.updateModel(eventArgs, value);
         }
     }
-    private async Task onOptionClickMultiple(MouseEventArgs eventArgs,TItem option) {        
+    private async Task onOptionSelectMultiple(MouseEventArgs eventArgs,TItem option) {        
         bool selected = await this.isSelected(option);
         bool valueChanged = false;
         List<TItem> value = null;
@@ -233,7 +240,11 @@
     private async Task updateModel(MouseEventArgs eventArgs,TItem value) {
         await valueChanged.InvokeAsync(value);
     }
-     private async Task updateModels(MouseEventArgs eventArgs,List<TItem> values) {
+    private async Task updateModels(MouseEventArgs eventArgs,List<TItem> values) {
         await valuesChanged.InvokeAsync(values);
+    }
+    private async Task onOptionKeyDown(KeyboardEventArgs eventArgs,TItem option)
+    {
+        await module.InvokeVoidAsync("optionKeyDown", dotNetHelper, eventArgs, option);
     }
 }
