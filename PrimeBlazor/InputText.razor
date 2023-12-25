@@ -1,17 +1,33 @@
-﻿<input class="p-inputtext p-component @CssClass" id="@Id" disabled="@disabled" value="@value" @oninput="(async(e)=>await onInputEvent(e))" />
+﻿<input class="@css @CssClass" id="@Id" disabled="@disabled" value="@value" @oninput="(async(e)=>await onInputEvent(e))" />
 @code {
     [Parameter]
-    public string Id{ get; set; }
+    public string Id { get; set; }
     [Parameter]
-    public string CssClass{ get; set; }
+    public string CssClass { get; set; }
     [Parameter]
-    public string value{ get; set; }
+    public string value { get; set; }
     [Parameter]
-    public bool disabled{ get; set; }
+    public bool disabled { get; set; }
     [Parameter]
     public EventCallback<string> valueChanged { get; set; }
     private async Task onInputEvent(ChangeEventArgs eventArgs)
     {
         await valueChanged.InvokeAsync(eventArgs.Value?.ToString());
+    }
+    private string css
+    {
+        get
+        {
+            string returnCSS = "p-inputtext p-component";
+            if (filled())
+            {
+                returnCSS += " p-filled";
+            }
+            return returnCSS;
+        }
+    }
+    private bool filled()
+    {
+        return !string.IsNullOrWhiteSpace(this.value);
     }
 }
