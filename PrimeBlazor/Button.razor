@@ -4,11 +4,11 @@
 </button>
 
 @code {
-    [Parameter] public string label { get; set; }
-    [Parameter] public string icon { get; set; }
+    [Parameter] public string label { get; set; } = string.Empty;
+    [Parameter] public string icon { get; set; } = string.Empty;
     [Parameter] public string iconPos { get; set; } = "left";
     [Parameter] public bool disabled { get; set; }
-    [Parameter] public string CssClass{ get; set; }
+    [Parameter] public string CssClass { get; set; } = string.Empty;
     private string buttonClass
     {
         get

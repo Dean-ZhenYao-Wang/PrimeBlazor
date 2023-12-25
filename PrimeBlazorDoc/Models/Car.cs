@@ -2,7 +2,7 @@
 {
     public class Car
     {
-        public string brand { get; set; }
-        public string value { get; set; }
+        public string Brand { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
     }
 }

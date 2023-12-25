@@ -16,12 +16,12 @@ export function width(el) {
 
 export function getWindowScrollTop() {
     let doc = document.documentElement;
-    return (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+    return (doc.scrollTop) - (doc.clientTop || 0);
 }
 
 export function getWindowScrollLeft() {
     let doc = document.documentElement;
-    return (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+    return (doc.scrollLeft) - (doc.clientLeft || 0);
 }
 
 export function getOuterWidth(el, margin) {

@@ -12,7 +12,7 @@ namespace PrimeBlazor
     {
         public static IServiceCollection AddPrimeBlazor(this IServiceCollection services)
         {
-            ArgumentNullException.ThrowIfNull(services, "services");
+            ArgumentNullException.ThrowIfNull(services, nameof(services));
             //services.AddSingleton<ObjectUtilsJsInterop>();
             return services;
         }

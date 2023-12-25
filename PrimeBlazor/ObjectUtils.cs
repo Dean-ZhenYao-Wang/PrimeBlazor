@@ -12,7 +12,7 @@ namespace PrimeBlazor
 {
     public static class ObjectUtils
     {
-        public static object resolveFieldData(object data, string field)
+        public static object ResolveFieldData(object? data, string? field)
         {
             if (data != null && !string.IsNullOrEmpty(field))
             {
@@ -22,7 +22,9 @@ namespace PrimeBlazor
                     var property = type.GetProperty(field);
                     if (property != null)
                     {
+#pragma warning disable CS8603 // 可能返回 null 引用。
                         return property.GetValue(data);
+#pragma warning restore CS8603 // 可能返回 null 引用。
                     }
                 }
                 else
@@ -31,7 +33,9 @@ namespace PrimeBlazor
                     var value = data;
                     foreach (var fieldName in fields)
                     {
+#pragma warning disable CS8602 // 解引用可能出现空引用。
                         var type = value.GetType();
+#pragma warning restore CS8602 // 解引用可能出现空引用。
                         var property = type.GetProperty(fieldName);
                         if (property != null)
                         {
@@ -39,23 +43,29 @@ namespace PrimeBlazor
                         }
                         else
                         {
+#pragma warning disable CS8603 // 可能返回 null 引用。
                             return null;
+#pragma warning restore CS8603 // 可能返回 null 引用。
                         }
                     }
+#pragma warning disable CS8603 // 可能返回 null 引用。
                     return value;
+#pragma warning restore CS8603 // 可能返回 null 引用。
                 }
             }
 
+#pragma warning disable CS8603 // 可能返回 null 引用。
             return null;
+#pragma warning restore CS8603 // 可能返回 null 引用。
         }
-        public static bool equals(object obj1, object obj2,string field)
+        public static bool Equals(object? obj1, object? obj2,string? field)
         {
             if(!string.IsNullOrWhiteSpace(field))
-                return (resolveFieldData(obj1,field)==resolveFieldData(obj2,field));
+                return (ResolveFieldData(obj1,field)==ResolveFieldData(obj2,field));
             else
-                return equalsByValue(obj1,obj2);
+                return EqualsByValue(obj1,obj2);
         }
-        public static bool equalsByValue(dynamic obj1, dynamic obj2)
+        public static bool EqualsByValue(dynamic? obj1, dynamic? obj2)
         {
             if (obj1 is null && obj2 is null)
             {
@@ -82,8 +92,8 @@ namespace PrimeBlazor
                         continue;
                     }
 
-                    if (!(obj1.GetType().GetProperty(property.Key) is PropertyInfo obj1Property)
-                        || !(obj2.GetType().GetProperty(property.Key) is PropertyInfo obj2Property))
+                    if (obj1.GetType().GetProperty(property.Key) is not PropertyInfo obj1Property
+                        || obj2.GetType().GetProperty(property.Key) is not PropertyInfo obj2Property)
                     {
                         return false;
                     }
@@ -91,7 +101,7 @@ namespace PrimeBlazor
                     switch (obj1Property.PropertyType.FullName)
                     {
                         case "System.Object":
-                            if ((obj1Property.GetValue(obj1)!._visited ?? false) || !equalsByValue(obj1Property.GetValue(obj1), obj2Property.GetValue(obj2)))
+                            if ((obj1Property.GetValue(obj1)!._visited ?? false) || !EqualsByValue(obj1Property.GetValue(obj1), obj2Property.GetValue(obj2)))
                             {
                                 return false;
                             }

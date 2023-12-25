@@ -48,14 +48,14 @@
     [Parameter] public string? optionLabel { get; set; } = null;
     [Parameter] public string? optionValue { get; set; } = null;
     [Parameter] public bool disabled{ get; set; }
-    [Parameter] public string listStyle{ get; set; }
-    [Parameter] public string style{ get; set; }
+    [Parameter] public string listStyle { get; set; } = string.Empty;
+    [Parameter] public string style { get; set; } = string.Empty;
     [Parameter] public RenderFragment<TItem>? Template { get; set; }
     private string label = string.Empty;
     private bool optionTouched = false;
     private IJSObjectReference? module;
 
-    private string filterValue;
+    private string filterValue = string.Empty;
 
     private List<TItem> visibleOptions
     {
@@ -93,12 +93,12 @@
     }
     private string getOptionLabel(TItem option)
     {
-        return ObjectUtils.resolveFieldData(option, this.optionLabel).ToString();
+        return ObjectUtils.ResolveFieldData(option, this.optionLabel).ToString();
     }
     private object getOptionValue(TItem option)
     {
         if( !string.IsNullOrWhiteSpace(this.optionValue)){
-            return ObjectUtils.resolveFieldData(option, this.optionValue);
+            return ObjectUtils.ResolveFieldData(option, this.optionValue);
         }
         else
         {
@@ -157,7 +157,7 @@
     private async Task onOptionSelectMultiple(MouseEventArgs eventArgs,TItem option) {        
         bool selected = this.isSelected(option);
         bool valueChanged = false;
-        List<TItem> value = null;
+        List<TItem>? value = null;
         bool metaSelection = this.optionTouched ? false : this.metaKeySelection;
 
         if (metaSelection) {
@@ -211,7 +211,7 @@
                 var type = this.value.GetType();
                 var properties = type.GetProperties();
                 foreach (var val in properties) {
-                    bool tif = ObjectUtils.equals(val.GetValue(this.value), optionValue, this.dataKey);
+                    bool tif = ObjectUtils.Equals(val.GetValue(this.value), optionValue, this.dataKey);
                     if (tif) {
                         selected = true;
                         break;
@@ -220,7 +220,7 @@
             }
         }
         else {
-            selected = ObjectUtils.equals(this.value,optionValue,this.dataKey);
+            selected = ObjectUtils.Equals(this.value,optionValue,this.dataKey);
         }
 
         return selected;
@@ -229,7 +229,7 @@
         List<TItem> returnValue = new List<TItem>();
         foreach(var val in this.values)
         {
-            bool tif =  ObjectUtils.equals(val, this.getOptionValue(option), this.dataKey);
+            bool tif =  ObjectUtils.Equals(val, this.getOptionValue(option), this.dataKey);
             if (!tif)
             {
                 returnValue.Add(val);
