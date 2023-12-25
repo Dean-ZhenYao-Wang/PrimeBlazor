@@ -1,0 +1,61 @@
+﻿<button class="@buttonClass">
+    <span v-if="icon" class="@iconClass"></span>
+    <span class="p-button-text p-c"> @(string.IsNullOrWhiteSpace(this.label) ? "p-btn" : this.label)</span>
+</button>
+
+@code {
+    [Parameter] public string label { get; set; }
+    [Parameter] public string icon { get; set; }
+    [Parameter] public string iconPos { get; set; } = "left";
+    [Parameter] public bool disabled { get; set; }
+    [Parameter] public string CssClass{ get; set; }
+    private string buttonClass
+    {
+        get
+        {
+            string button_class = "p-button p-component";
+            if (!string.IsNullOrWhiteSpace(this.icon) && string.IsNullOrWhiteSpace(this.label))
+            {
+                button_class += " p-button-icon-only";
+            }
+            if (!string.IsNullOrWhiteSpace(this.icon) && !string.IsNullOrWhiteSpace(this.label) && this.iconPos.Equals("left"))
+            {
+                button_class += " p-button-text-icon-left";
+            }
+            if (!string.IsNullOrWhiteSpace(this.icon) && !string.IsNullOrWhiteSpace(this.label) && this.iconPos.Equals("right"))
+            {
+                button_class += " p-button-text-icon-right";
+            }
+            if (string.IsNullOrWhiteSpace(this.icon) && !string.IsNullOrWhiteSpace(this.label))
+            {
+                button_class += " p-button-text-only";
+            }
+            if (this.disabled)
+            {
+                button_class += " p-disabled";
+            }
+            if (!string.IsNullOrWhiteSpace(this.CssClass))
+            {
+                button_class += $" {CssClass}";
+            }
+            return button_class;
+        }
+    }
+    private string iconClass
+    {
+        get
+        {
+            string icon_class = this.icon;
+            switch (this.iconPos)
+            {
+                case "left":
+                    icon_class += " p-button-icon-left";
+                    break;
+                case "right":
+                    icon_class += " p-button-icon-right";
+                    break;
+            }
+            return icon_class;
+        }
+    }
+}
