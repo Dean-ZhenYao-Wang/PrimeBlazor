@@ -1,0 +1,25 @@
+﻿<div class="p-panel p-component" style="@style">
+    <div class="p-panel-titlebar">
+        @if (HeaderTemplate is not null)
+        {
+            @HeaderTemplate
+        }
+        else
+        {
+            <span class="p-panel-title" v-if="header">@header</span>
+        }
+    </div>
+    <div class="p-panel-content-wrapper">
+        <div class="p-panel-content">
+            @ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string header { get; set; } = string.Empty;
+    [Parameter] public bool toggleable { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? HeaderTemplate{ get; set; }
+    [Parameter] public string? style { get; set; } = null;
+}
