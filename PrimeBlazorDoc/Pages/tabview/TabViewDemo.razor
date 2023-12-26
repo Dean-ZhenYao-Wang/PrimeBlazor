@@ -28,9 +28,10 @@
         </TabView>
 
         <h3>Programmatic</h3>
-        <Button icon="pi pi-chevron-left" onclick="prev" CssClass="p-button-secondary" style="margin-left: .25em" />
-        <Button icon="pi pi-chevron-right" onclick="next" style="margin-left: .5em" CssClass="p-button-secondary" />
-
+        <div style="padding: .25em">
+            <Button icon="pi pi-chevron-left" onclick="prev" CssClass="p-button-secondary"/>
+            <Button icon="pi pi-chevron-right" onclick="next" style="margin-left: .5em" CssClass="p-button-secondary" />
+        </div>
         <TabView activeIndex="activeIndex">
             <TabPanel header="Godfather I">
                 The story begins as Don Vito Corleone, the head of a New York Mafia family, overseeshis daughter's wedding. His beloved son ichael has just come home from the war,
@@ -69,7 +70,7 @@
             <TabPanel header="Godfather IV" disabled="true"></TabPanel>
         </TabView>
 
-        <h3>Custom Content</h3>
+        <h3>Custom Headers</h3>
         <TabView CssClass="tabview-custom">
             <TabPanel>
                 <HeaderTemplate>
@@ -96,8 +97,8 @@
             <TabPanel>
                 <HeaderTemplate>
                     <i class="pi pi-search"></i>
-                    <span>Godfather II</span>
-                    <i class="pi pi-times"></i>
+                    <span>Godfather III</span>
+                    <i class="pi pi-pi-cog"></i>
                 </HeaderTemplate>
                 <ChildContent>
                     The Godfather Part III is set in 1979 and 1980. Michael has moved back to New York and taken great strides to remove the family from crime. He turns over his New York criminal

@@ -1,4 +1,4 @@
-﻿<div class="p-accordion p-component">
+﻿<div class="p-accordion p-component @CssClass">
     <CascadingValue Value="this">
         @ChildContent
         @foreach (var tab in tabs)
@@ -31,6 +31,7 @@
 </div>
 
 @code {
+    [Parameter] public string CssClass { get; set; } = string.Empty;
     [Parameter] public bool multiple { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public EventCallback<AccordionTab>? tabclose { get; set; }
