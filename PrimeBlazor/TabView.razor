@@ -4,9 +4,9 @@
             @foreach (var tab in tabs)
             {
                 int i = tabs.IndexOf(tab);
-                <li role="presentation" key="@tab.header" class="@(d_activeTabIndex==i?"p-highlight":null) @(tab.disabled?"p-disabled":null)">
+                <li role="presentation" key="@(string.IsNullOrWhiteSpace(tab.header)?i:tab.header)" class="@(d_activeTabIndex==i?"p-highlight":null) @(tab.disabled?"p-disabled":null)">
                     <a role="tab" @onclick="async()=>await onTabClick(tab, i)" @onkeydown="async(e)=>await keyDown(e,tab,i)">
-                        @if(tab.HeaderTemplate is not null)
+                        @if (tab.HeaderTemplate is not null)
                         {
                             @tab.HeaderTemplate
                         }
@@ -30,7 +30,7 @@
     public EventCallback<int> activeIndexChanged { get; set; }
     [Parameter] public string orientation { get; set; } = "top";
     [Parameter] public RenderFragment? ChildContent { get; set; } = null;
-    [Parameter] public string CssClass{ get; set; }
+    [Parameter] public string CssClass { get; set; }
     private int d_activeTabIndex;
     private List<TabPanel> tabs { get; set; } = new List<TabPanel>();
     public override Task SetParametersAsync(ParameterView parameters)
