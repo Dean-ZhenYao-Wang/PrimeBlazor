@@ -8,18 +8,37 @@
         {
             <span class="p-panel-title" v-if="header">@header</span>
         }
+        @if (toggleable)
+        {
+            <a tabindex="0" class="p-panel-titlebar-icon p-panel-titlebar-toggler" @onclick="toggle">
+                <span class="@(!d_collapsed?"pi pi-minus":"pi pi-plus")"></span>
+            </a>
+        }
     </div>
-    <div class="p-panel-content-wrapper">
-        <div class="p-panel-content">
-            @ChildContent
+    <transition name="p-panel-content-wrapper">
+        <div class="p-panel-content-wrapper" style="display:@(!d_collapsed?"none":"inline")">
+            <div class="p-panel-content">
+                @ChildContent
+            </div>
         </div>
-    </div>
+    </transition>
 </div>
 
 @code {
     [Parameter] public string header { get; set; } = string.Empty;
     [Parameter] public bool toggleable { get; set; }
+    [Parameter] public bool collapsed{ get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public RenderFragment? HeaderTemplate{ get; set; }
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
     [Parameter] public string? style { get; set; } = null;
+    private bool d_collapsed;
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.TryGetValue(nameof(collapsed), out d_collapsed);
+        return base.SetParametersAsync(parameters);
+    }
+    private void toggle()
+    {
+        this.d_collapsed = !this.d_collapsed;
+    }
 }
