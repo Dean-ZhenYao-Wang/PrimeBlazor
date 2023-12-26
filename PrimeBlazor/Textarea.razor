@@ -1,0 +1,59 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<textarea @ref="element"
+          class="p-inputtextarea p-inputtext p-component @(filled?"p-filled":null) @(autoResize?"p-inputtextarea-resizable":null)"
+          value="@value"
+          @oninput="(async(e)=>await onInputEvent(e))"
+          disabled="@disabled"
+          rows="@rows"
+          cols="@cols"></textarea>
+
+@code {
+    private ElementReference element { get; set; }
+    [Parameter] public string value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> valueChanged { get; set; }
+    [Parameter] public bool autoResize { get; set; }
+    [Parameter] public bool disabled { get; set; }
+    [Parameter] public int rows { get; set; } = 1;
+    [Parameter] public int cols { get; set; } = 1;
+    private int cachedScrollHeight;
+    private bool filled
+    {
+        get
+        {
+            return !string.IsNullOrWhiteSpace(this.value);
+        }
+    }
+    private IJSObjectReference module;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+              "./_content/PrimeBlazor/Textarea.razor.js");
+        }
+        if (this.autoResize)
+        {
+            await this.resize();
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+    private async Task resize()
+    {
+        await module.InvokeVoidAsync("resize", element);
+    }
+    private async Task onInputEvent(ChangeEventArgs eventArgs)
+    {
+        if (this.autoResize)
+        {
+            await this.resize();
+        }
+        await valueChanged.InvokeAsync(eventArgs.Value?.ToString());
+    }
+}

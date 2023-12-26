@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Content Include="ObjectUtils.cs" />
+    <Content Include="Textarea.razor.js" />
   </ItemGroup>
 
 

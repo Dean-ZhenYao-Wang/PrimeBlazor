@@ -1,0 +1,26 @@
+﻿@page "/textarea"
+<div>
+    <div class="content-section introduction">
+        <div class="feature-intro">
+            <h1>Textarea</h1>
+            <p>Textarea is a multi-line text input element.</p>
+        </div>
+    </div>
+
+    <div class="content-section implementation">
+        <h3 class="first">Basic</h3>
+        <Textarea @bind-value="value1" rows="5" cols="30" />
+
+        <h3>Auto Resize</h3>
+        <Textarea @bind-value="value2" autoResize="true" rows="5" cols="30" />
+
+        <h3>Disabled</h3>
+        <Textarea @bind-value="value3" disabled rows="5" cols="30" />
+    </div>
+</div>
+
+@code {
+    private string value1 = "Welcome to PrimeBlazor";
+    private string value2 = "";
+    private string value3 = "";
+}
