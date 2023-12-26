@@ -1,0 +1,13 @@
+﻿<div class="p-toolbar p-component">
+    <div class="p-toolbar-group-left">
+        @LeftTemplate
+    </div>
+    <div class="p-toolbar-group-right">
+        @RightTemplate
+    </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? LeftTemplate { get; set; }
+    [Parameter] public RenderFragment? RightTemplate { get; set; }
+}

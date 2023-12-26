@@ -1,0 +1,29 @@
+﻿@page "/toolbar"
+<div>
+    <div class="content-section introduction">
+        <div class="feature-intro">
+            <h1>Toolbar</h1>
+            <p>Toolbar is a grouping component for buttons and other content.</p>
+        </div>
+    </div>
+
+    <div class="content-section implementation">
+        <Toolbar>
+            <LeftTemplate>
+                <Button label="New" icon="pi pi-plus" style="margin-right: .25em" />
+                <Button label="Upload" icon="pi pi-upload" CssClass="p-button-success" />
+                <i class="pi pi-bars p-toolbar-separator" style="margin-right: .25em" />
+                <Button label="Save" icon="pi pi-check" CssClass="p-button-warning" />
+            </LeftTemplate>
+            <RightTemplate>
+                <Button icon="pi pi-search" style="margin-right: .25em" />
+                <Button icon="pi pi-calendar" CssClass="p-button-success" style="margin-right: .25em" />
+                <Button icon="pi pi-times" CssClass="p-button-danger" />
+            </RightTemplate>
+        </Toolbar>
+    </div>
+</div>
+
+@code {
+
+}
