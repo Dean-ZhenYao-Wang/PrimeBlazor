@@ -1,12 +1,19 @@
-﻿<div class="p-tabview p-component p-tabview-top">
+﻿<div class="p-tabview p-component p-tabview-top @CssClass">
     <CascadingValue Value="this">
         <ul class="p-tabview-nav p-resest" role="tablist">
             @foreach (var tab in tabs)
             {
                 int i = tabs.IndexOf(tab);
                 <li role="presentation" key="@tab.header" class="@(d_activeTabIndex==i?"p-highlight":null) @(tab.disabled?"p-disabled":null)">
-                    <a role="tab" @onclick="async(e)=>await onTabClick(e, tab, i)">
-                        <span class="p-tabview-title">@tab.header</span>
+                    <a role="tab" @onclick="async()=>await onTabClick(tab, i)" @onkeydown="async(e)=>await keyDown(e,tab,i)">
+                        @if(tab.HeaderTemplate is not null)
+                        {
+                            @tab.HeaderTemplate
+                        }
+                        else
+                        {
+                            @tab.header
+                        }
                     </a>
                 </li>
             }
@@ -23,6 +30,7 @@
     public EventCallback<int> activeIndexChanged { get; set; }
     [Parameter] public string orientation { get; set; } = "top";
     [Parameter] public RenderFragment? ChildContent { get; set; } = null;
+    [Parameter] public string CssClass{ get; set; }
     private int d_activeTabIndex;
     private List<TabPanel> tabs { get; set; } = new List<TabPanel>();
     public override Task SetParametersAsync(ParameterView parameters)
@@ -40,13 +48,18 @@
         this.tabs.Add(tab);
         StateHasChanged();
     }
-    private async Task onTabClick(MouseEventArgs eventArgs, TabPanel tab, int index)
+    private async Task onTabClick(TabPanel tab, int index)
     {
-        if (!tab.disabled)
+        if (!tab.disabled && index != this.d_activeTabIndex)
         {
             this.activateTab(index);
-            await activeIndexChanged.InvokeAsync(index);            
+            await activeIndexChanged.InvokeAsync(index);
         }
+    }
+    private async Task keyDown(KeyboardEventArgs eventArgs, TabPanel tab, int index)
+    {
+        if (eventArgs.Key.Equals("Enter"))
+            await onTabClick(tab, index);
     }
     private void activateTab(int index)
     {
