@@ -10,7 +10,7 @@
         }
         @if (toggleable)
         {
-            <a tabindex="0" class="p-panel-titlebar-icon p-panel-titlebar-toggler" @onclick="toggle">
+            <a tabindex="0" class="p-panel-titlebar-icon p-panel-titlebar-toggler" @onclick="toggle" @onkeydown="toggleKeyDown">
                 <span class="@(!d_collapsed?"pi pi-minus":"pi pi-plus")"></span>
             </a>
         }
@@ -40,5 +40,12 @@
     private void toggle()
     {
         this.d_collapsed = !this.d_collapsed;
+    }
+    private void toggleKeyDown(KeyboardEventArgs eventArgs)
+    {
+        if (eventArgs.Key.Equals("Enter"))
+        {
+            this.toggle();
+        }
     }
 }

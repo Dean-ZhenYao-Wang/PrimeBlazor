@@ -1,0 +1,61 @@
+﻿<fieldset class="p-fieldset p-component @(toggleable?"p-fieldset-toggleable":null)">
+    <legend class="p-fieldset-legend p-unselectable-text">
+        @if (!toggleable)
+        {
+            if (LegendTemplate is not null)
+            {
+                @LegendTemplate
+            }
+            else
+            {
+                <span class="p-fieldset-legend-text">@legend</span>
+            }
+        }
+        @if (toggleable)
+        {
+            <a tabindex="0" @onclick="toggle" @onkeydown="toggleKeyDown">
+                <span class="p-fieldset-toggler pi pi-minus"></span>
+                @if (LegendTemplate is not null)
+                {
+                    @LegendTemplate
+                }
+                else
+                {
+                    <span class="p-fieldset-legend-text">@legend</span>
+                }
+            </a>
+        }
+    </legend>
+    <transition name="p-fieldset-content-wrapper">
+        <div class="p-fieldset-content-wrapper" style="display:@(!d_collapsed?"none":"inline")">
+            <div class="p-fieldset-content">
+                @ChildContent
+            </div>
+        </div>
+    </transition>
+</fieldset>
+
+@code {
+    [Parameter] public string legend { get; set; } = string.Empty;
+    [Parameter] public bool toggleable { get; set; }
+    [Parameter] public bool collapsed { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? LegendTemplate { get; set; }
+    private bool d_collapsed;
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.TryGetValue(nameof(collapsed), out d_collapsed);
+        return base.SetParametersAsync(parameters);
+    }
+    private void toggle()
+    {
+        this.d_collapsed = !this.d_collapsed;
+    }
+    private void toggleKeyDown(KeyboardEventArgs eventArgs)
+    {
+        if (eventArgs.Key.Equals("Enter"))
+        {
+            this.toggle();
+        }
+    }
+}
