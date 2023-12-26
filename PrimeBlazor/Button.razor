@@ -1,4 +1,4 @@
-﻿<button class="@buttonClass" style="@style">
+﻿<button class="@buttonClass" style="@style" @onclick="onclick">
     <span v-if="icon" class="@iconClass"></span>
     <span class="p-button-text p-c"> @(string.IsNullOrWhiteSpace(this.label) ? "p-btn" : this.label)</span>
 </button>
@@ -10,6 +10,7 @@
     [Parameter] public bool disabled { get; set; }
     [Parameter] public string CssClass { get; set; } = string.Empty;
     [Parameter] public string? style{ get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> onclick{ get; set; }
     private string buttonClass
     {
         get
