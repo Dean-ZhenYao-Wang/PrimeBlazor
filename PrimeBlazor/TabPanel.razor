@@ -1,0 +1,15 @@
+﻿<div class="p-tabview-panel" role="tabpanel" disabled="@disabled" style="display:@(active?"block":"none")">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public string? header { get; set; } = null;
+    [Parameter] public bool disabled { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; } = null;
+    public bool active { get; set; } = false;
+    [CascadingParameter]public TabView? TabViewSet{ get; set; }
+    protected override void OnInitialized()
+    {
+        TabViewSet?.addTab(this);
+    }
+}

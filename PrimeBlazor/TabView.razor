@@ -1,0 +1,55 @@
+﻿<div class="p-tabview p-component p-tabview-top">
+    <CascadingValue Value="this">
+        <ul class="p-tabview-nav p-resest" role="tablist">
+            @foreach (var tab in tabs)
+            {
+                int i = tabs.IndexOf(tab);
+                <li role="presentation" key="@tab.header" class="@(d_activeTabIndex==i?"p-highlight":null)">
+                    <a role="tab" @onclick="async(e)=>await onTabClick(e, tab, i)">
+                        <span class="p-tabview-title">@tab.header</span>
+                    </a>
+                </li>
+            }
+        </ul>
+        <div class="p-tabview-panels">
+            @ChildContent
+        </div>
+    </CascadingValue>
+</div>
+
+@code {
+    [Parameter] public int activeIndex { get; set; }
+    [Parameter]
+    public EventCallback<int> activeIndexChanged { get; set; }
+    [Parameter] public string orientation { get; set; } = "top";
+    [Parameter] public RenderFragment? ChildContent { get; set; } = null;
+    private int d_activeTabIndex;
+    private List<TabPanel> tabs { get; set; } = new List<TabPanel>();
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.TryGetValue(nameof(activeIndex), out d_activeTabIndex);
+        this.activateTab(d_activeTabIndex);
+        return base.SetParametersAsync(parameters);
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        this.tabs[this.activeIndex].active = true;
+    }
+    public void addTab(TabPanel tab)
+    {
+        this.tabs.Add(tab);
+        StateHasChanged();
+    }
+    private async Task onTabClick(MouseEventArgs eventArgs,TabPanel tab,int index)
+    {
+        this.activateTab(index);
+        await activeIndexChanged.InvokeAsync(index);
+    }
+    private void activateTab(int index)
+    {
+        for(int i = 0; i < this.tabs.Count; i++)
+        {
+            this.tabs[i].active = (i == index);
+        }
+    }
+}
