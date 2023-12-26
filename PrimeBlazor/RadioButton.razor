@@ -1,0 +1,84 @@
+﻿@typeparam TItem
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="p-radiobutton p-component" @onclick="onClick">
+    <div class="p-hidden-accessible">
+        <input @ref="inputElement" id="@inputId" type="radio" name="@name" checked="@isChecked" disabled="@disabled"  @onfocus="onFocus"  @onblur="onBlur"
+               autocomplete="@autocomplete" autofocus="@autofocus">
+    </div>
+    <div ref="box" class="p-radiobutton-box p-component @(isChecked?"p-highlight":null) @(disabled?"p-disabled":null) @(focused?"p-focus":null)">
+        <span class="p-radiobutton-icon p-c @(isChecked?"pi pi-circle-on":null)"></span>
+    </div>
+</div>
+<style>
+.p-radiobutton-box {
+    transition: background-color 0.2s, border-color 0.2s, box-shadow .2s !important;
+}
+    
+.p-radiobutton-box.p-focus {
+    box-shadow: 0 0 0 0.2em #8dcdff;
+}
+</style>
+@code {
+    [Parameter] public TItem? value { get; set; }
+    [Parameter] public TItem? model { get; set; }
+    [Parameter] public EventCallback<TItem?> modelChanged { get; set; }
+    [Parameter] public string name { get; set; } = string.Empty;
+    [Parameter] public string inputId { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public bool autofocus { get; set; }
+    [Parameter] public string autocomplete { get; set; } = string.Empty;
+    [Parameter] public bool disabled { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> click { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> change{ get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> focus{ get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> blur{ get; set; }
+    private bool focused = false;
+    private bool isChecked{
+        get
+        {
+            return this.model != null && this.model.Equals(this.value);
+        }
+    }
+    private IJSObjectReference? module;
+    private ElementReference inputElement;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./_content/PrimeBlazor/DomHandler.js");
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+    private async Task onClick(MouseEventArgs mouseEvent)
+    {
+        if (!this.disabled)
+        {
+            await click.InvokeAsync(mouseEvent);
+            await modelChanged.InvokeAsync(this.value);
+            if (module is not null)
+                await module.InvokeVoidAsync("elementFocus", inputElement);
+            this.focused = true;
+            if (!this.isChecked)
+            {
+                await change.InvokeAsync(mouseEvent);
+            }
+        }
+    }
+    private async Task onFocus(FocusEventArgs focusEventArgs)
+    {
+        this.focused = true;
+        await focus.InvokeAsync(focusEventArgs);
+    }
+    private async Task onBlur(FocusEventArgs focusEventArgs)
+    {
+        this.focused = false;
+        await blur.InvokeAsync(focusEventArgs);
+    }
+}

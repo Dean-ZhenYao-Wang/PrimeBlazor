@@ -377,3 +377,7 @@ export function resolveUserAgent() {
 export function isVisible(element) {
     return element.offsetParent != null;
 }
+
+export function elementFocus(element) {
+    element.focus();
+}
