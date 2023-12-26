@@ -4,7 +4,7 @@
             @foreach (var tab in tabs)
             {
                 int i = tabs.IndexOf(tab);
-                <li role="presentation" key="@tab.header" class="@(d_activeTabIndex==i?"p-highlight":null)">
+                <li role="presentation" key="@tab.header" class="@(d_activeTabIndex==i?"p-highlight":null) @(tab.disabled?"p-disabled":null)">
                     <a role="tab" @onclick="async(e)=>await onTabClick(e, tab, i)">
                         <span class="p-tabview-title">@tab.header</span>
                     </a>
@@ -40,14 +40,17 @@
         this.tabs.Add(tab);
         StateHasChanged();
     }
-    private async Task onTabClick(MouseEventArgs eventArgs,TabPanel tab,int index)
+    private async Task onTabClick(MouseEventArgs eventArgs, TabPanel tab, int index)
     {
-        this.activateTab(index);
-        await activeIndexChanged.InvokeAsync(index);
+        if (!tab.disabled)
+        {
+            this.activateTab(index);
+            await activeIndexChanged.InvokeAsync(index);            
+        }
     }
     private void activateTab(int index)
     {
-        for(int i = 0; i < this.tabs.Count; i++)
+        for (int i = 0; i < this.tabs.Count; i++)
         {
             this.tabs[i].active = (i == index);
         }
