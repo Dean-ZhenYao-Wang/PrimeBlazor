@@ -1,0 +1,76 @@
+﻿<div class="p-accordion p-component">
+    <CascadingValue Value="this">
+        @ChildContent
+        @foreach (var tab in tabs)
+        {
+            int i = tabs.IndexOf(tab);
+            <div key=@(string.IsNullOrWhiteSpace(tab.header)?i.ToString():tab.header) class="p-accordion-tab">
+                <div class="p-accordion-header @(tab.active?"p-highlight":null) @(tab.disabled?"p-disabled":null)">
+                    <a role="tab" @onclick="async()=>await this.onTabClick(tab)" @onkeydown="async(e)=>await this.onTabKeydown(e, tab)" tabindex="@(tab.disabled ? null : 0)">
+                        <span class="p-accordion-toggle-icon pi pi-fw pi-caret-right"></span>
+                        @if (tab.HeaderTemplate is not null)
+                        {
+                            @tab.HeaderTemplate
+                        }
+                        else
+                        {
+                            <span class="p-accordion-header-text">@tab.header</span>
+                        }
+                    </a>
+                </div>
+                <transition name="p-accordion-content-wrapper">
+                    <div class="p-accordion-content-wrapper" style="display:@(tab.active?"block":"none")">
+                        <div class="p-accordion-content">
+                            @tab.ChildContent
+                        </div>
+                    </div>
+                </transition>
+            </div>
+        }
+    </CascadingValue>
+</div>
+
+@code {
+    [Parameter] public bool multiple { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback<AccordionTab>? tabclose { get; set; }
+    [Parameter] public EventCallback<AccordionTab>? tabopen { get; set; }
+    private List<AccordionTab> tabs { get; set; } = new List<AccordionTab>();
+    public void addTab(AccordionTab tab)
+    {
+        this.tabs.Add(tab);
+        StateHasChanged();
+    }
+    public bool IsTabAny(AccordionTab tab)
+    {
+        return this.tabs.IndexOf(tab) > -1;
+    }
+    private async Task onTabClick(AccordionTab tab)
+    {
+        if (!tab.disabled)
+        {
+            if (!this.multiple && tab.active)
+            {
+                this.tabs.ForEach(t => t.active = false);
+            }
+            tab.active = !tab.active;
+            if (!tab.active)
+            {
+                if (tabclose is not null)
+                    await tabclose.Value.InvokeAsync(tab);
+            }
+            else
+            {
+                if (tabopen is not null)
+                    await tabopen.Value.InvokeAsync(tab);
+            }
+        }
+    }
+    private async Task onTabKeydown(KeyboardEventArgs eventArgs, AccordionTab tab)
+    {
+        if (eventArgs.Key.Equals("Enter"))
+        {
+            await this.onTabClick(tab);
+        }
+    }
+}
