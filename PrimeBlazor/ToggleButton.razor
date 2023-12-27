@@ -129,11 +129,14 @@
     }
     private async Task onClick(MouseEventArgs eventArgs)
     {
-        await click.InvokeAsync(eventArgs);
-        await modelChanged.InvokeAsync(!this.model);
-        await change.InvokeAsync(eventArgs);
-        if (module is not null)
-            await module.InvokeVoidAsync("elementFocus", inputElement);
+        if (!this.disabled)
+        {
+            await click.InvokeAsync(eventArgs);
+            await modelChanged.InvokeAsync(!this.model);
+            await change.InvokeAsync(eventArgs);
+            if (module is not null)
+                await module.InvokeVoidAsync("elementFocus", inputElement);
+        }
     }
     private async Task keyDown(KeyboardEventArgs eventArgs)
     {
