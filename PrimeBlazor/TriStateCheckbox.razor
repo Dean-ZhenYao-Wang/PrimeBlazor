@@ -1,0 +1,106 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="p-checkbox p-component" @onclick="async(e)=>await onClick(e)">
+    <div class="p-hidden-accessible">
+        <input @ref="inputElement" id="@inputId" type="checkbox" name="@name" checked="@isChecked" disabled="@disabled" @onfocus="async(e)=>await onFocus(e)" @onblur="async(e)=>await onBlur(e)"
+               autocomplete="@autocomplete" autofocus="@autofocus">
+    </div>
+    <div ref="box" class="p-checkbox-box p-component @(isChecked?"p-highlight":null) @(disabled?"p-disabled":null) @(focused?"p-focus":null)">
+        <span class="p-checkbox-icon p-c @(icon)"></span>
+    </div>
+</div>
+
+@code {
+    [Parameter]public bool? model{ get; set; }
+    [Parameter] public EventCallback<bool?> modelChanged { get; set; }
+    [Parameter] public string name { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public string inputId { get; set; } = Guid.NewGuid().ToString();
+    [Parameter]public bool autofocus{ get; set; }
+    [Parameter]public string? autocomplete{ get; set; }
+    [Parameter]public bool disabled{ get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> click { get; set; }
+    [Parameter]public EventCallback change{ get; set; }
+    [Parameter]public EventCallback<FocusEventArgs> focus{ get; set; }
+    [Parameter]public EventCallback<FocusEventArgs> blur{ get; set; }
+    private ElementReference inputElement;
+    private bool focused = false;
+    private bool isChecked
+    {
+        get
+        {
+            return this.model == true;
+        }
+    }
+    private string? icon
+    {
+        get
+        {
+            string? icon_str;
+            switch (this.model)
+            {
+                case true:
+                    icon_str = "pi pi-check";
+                    break;
+                case false:
+                    icon_str = "pi pi-times";
+                    break;
+                case null:
+                    icon_str = null;
+                    break;
+            }
+            return icon_str;
+        }
+    }
+
+
+    private IJSObjectReference? module;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./_content/PrimeBlazor/DomHandler.js");
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+    private async Task onClick(MouseEventArgs eventArgs)
+    {
+        if (!this.disabled)
+        {
+            bool? newValue;
+            switch (this.model)
+            {
+                case true:
+                    newValue = false;
+                    break;
+                case false:
+                    newValue = null;
+                    break;
+                case null:
+                    newValue = true;
+                    break;
+            }
+            await click.InvokeAsync(eventArgs);
+            await modelChanged.InvokeAsync(newValue);
+            await change.InvokeAsync();
+            if (module is not null)
+                await module.InvokeVoidAsync("elementFocus", inputElement);
+        }
+    }
+    private async Task onFocus(FocusEventArgs eventArgs)
+    {
+        this.focused = true;
+        await focus.InvokeAsync(eventArgs);
+    }
+    private async Task onBlur(FocusEventArgs eventArgs)
+    {
+        this.focused = false;
+        await blur.InvokeAsync(eventArgs);
+    }
+}
