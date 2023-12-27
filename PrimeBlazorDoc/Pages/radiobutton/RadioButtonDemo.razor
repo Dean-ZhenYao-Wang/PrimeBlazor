@@ -12,16 +12,20 @@
         <h3 class="first">Basic</h3>
         <div class="p-grid">
             <div class="p-col-12">
-                <RadioButton inputId="rb1" name="city" value=@("New York") @bind-model="city" />
-                <label for="rb1" class="RadioButton-label">New York</label>
+                <RadioButton inputId="city1" name="city" value='"Chicago"' @bind-model="city" />
+                <label for="city1" class="p-radiobutton-label">Chicago</label>
             </div>
             <div class="p-col-12">
-                <RadioButton inputId="rb2" name="city" value=@("San Francisco") @bind-model="city" />
-                <label for="rb2" class="RadioButton-label">San Francisco</label>
+                <RadioButton inputId="city2" name="city" value='"Los Angeles"' @bind-model="city" />
+                <label for="city2" class="p-radiobutton-label">Los Angeles</label>
             </div>
             <div class="p-col-12">
-                <RadioButton inputId="rb3" name="city" value=@("Los Angeles") @bind-model="city" />
-                <label for="rb3" class="RadioButton-label">Los Angeles</label>
+                <RadioButton inputId="city3" name="city" value='"New York"' @bind-model="city" />
+                <label for="city3" class="p-radiobutton-label">New York</label>
+            </div>
+            <div class="p-col-12">
+                <RadioButton inputId="city4" name="city" value='"San Francisco"' @bind-model="city" />
+                <label for="city4" class="p-radiobutton-label">San Francisco</label>
             </div>
         </div>
         Selected City : @this.city
@@ -29,23 +33,23 @@
         <h3>Advanced with Preselection, Value Binding and Disabled Option</h3>
         <div class="p-grid">
             <div class="p-col-12">
-                <RadioButton inputId="rb1" name="template" value="@(new Theme(){Brand= "Ultima", Key="U"})" @bind-model="theme" />
-                <label for="rb1" class="RadioButton-label">Ultima</label>
+                <RadioButton inputId="theme1" name="template" value="@(new Theme(){Brand= "Ultima", Key="U"})" @bind-model="theme" />
+                <label for="theme1" class="p-radiobutton-label">Ultima</label>
             </div>
             <div class="p-col-12">
-                <RadioButton inputId="rb2" name="template" value="@(new Theme(){Brand= "Serenity", Key="S"})" @bind-model="theme" />
-                <label for="rb2" class="RadioButton-label">Serenity</label>
+                <RadioButton inputId="theme2" name="template" value="@(new Theme(){Brand= "Serenity", Key="S"})" @bind-model="theme" />
+                <label for="theme2" class="p-radiobutton-label">Serenity</label>
             </div>
             <div class="p-col-12">
-                <RadioButton inputId="rb3" name="template" value="@(new Theme(){Brand= "Apollo", Key="A"})" @bind-model="theme" />
-                <label for="rb3" class="RadioButton-label">Apollo</label>
+                <RadioButton inputId="theme3" name="template" value="@(new Theme(){Brand= "Apollo", Key="A"})" @bind-model="theme" />
+                <label for="theme3" class="p-radiobutton-label">Apollo</label>
             </div>
             <div class="p-col-12">
-                <RadioButton inputId="rb4" name="template" value="@(new Theme(){Brand= "Babylon", Key="B"})" @bind-model="theme" disabled="true" />
-                <label for="rb3" class="RadioButton-label">Babylon</label>
+                <RadioButton inputId="theme4" name="template" value="@(new Theme(){Brand= "Babylon", Key="B"})" @bind-model="theme" disabled="true" />
+                <label for="theme3" class="p-radiobutton-label">Babylon</label>
             </div>
         </div>
-        Selected Template : @this.theme.Brand
+        Selected Template : @this.theme
     </div>
 </div>
 
