@@ -1,17 +1,16 @@
 ﻿<div class="@containerClass">
     @if (cancel)
     {
-        <a class="p-rating-cancel" @onclick="async(e)=>await onCancelClick(e)" tabindex="0">
-            <span class="p-rating-icon pi pi-ban"></span>
-        </a>
+        <span class="p-rating-icon p-rating-cancel pi pi-ban" tabindex="0" @onclick="async(e)=>await onCancelClick(e)"></span>
     }
     @for (int i = 1; i <= stars; i++)
     {
-        <a @key="i" @onclick="async(e)=>await onStarClick(e,i)" tabindex="0"
+        int index = i;
+        <span @key="index" @onclick="async(e)=>await onStarClick(e,index)" tabindex="0"
            @onkeydown="async(e)=>await keyDown(e,i)"
            @onkeydown:preventDefault="true">
-            <span class="p-rating-icon @(i>value||i>model?"pi pi-star-o":null) @(i<=value||i<=model?"pi pi-star":null)"></span>
-        </a>
+            <span class="p-rating-icon @(i>value||i>model?"pi pi-star-o":"pi pi-star")"></span>
+        </span>
     }
 </div>
 
