@@ -8,8 +8,8 @@
              @onkeydown="async(e)=>await keyDown(e,option,i)"
              @onkeydown:preventDefault="true"
              @onkeydown:stopPropagation="true"
-             tabindex="@(isOptionDisabled(option) ? null : 0)"
-             class="p-button p-component p-button-text-only @(isSelected(option)?"p-highlight":null) @(isOptionDisabled(option)?"p-disabled":null)">
+             tabindex="@(isOptionDisabled(option) ? null : 0)" @onfocus="async(e)=>await onFocus(e,i)" @onblur="async(e)=>await onBlur(e)"
+             class="p-button p-component p-button-text-only @(isSelected(option)?"p-highlight":null) @(isOptionDisabled(option)?"p-disabled":null) @(i==focusedIndex?"p-focus":null)">
             @if(template is not null)
             {
                 @template(option)
@@ -36,6 +36,9 @@
     [Parameter]public string? optionValue{ get; set; }
     [Parameter]public string? optionDisabled{ get; set; }
     [Parameter]public RenderFragment<TItem>? template{ get; set; }
+    [Parameter]public EventCallback<FocusEventArgs> focus{ get; set; }
+    [Parameter]public EventCallback<FocusEventArgs> blur{ get; set; }
+    private int focusedIndex=-1;
     private string getOptionLabel(TItem option)
     {
         return (string)ObjectUtils.ResolveFieldData(option, this.optionLabel);
@@ -139,5 +142,15 @@
         {
             await this.onOptionSelect(eventArgs, option, index);
         }
+    }
+    private async Task onFocus(FocusEventArgs eventArgs,int index)
+    {
+        this.focusedIndex = index;
+        await focus.InvokeAsync(eventArgs);
+    }
+    private async Task onBlur(FocusEventArgs eventArgs)
+    {
+        this.focusedIndex = -1;
+        await blur.InvokeAsync(eventArgs);
     }
 }
