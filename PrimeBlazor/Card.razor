@@ -1,0 +1,44 @@
+﻿<div class="p-card p-component ui-card-shadow" style="@style">
+    @if (this.header is not null)
+    {
+        <div class="p-card-header">
+            @header
+        </div>
+    }
+    <div class="p-card-body">
+        @if (this.title is not null)
+        {
+            <div class="p-card-title">@title</div>
+        }
+        @if (this.subtitle is not null)
+        {
+            <div class="p-card-subtitle">@subtitle</div>
+        }
+        <div class="p-card-content">
+            @if (this.ChildContent is not null)
+            {
+                @ChildContent
+            }
+            else if (this.content is not null)
+            {
+                @content
+            }
+        </div>
+        @if (this.footer is not null)
+        {
+            <div class="p-card-footer">
+                @this.footer
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? header { get; set; }
+    [Parameter] public RenderFragment? title { get; set; }
+    [Parameter] public RenderFragment? subtitle { get; set; }
+    [Parameter] public RenderFragment? content { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? footer { get; set; }
+    [Parameter] public string style { get; set; } = "width: 360px;";
+}
