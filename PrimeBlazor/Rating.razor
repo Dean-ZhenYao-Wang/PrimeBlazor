@@ -1,0 +1,61 @@
+﻿<div class="@containerClass">
+    @if (cancel)
+    {
+        <a class="p-rating-cancel" @onclick="async(e)=>await onCancelClick(e)" tabindex="0">
+            <span class="p-rating-icon pi pi-ban"></span>
+        </a>
+    }
+    @for (int i = 1; i <= stars; i++)
+    {
+        <a @key="i" @onclick="async(e)=>await onStarClick(e,i)" tabindex="0"
+           @onkeydown="async(e)=>await keyDown(e,i)"
+           @onkeydown:preventDefault="true">
+            <span class="p-rating-icon @(i>value||i>model?"pi pi-star-o":null) @(i<=value||i<=model?"pi pi-star":null)"></span>
+        </a>
+    }
+</div>
+
+@code {
+    [Parameter] public int? value { get; set; }
+    [Parameter] public int? model { get; set; }
+    [Parameter] public EventCallback<int?> modelChanged { get; set; }
+    [Parameter] public int stars { get; set; } = 5;
+    [Parameter] public bool isReadonly { get; set; }
+    [Parameter] public bool disabled { get; set; }
+    [Parameter] public bool cancel { get; set; } = true;
+    [Parameter] public EventCallback<int?> change { get; set; }
+    private string containerClass
+    {
+        get
+        {
+            string container_class = "p-rating";
+            if (this.isReadonly)
+            {
+                container_class += " p-rating-readonly";
+            }
+            if (this.disabled)
+            {
+                container_class += " p-disabled";
+            }
+            return container_class;
+        }
+    }
+    private async Task onStarClick(MouseEventArgs eventArgs, int value)
+    {
+        await this.updateModel(eventArgs, value);
+    }
+    private async Task onCancelClick(MouseEventArgs eventArgs)
+    {
+        await this.updateModel(eventArgs, null);
+    }
+    private async Task updateModel(MouseEventArgs eventArgs, int? value)
+    {
+        await modelChanged.InvokeAsync(value);
+        await change.InvokeAsync(value);
+    }
+    private async Task keyDown(KeyboardEventArgs eventArgs, int value)
+    {
+        if (eventArgs.Key.Equals("Enter"))
+            await this.onStarClick(new MouseEventArgs(), value);
+    }
+}
