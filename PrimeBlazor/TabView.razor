@@ -1,11 +1,10 @@
 ﻿<div class="p-tabview p-component p-tabview-top @CssClass">
     <CascadingValue Value="this">
-        <ul class="p-tabview-nav p-resest" role="tablist">
+        <ul class="p-tabview-nav p-reset" role="tablist">
             @foreach (var tab in tabs)
             {
-                int i = tabs.IndexOf(tab);
-                <li role="presentation" @key="@(string.IsNullOrWhiteSpace(tab.header)?i:tab.header)" class="@(d_activeTabIndex==i?"p-highlight":null) @(tab.disabled?"p-disabled":null)">
-                    <a role="tab" @onclick="async()=>await onTabClick(tab, i)" @onkeydown="async(e)=>await keyDown(e,tab,i)">
+                <li role="presentation" @key="tab.header" class="p-unselectable-text @(tab.active?"p-highlight":null) @(tab.disabled?"p-disabled":null)">
+                    <a role="tab" @onclick="async()=>await onTabClick(tab)" @onkeydown="async(e)=>await keyDown(e,tab)">
                         @if (tab.Headertemplate is not null)
                         {
                             @tab.Headertemplate
@@ -25,47 +24,53 @@
 </div>
 
 @code {
-    [Parameter] public int activeIndex { get; set; }
-    [Parameter]
-    public EventCallback<int> activeIndexChanged { get; set; }
-    [Parameter] public string orientation { get; set; } = "top";
     [Parameter] public RenderFragment? ChildContent { get; set; } = null;
     [Parameter] public string CssClass { get; set; }
-    private int d_activeTabIndex;
+    [Parameter] public EventCallback<TabPanel> tabchange { get; set; }
     private List<TabPanel> tabs { get; set; } = new List<TabPanel>();
-    public override Task SetParametersAsync(ParameterView parameters)
-    {
-        parameters.TryGetValue(nameof(activeIndex), out d_activeTabIndex);
-        this.activateTab(d_activeTabIndex);
-        return base.SetParametersAsync(parameters);
-    }
     protected override void OnAfterRender(bool firstRender)
     {
-        this.tabs[this.activeIndex].active = true;
+        TabPanel? activeTab = this.findActiveTab();
+        if (activateTab == null && this.tabs.Count > 0)
+            this.tabs[0].active = true;
     }
     public void addTab(TabPanel tab)
     {
         this.tabs.Add(tab);
         StateHasChanged();
     }
-    private async Task onTabClick(TabPanel tab, int index)
+    private async Task onTabClick(TabPanel tab)
     {
-        if (!tab.disabled && index != this.d_activeTabIndex)
+        if (!tab.disabled && !tab.active)
         {
-            this.activateTab(index);
-            await activeIndexChanged.InvokeAsync(index);
+            this.activateTab(tab);
+            await tabchange.InvokeAsync(tab);
         }
     }
-    private async Task keyDown(KeyboardEventArgs eventArgs, TabPanel tab, int index)
+    private async Task keyDown(KeyboardEventArgs eventArgs, TabPanel tab)
     {
         if (eventArgs.Key.Equals("Enter"))
-            await onTabClick(tab, index);
+            await onTabClick(tab);
     }
-    private void activateTab(int index)
+    private void activateTab(TabPanel tab)
     {
         for (int i = 0; i < this.tabs.Count; i++)
         {
-            this.tabs[i].active = (i == index);
+            this.tabs[i].active = this.tabs[i] == tab;
         }
+    }
+    private TabPanel? findActiveTab()
+    {
+        TabPanel? activeTab = null;
+        for(int i = 0; i < this.tabs.Count; i++)
+        {
+            TabPanel tab = this.tabs[i];
+            if (tab.active)
+            {
+                activeTab = tab;
+                break;
+            }
+        }
+        return activeTab;
     }
 }
