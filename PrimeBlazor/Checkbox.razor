@@ -1,34 +1,36 @@
 ﻿@typeparam TItem
 @implements IAsyncDisposable
 @inject IJSRuntime JS
-<div class="p-radiobutton p-component" @onclick="onClick">
+<div class="p-checkbox p-component" @onclick="onClick">
     <div class="p-hidden-accessible">
-        <input @ref="inputElement" id="@inputId" type="radio" name="@name" checked="@isChecked" disabled="@disabled"  @onfocus="onFocus"  @onblur="onBlur"
+        <input @ref="inputElement" id="@inputId" type="checkbox" name="@name" checked="@isChecked" disabled="@disabled" @onfocus="onFocus" @onblur="onBlur"
                autocomplete="@autocomplete" autofocus="@autofocus">
     </div>
-    <div ref="box" class="p-radiobutton-box p-component @(isChecked?"p-highlight":null) @(disabled?"p-disabled":null) @(focused?"p-focus":null)">
-        <span class="p-radiobutton-icon p-c @(isChecked?"pi pi-circle-on":null)"></span>
+    <div ref="box" class="p-checkbox-box p-component @(isChecked?"p-highlight":null) @(disabled?"p-disabled":null) @(focused?"p-focus":null)">
+        <span class="p-checkbox-icon p-c @(isChecked?"pi pi-check":null)"></span>
     </div>
 </div>
+
 @code {
-    [Parameter] public TItem? value { get; set; }
-    [Parameter] public TItem? model { get; set; }
-    [Parameter] public EventCallback<TItem?> modelChanged { get; set; }
+    [Parameter] public TItem value { get; set; }
+    [Parameter] public ICollection<TItem> model { get; set; } = new List<TItem>();
+    [Parameter] public EventCallback<ICollection<TItem>> modelChanged { get; set; }
     [Parameter] public string name { get; set; } = string.Empty;
     [Parameter] public string inputId { get; set; } = Guid.NewGuid().ToString();
     [Parameter] public bool autofocus { get; set; }
     [Parameter] public string autocomplete { get; set; } = string.Empty;
     [Parameter] public bool disabled { get; set; }
-    [Parameter] public EventCallback<TItem> input { get; set; }
+    [Parameter] public EventCallback<ICollection<TItem>?> input { get; set; }
     [Parameter] public EventCallback<MouseEventArgs> click { get; set; }
     [Parameter] public EventCallback<MouseEventArgs> change{ get; set; }
     [Parameter] public EventCallback<FocusEventArgs> focus{ get; set; }
     [Parameter] public EventCallback<FocusEventArgs> blur{ get; set; }
     private bool focused = false;
-    private bool isChecked{
+    private bool isChecked
+    {
         get
         {
-            return this.model != null && this.model.Equals(this.value);
+            return this.model != null && this.model.Contains(this.value);
         }
     }
     private IJSObjectReference? module;
@@ -52,16 +54,18 @@
     {
         if (!this.disabled)
         {
+            List<TItem> newModelValue;
+            if (this.isChecked)
+                newModelValue = this.model.Where(val => !this.value.Equals(val)).ToList();
+            else
+                newModelValue = this.model != null && this.model.Count() > 0 ? this.model.Append(this.value).ToList() :new List<TItem>(){this.value};
+
             await click.InvokeAsync(mouseEvent);
-            await input.InvokeAsync(this.value);
-            await modelChanged.InvokeAsync(this.value);
+            await input.InvokeAsync(newModelValue);
+            await modelChanged.InvokeAsync(newModelValue);
+            await change.InvokeAsync(mouseEvent);
             if (module is not null)
                 await module.InvokeVoidAsync("elementFocus", inputElement);
-            
-            if (!this.isChecked)
-            {
-                await change.InvokeAsync(mouseEvent);
-            }
         }
     }
     private async Task onFocus(FocusEventArgs focusEventArgs)

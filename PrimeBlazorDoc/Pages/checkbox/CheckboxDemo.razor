@@ -1,0 +1,61 @@
+﻿@page "/checkbox"
+<div>
+    <div class="content-section introduction">
+        <div class="feature-intro">
+            <h1>Checkbox</h1>
+            <p>Checkbox is an extension to standard checkbox element with theming.</p>
+        </div>
+    </div>
+
+    <div class="content-section implementation">
+        <h3 class="first">Basic</h3>
+        <div class="p-grid">
+            <div class="p-col-12">
+                <Checkbox inputId="city1" name="city" value='"Chicago"' @bind-model="cities" />
+                <label for="city1" class="p-checkbox-label">Chicago</label>
+            </div>
+            <div class="p-col-12">
+                <Checkbox inputId="city2" name="city" value='"Los Angeles"' @bind-model="cities" />
+                <label for="city2" class="p-checkbox-label">Los Angeles</label>
+            </div>
+            <div class="p-col-12">
+                <Checkbox inputId="city3" name="city" value='"New York"' @bind-model="cities" />
+                <label for="city3" class="p-checkbox-label">New York</label>
+            </div>
+            <div class="p-col-12">
+                <Checkbox inputId="city4" name="city" value='"San Francisco"'  @bind-model="cities" />
+                <label for="city4" class="p-checkbox-label">San Francisco</label>
+            </div>
+        </div>
+        Selected Cities : @cities
+
+        <h3>Advanced with Preselection, Value Binding and Disabled Option</h3>
+        <div class="p-grid">
+            <div class="p-col-12">
+                <Checkbox inputId="theme1" name="template" value='new Models.Theme(){Brand= "Ultima", Key="U" }' @bind-model="themes" />
+                <label for="theme1" class="p-checkbox-label">Ultima</label>
+            </div>
+            <div class="p-col-12">
+                <Checkbox inputId="theme2" name="template" value='new Models.Theme(){Brand= "Serenity", Key="S" }' @bind-model="themes" />
+                <label for="theme2" class="p-checkbox-label">Serenity</label>
+            </div>
+            <div class="p-col-12">
+                <Checkbox inputId="theme3" name="template" value='new Models.Theme(){Brand= "Apollo", Key="A" }' @bind-model="themes" />
+                <label for="theme3" class="p-checkbox-label">Apollo</label>
+            </div>
+            <div class="p-col-12">
+                <Checkbox inputId="theme4" name="template" value='new Models.Theme(){Brand= "Babylon", Key="B" }' @bind-model="themes" disabled="true" />
+                <label for="theme4" class="p-checkbox-label">Babylon</label>
+            </div>
+        </div>
+        Selected Themes : @this.themes
+    </div>
+</div>
+@code {
+    private ICollection<string> cities = new List<string>();
+    private ICollection<Models.Theme> themes = new Models.Theme[]
+    {
+        new Models.Theme(){Brand="Serenity",Key="S"},
+        new Models.Theme(){Brand="Apollo",Key="A"}
+    };
+}

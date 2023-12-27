@@ -163,6 +163,16 @@ export function findPrevItem(item) {
     else
         return null;
 }
+export function contains(value, list) {
+    if (value != null && list && list.length) {
+        for (let val of list) {
+            if (this.equals(value, val))
+                return true;
+        }
+    }
+
+    return false;
+}
 //export default class filterConstraints {
 
 //    startsWith(value, filter) {

@@ -8,7 +8,7 @@
         {
             if(obj==null||GetType() != obj.GetType()) return false;
             Theme other=(Theme)obj;
-            return (Brand==other.Brand) && (Key==other.Key);
+            return Brand.Equals(other.Brand) && Key.Equals(other.Key);
         }
         public override int GetHashCode()
         {
