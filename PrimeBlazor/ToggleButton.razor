@@ -1,0 +1,145 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="@buttonClass" @onclick="onClick" style="@style">
+    <div class="p-hidden-accessible">
+        <input @ref="inputElement" type="checkbox" id="@inputId" name="@name" checked="@model" @onfocus="onFocus" @onblur="onBlur">
+    </div>
+    @if (hasIcon)
+    {        
+        <span class="@iconClass"></span>
+    }
+    <span class="p-button-text p-unselectable-text p-c">@label</span>
+</div>
+
+@code {
+    [Parameter]public string? style{ get; set; }
+    [Parameter]public bool model{ get; set; }
+    [Parameter]public EventCallback<bool> modelChanged{ get; set; }
+    [Parameter]public string? onLabel{ get; set; }
+    [Parameter]public string? offLabel{ get; set; }
+    [Parameter]public string? onIcon{ get; set; }
+    [Parameter]public string? offIcon{ get; set; }
+    [Parameter] public string inputId { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public string name { get; set; } = string.Empty;
+    [Parameter] public string iconPos { get; set; } = "left";
+    [Parameter]public bool disabled{ get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> click{ get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> change { get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> focus{ get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> blur{ get; set; }
+    private bool focused = false;
+    private string buttonClass
+    {
+        get
+        {
+            string button_class = "p-button p-togglebutton p-component";
+            if (this.hasIcon && !this.hasLabel)
+            {
+                button_class += " p-button-icon-only";
+            }
+            if (this.hasIcon && this.hasLabel)
+            {
+                switch (this.iconPos)
+                {
+                    case "left":
+                        button_class += " p-button-text-icon-left";
+                        break;
+                    case "right":
+                        button_class += " p-button-text-icon-right";
+                        break;
+                }
+            }
+            if (!this.hasIcon && this.hasLabel)
+            {
+                button_class += " p-button-text-only";
+            }
+            if (this.disabled)
+            {
+                button_class += " p-disabled";
+            }
+            if (this.focused)
+            {
+                button_class += " p-focus";
+            }
+            if (this.model)
+            {
+                button_class += " p-highlight";
+            }
+            return button_class;
+        }
+    }
+    private string iconClass
+    {
+        get
+        {
+            string icon_class = this.model ? this.onIcon : this.offIcon;
+            switch (this.iconPos)
+            {
+                case "left":
+                    icon_class += " p-button-icon-left";
+                    break;
+                case "right":
+                    icon_class += " p-button-icon-right";
+                    break;
+            }
+            return icon_class;
+        }
+    }
+    private bool hasLabel
+    {
+        get
+        {
+            return !string.IsNullOrWhiteSpace(this.onLabel) && !string.IsNullOrWhiteSpace(this.offLabel);
+        }
+    }
+    private bool hasIcon
+    {
+        get
+        {
+            return !string.IsNullOrWhiteSpace(this.onIcon) && !string.IsNullOrWhiteSpace(this.offIcon);
+        }
+    }
+    private string label
+    {
+        get
+        {
+            return this.hasLabel ? (this.model ? this.onLabel : this.offLabel) : "p-btn";
+        }
+    }
+
+    private IJSObjectReference? module;
+    private ElementReference inputElement;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./_content/PrimeBlazor/DomHandler.js");
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+    private async Task onClick(MouseEventArgs eventArgs)
+    {
+        await click.InvokeAsync(eventArgs);
+        await modelChanged.InvokeAsync(!this.model);
+        await change.InvokeAsync(eventArgs);
+        if (module is not null)
+            await module.InvokeVoidAsync("elementFocus", inputElement);
+    }
+    private async Task onFocus(FocusEventArgs eventArgs)
+    {
+        this.focused = true;
+        await focus.InvokeAsync(eventArgs);
+    }
+    private async Task onBlur(FocusEventArgs eventArgs)
+    {
+        this.focused = false;
+        await blur.InvokeAsync(eventArgs);
+    }
+}
