@@ -1,12 +1,12 @@
 ﻿<div class="@containerClass">
     @if (cancel)
     {
-        <span class="p-rating-icon p-rating-cancel pi pi-ban" tabindex="0" @onclick="async(e)=>await onCancelClick(e)"></span>
+        <span class="p-rating-icon p-rating-cancel pi pi-ban" tabindex="@focusIndex" @onclick="async(e)=>await onCancelClick(e)"></span>
     }
     @for (int i = 1; i <= stars; i++)
     {
         int index = i;
-        <span @key="index" @onclick="async(e)=>await onStarClick(e,index)" tabindex="0"
+        <span @key="index" @onclick="async(e)=>await onStarClick(e,index)" tabindex="@focusIndex"
            @onkeydown="async(e)=>await keyDown(e,i)"
            @onkeydown:preventDefault="true">
             <span class="p-rating-icon @(i>value||i>model?"pi pi-star-o":"pi pi-star")"></span>
@@ -37,6 +37,13 @@
                 container_class += " p-disabled";
             }
             return container_class;
+        }
+    }
+    private int? focusIndex
+    {
+        get
+        {
+            return (this.disabled || this.isReadonly) ? null : 0;
         }
     }
     private async Task onStarClick(MouseEventArgs eventArgs, int value)
