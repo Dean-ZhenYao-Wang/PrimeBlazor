@@ -512,7 +512,7 @@
             ]
         },
         {
-            "name": "Templates",
+            "name": "templates",
             "icon": "pi pi-star",
             "to": "/templates"
         },

@@ -32,7 +32,7 @@
             <transition-group name="dynamic-box" tag="div" class="p-grid">
                 @foreach(var col in columns)
                 {
-                    <div key="@col" class="p-col">
+                    <div @key="@col" class="p-col">
                         <div class="box">@col</div>
                     </div>                    
                 }

@@ -4,13 +4,13 @@
         @foreach (var tab in tabs)
         {
             int i = tabs.IndexOf(tab);
-            <div key=@(string.IsNullOrWhiteSpace(tab.header)?i.ToString():tab.header) class="p-accordion-tab">
+            <div @key="@(string.IsNullOrWhiteSpace(tab.header)?i.ToString():tab.header)" class="p-accordion-tab">
                 <div class="p-accordion-header @(tab.active?"p-highlight":null) @(tab.disabled?"p-disabled":null)">
                     <a role="tab" @onclick="async()=>await this.onTabClick(tab)" @onkeydown="async(e)=>await this.onTabKeydown(e, tab)" tabindex="@(tab.disabled ? null : 0)">
                         <span class="p-accordion-toggle-icon pi pi-fw pi-caret-right"></span>
-                        @if (tab.HeaderTemplate is not null)
+                        @if (tab.Headertemplate is not null)
                         {
-                            @tab.HeaderTemplate
+                            @tab.Headertemplate
                         }
                         else
                         {

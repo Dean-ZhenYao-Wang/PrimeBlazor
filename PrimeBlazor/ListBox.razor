@@ -19,11 +19,11 @@
                 var option = visibleOptions[index];
                 <li tabindex="@(isOptionDisabled(option)?null:"0")" class="'p-listbox-item @(isSelected(option) ?"p-highlight":null) @(isOptionDisabled(option)?"p-disabled":null)"
                     area-label="@getOptionLabel(option)"
-                    key="@(getOptionLabel(option))" @onclick="async(e)=>await onOptionSelect(e, option)" @ontouchend="onOptionTouchEnd"
+                    @key="@(getOptionLabel(option))" @onclick="async(e)=>await onOptionSelect(e, option)" @ontouchend="onOptionTouchEnd"
                     @onkeydown="@((e)=>onOptionKeyDown(e,option))" @onkeydown:stopPropagation>
-                    @if (Template is not null)
+                    @if (template is not null)
                     {
-                        @Template(option)                        
+                        @template(option)                        
                     }
                     else
                     {
@@ -51,7 +51,7 @@
     [Parameter] public bool disabled{ get; set; }
     [Parameter] public string listStyle { get; set; } = string.Empty;
     [Parameter] public string style { get; set; } = string.Empty;
-    [Parameter] public RenderFragment<TItem>? Template { get; set; }
+    [Parameter] public RenderFragment<TItem>? template { get; set; }
     private string label = string.Empty;
     private bool optionTouched = false;
     private IJSObjectReference? module;
@@ -117,7 +117,7 @@
         }
 
         if(this.multiple)
-           await this.onOptionSelectMultiple(eventArgs, option);
+            await this.onOptionSelectMultiple(eventArgs, option);
         else
             await this.onOptionSelectSingle(eventArgs, option);
 
@@ -156,7 +156,7 @@
         }
 
         if (valueChanged) {
-           await this.updateModel(eventArgs, value);
+            await this.updateModel(eventArgs, value);
         }
     }
     private async Task onOptionSelectMultiple(MouseEventArgs eventArgs,TItem option) {        
@@ -177,7 +177,22 @@
                 valueChanged = true;
             }
             else {
-                value = (metaKey) ? this.values == null ? new List<TItem>() : this.values : new List<TItem>();
+                if (metaKey)
+                {
+                    if (this.values == null || this.values.Count == 0)
+                    {
+                        value = new List<TItem>();
+                    }
+                    else
+                    {
+                        value = new List<TItem>();
+                        value.AddRange(this.values);
+                    }
+                }
+                else
+                {
+                    value = new List<TItem>();
+                }
                 value.Add((TItem)this.getOptionValue(option));
                 valueChanged = true;
             }

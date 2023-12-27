@@ -4,11 +4,11 @@
             @foreach (var tab in tabs)
             {
                 int i = tabs.IndexOf(tab);
-                <li role="presentation" key="@(string.IsNullOrWhiteSpace(tab.header)?i:tab.header)" class="@(d_activeTabIndex==i?"p-highlight":null) @(tab.disabled?"p-disabled":null)">
+                <li role="presentation" @key="@(string.IsNullOrWhiteSpace(tab.header)?i:tab.header)" class="@(d_activeTabIndex==i?"p-highlight":null) @(tab.disabled?"p-disabled":null)">
                     <a role="tab" @onclick="async()=>await onTabClick(tab, i)" @onkeydown="async(e)=>await keyDown(e,tab,i)">
-                        @if (tab.HeaderTemplate is not null)
+                        @if (tab.Headertemplate is not null)
                         {
-                            @tab.HeaderTemplate
+                            @tab.Headertemplate
                         }
                         else
                         {

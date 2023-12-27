@@ -2,9 +2,9 @@
     <legend class="p-fieldset-legend p-unselectable-text">
         @if (!toggleable)
         {
-            if (LegendTemplate is not null)
+            if (Legendtemplate is not null)
             {
-                @LegendTemplate
+                @Legendtemplate
             }
             else
             {
@@ -15,9 +15,9 @@
         {
             <a tabindex="0" @onclick="toggle" @onkeydown="toggleKeyDown">
                 <span class="p-fieldset-toggler pi pi-minus"></span>
-                @if (LegendTemplate is not null)
+                @if (Legendtemplate is not null)
                 {
-                    @LegendTemplate
+                    @Legendtemplate
                 }
                 else
                 {
@@ -40,7 +40,7 @@
     [Parameter] public bool toggleable { get; set; }
     [Parameter] public bool collapsed { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public RenderFragment? LegendTemplate { get; set; }
+    [Parameter] public RenderFragment? Legendtemplate { get; set; }
     private bool d_collapsed;
     public override Task SetParametersAsync(ParameterView parameters)
     {

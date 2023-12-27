@@ -78,20 +78,13 @@ namespace PrimeBlazor
 
             if (obj1 == obj2)
             {
-                obj1._visited = null;
                 return true;
             }
 
             if (obj1.GetType() == typeof(ExpandoObject) && obj2.GetType() == typeof(ExpandoObject))
             {
-                obj1._visited = true;
                 foreach (var property in (IDictionary<string, object>)obj1)
                 {
-                    if (property.Key == "_visited")
-                    {
-                        continue;
-                    }
-
                     if (obj1.GetType().GetProperty(property.Key) is not PropertyInfo obj1Property
                         || obj2.GetType().GetProperty(property.Key) is not PropertyInfo obj2Property)
                     {
@@ -101,7 +94,7 @@ namespace PrimeBlazor
                     switch (obj1Property.PropertyType.FullName)
                     {
                         case "System.Object":
-                            if ((obj1Property.GetValue(obj1)!._visited ?? false) || !EqualsByValue(obj1Property.GetValue(obj1), obj2Property.GetValue(obj2)))
+                            if (!EqualsByValue(obj1Property.GetValue(obj1), obj2Property.GetValue(obj2)))
                             {
                                 return false;
                             }
@@ -131,7 +124,6 @@ namespace PrimeBlazor
                     }
                 }
 
-                obj1._visited = null;
                 return true;
             }
 

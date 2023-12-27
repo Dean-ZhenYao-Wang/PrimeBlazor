@@ -1,8 +1,8 @@
 ﻿<div class="p-panel p-component" style="@style">
     <div class="p-panel-titlebar">
-        @if (HeaderTemplate is not null)
+        @if (Headertemplate is not null)
         {
-            @HeaderTemplate
+            @Headertemplate
         }
         else
         {
@@ -29,7 +29,7 @@
     [Parameter] public bool toggleable { get; set; }
     [Parameter] public bool collapsed{ get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment? Headertemplate { get; set; }
     [Parameter] public string? style { get; set; } = null;
     private bool d_collapsed;
     public override Task SetParametersAsync(ParameterView parameters)
