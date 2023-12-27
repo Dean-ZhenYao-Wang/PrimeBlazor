@@ -31,31 +31,31 @@
 
         <h3>Dynamic Values, Preselection, Value Binding and Disabled Option</h3>
         <div class="p-grid">
-            <div class="p-col-12">
-                <Checkbox inputId="theme1" name="template" value='new Models.Theme(){Brand= "Ultima", Key="U" }' @bind-model="themes" />
-                <label for="theme1" class="p-checkbox-label">Ultima</label>
-            </div>
-            <div class="p-col-12">
-                <Checkbox inputId="theme2" name="template" value='new Models.Theme(){Brand= "Serenity", Key="S" }' @bind-model="themes" />
-                <label for="theme2" class="p-checkbox-label">Serenity</label>
-            </div>
-            <div class="p-col-12">
-                <Checkbox inputId="theme3" name="template" value='new Models.Theme(){Brand= "Apollo", Key="A" }' @bind-model="themes" />
-                <label for="theme3" class="p-checkbox-label">Apollo</label>
-            </div>
-            <div class="p-col-12">
-                <Checkbox inputId="theme4" name="template" value='new Models.Theme(){Brand= "Babylon", Key="B" }' @bind-model="themes" disabled="true" />
-                <label for="theme4" class="p-checkbox-label">Babylon</label>
-            </div>
+            @foreach(var theme in themes)
+            {
+                <div class="p-col-12">
+                    <Checkbox inputId="@theme.Key" name="theme" value='theme' @bind-model="selectedThemes" disabled='theme.Key.Equals("U")'/>
+                    <label for="@theme.Key" class="p-checkbox-label">
+                        @theme.Name
+                    </label>
+                </div>
+            }
         </div>
-        Selected Themes : @this.themes
+        Selected Themes : @this.selectedThemes
     </div>
 </div>
 @code {
     private ICollection<string> cities = new List<string>();
     private ICollection<Models.Theme> themes = new Models.Theme[]
     {
-        new Models.Theme(){Brand="Serenity",Key="S"},
-        new Models.Theme(){Brand="Apollo",Key="A"}
+        new Models.Theme(){Name="Apollo",Key="A"},
+        new Models.Theme(){Name="Babylon",Key="B"},
+        new Models.Theme(){Name="Serenity",Key="S"},
+        new Models.Theme(){Name= "Ultima", Key="U" }
     };
+    private ICollection<Models.Theme> selectedThemes;
+    protected override void OnInitialized()
+    {
+        selectedThemes = this.themes.Skip(1).Take(2).ToList();
+    }
 }

@@ -33,19 +33,19 @@
         <h3>Advanced with Preselection, Value Binding and Disabled Option</h3>
         <div class="p-grid">
             <div class="p-col-12">
-                <RadioButton inputId="theme1" name="template" value="@(new Theme(){Brand= "Ultima", Key="U"})" @bind-model="theme" />
+                <RadioButton inputId="theme1" name="template" value="@(new Theme(){Name= "Ultima", Key="U"})" @bind-model="theme" />
                 <label for="theme1" class="p-radiobutton-label">Ultima</label>
             </div>
             <div class="p-col-12">
-                <RadioButton inputId="theme2" name="template" value="@(new Theme(){Brand= "Serenity", Key="S"})" @bind-model="theme" />
+                <RadioButton inputId="theme2" name="template" value="@(new Theme(){Name= "Serenity", Key="S"})" @bind-model="theme" />
                 <label for="theme2" class="p-radiobutton-label">Serenity</label>
             </div>
             <div class="p-col-12">
-                <RadioButton inputId="theme3" name="template" value="@(new Theme(){Brand= "Apollo", Key="A"})" @bind-model="theme" />
+                <RadioButton inputId="theme3" name="template" value="@(new Theme(){Name= "Apollo", Key="A"})" @bind-model="theme" />
                 <label for="theme3" class="p-radiobutton-label">Apollo</label>
             </div>
             <div class="p-col-12">
-                <RadioButton inputId="theme4" name="template" value="@(new Theme(){Brand= "Babylon", Key="B"})" @bind-model="theme" disabled="true" />
+                <RadioButton inputId="theme4" name="template" value="@(new Theme(){Name= "Babylon", Key="B"})" @bind-model="theme" disabled="true" />
                 <label for="theme3" class="p-radiobutton-label">Babylon</label>
             </div>
         </div>
@@ -57,7 +57,7 @@
     private string? city = null;
     public Theme theme = new Theme()
         {
-            Brand = "Serenity",
+            Name = "Serenity",
             Key = "S"
         };
 }
