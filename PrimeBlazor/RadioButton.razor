@@ -3,7 +3,7 @@
 @inject IJSRuntime JS
 <div class="p-radiobutton p-component" @onclick="onClick">
     <div class="p-hidden-accessible">
-        <input @ref="inputElement" id="@inputId" type="radio" name="@name" checked="@isChecked" disabled="@disabled"  @onfocus="onFocus"  @onblur="onBlur"
+        <input @ref="inputElement" id="@inputId" type="radio" name="@name" checked="@isChecked" disabled="@disabled"  @onfocus="async(e)=>await onFocus(e)"  @onblur="async(e)=>await onBlur(e)"
                autocomplete="@autocomplete" autofocus="@autofocus">
     </div>
     <div ref="box" class="p-radiobutton-box p-component @(isChecked?"p-highlight":null) @(disabled?"p-disabled":null) @(focused?"p-focus":null)">

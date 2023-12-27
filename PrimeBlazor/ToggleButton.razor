@@ -2,7 +2,7 @@
 @inject IJSRuntime JS
 <div class="@buttonClass" @onclick="onClick" style="@style">
     <div class="p-hidden-accessible">
-        <input @ref="inputElement" type="checkbox" id="@inputId" name="@name" checked="@model" disabled="@disabled" @onfocus="onFocus" @onblur="onBlur" 
+        <input @ref="inputElement" type="checkbox" id="@inputId" name="@name" checked="@model" disabled="@disabled" @onfocus="async(e)=>await onFocus(e)" @onblur="async(e)=>await onBlur(e)" 
             @onkeydown="async(e)=>await keyDown(e)"
              @onkeydown:preventDefault="true"
              @onkeydown:stopPropagation="true">

@@ -1,0 +1,79 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="@containerClass" @onclick="async(e)=>await onClick(e)">
+    <div class="p-hidden-accessible">
+        <input @ref="inputElement" type="checkbox" id="@inputId" name="@name" checked="@model" disabled="@disabled"
+               @onfocus="async(e)=>await onFocus(e)" @onblur="async(e)=>await onBlur(e)"  
+               @onkeydown="async(e)=>await keyDown(e)"
+             @onkeydown:preventDefault="true">
+    </div>
+    <span class="p-inputswitch-slider"></span>
+</div>
+
+@code {
+    [Parameter]public bool model{ get; set; }
+    [Parameter]public EventCallback<bool> modelChanged{ get; set; }
+    [Parameter] public string inputId { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public string name { get; set; } = Guid.NewGuid().ToString();
+    [Parameter]public bool disabled{ get; set; }
+    [Parameter]public EventCallback<MouseEventArgs> click{ get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> change { get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> focus { get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> blur { get; set; }
+    private bool focused = false;
+    private string containerClass
+    {
+        get
+        {
+            string container_class = "p-inputswitch p-component";
+            if (this.model)
+                container_class += " p-inputswitch-checked";
+            if (this.focused)
+                container_class += " p-inputswitch-focus";
+            return container_class;
+        }
+    }
+    private IJSObjectReference? module;
+    private ElementReference inputElement;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./_content/PrimeBlazor/DomHandler.js");
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+    private async Task onClick(MouseEventArgs eventArgs)
+    {
+        if (!this.disabled)
+        {
+            await click.InvokeAsync(eventArgs);
+            await modelChanged.InvokeAsync(!this.model);
+            await change.InvokeAsync(eventArgs);
+            if(module is not null)
+                await module.InvokeVoidAsync("elementFocus", inputElement);
+        }
+    }
+    private async Task onFocus(FocusEventArgs focusEventArgs)
+    {
+        this.focused = true;
+        await focus.InvokeAsync(focusEventArgs);
+    }
+    private async Task onBlur(FocusEventArgs focusEventArgs)
+    {
+        this.focused = false;
+        await blur.InvokeAsync(focusEventArgs);
+    }
+     private async Task keyDown(KeyboardEventArgs eventArgs)
+    {
+        if(eventArgs.Key.Equals("Enter"))
+            await this.onClick(new MouseEventArgs());
+    }
+}
