@@ -2,7 +2,10 @@
 @inject IJSRuntime JS
 <div class="@buttonClass" @onclick="onClick" style="@style">
     <div class="p-hidden-accessible">
-        <input @ref="inputElement" type="checkbox" id="@inputId" name="@name" checked="@model" @onfocus="onFocus" @onblur="onBlur">
+        <input @ref="inputElement" type="checkbox" id="@inputId" name="@name" checked="@model" disabled="@disabled" @onfocus="onFocus" @onblur="onBlur" 
+            @onkeydown="async(e)=>await keyDown(e)"
+             @onkeydown:preventDefault="true"
+             @onkeydown:stopPropagation="true">
     </div>
     @if (hasIcon)
     {        
@@ -131,6 +134,11 @@
         await change.InvokeAsync(eventArgs);
         if (module is not null)
             await module.InvokeVoidAsync("elementFocus", inputElement);
+    }
+    private async Task keyDown(KeyboardEventArgs eventArgs)
+    {
+        if(eventArgs.Key.Equals("Enter"))
+            await this.onClick(new MouseEventArgs());
     }
     private async Task onFocus(FocusEventArgs eventArgs)
     {
