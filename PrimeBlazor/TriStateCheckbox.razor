@@ -2,10 +2,10 @@
 @inject IJSRuntime JS
 <div class="p-checkbox p-component" @onclick="async(e)=>await onClick(e)">
     <div class="p-hidden-accessible">
-        <input @ref="inputElement" id="@inputId" type="checkbox" name="@name" checked="@isChecked" disabled="@disabled" @onfocus="async(e)=>await onFocus(e)" @onblur="async(e)=>await onBlur(e)"
+        <input @ref="inputElement" id="@inputId" type="checkbox" name="@name" checked="@(model==true)" disabled="@disabled" @onfocus="async(e)=>await onFocus(e)" @onblur="async(e)=>await onBlur(e)"
                autocomplete="@autocomplete" autofocus="@autofocus">
     </div>
-    <div ref="box" class="p-checkbox-box p-component @(isChecked?"p-highlight":null) @(disabled?"p-disabled":null) @(focused?"p-focus":null)">
+    <div ref="box" class="p-checkbox-box p-component @(model!=null?"p-highlight":null) @(disabled?"p-disabled":null) @(focused?"p-focus":null)">
         <span class="p-checkbox-icon p-c @(icon)"></span>
     </div>
 </div>
@@ -24,13 +24,6 @@
     [Parameter]public EventCallback<FocusEventArgs> blur{ get; set; }
     private ElementReference inputElement;
     private bool focused = false;
-    private bool isChecked
-    {
-        get
-        {
-            return this.model == true;
-        }
-    }
     private string? icon
     {
         get
