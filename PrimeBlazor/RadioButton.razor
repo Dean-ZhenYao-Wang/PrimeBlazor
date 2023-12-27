@@ -55,7 +55,7 @@
             await modelChanged.InvokeAsync(this.value);
             if (module is not null)
                 await module.InvokeVoidAsync("elementFocus", inputElement);
-            this.focused = true;
+            
             if (!this.isChecked)
             {
                 await change.InvokeAsync(mouseEvent);
