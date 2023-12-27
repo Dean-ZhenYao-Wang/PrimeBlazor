@@ -71,7 +71,7 @@
         this.focused = false;
         await blur.InvokeAsync(focusEventArgs);
     }
-     private async Task keyDown(KeyboardEventArgs eventArgs)
+    private async Task keyDown(KeyboardEventArgs eventArgs)
     {
         if(eventArgs.Key.Equals("Enter"))
             await this.onClick(new MouseEventArgs());

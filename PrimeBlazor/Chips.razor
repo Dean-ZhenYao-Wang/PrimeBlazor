@@ -1,0 +1,113 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="p-chips p-component">
+    <ul class="p-inputtext @(disabled?"p-disabled":null) @(focused?"p-focus":null)" @onclick="async(e)=>await onWrapperClick(e)">
+        @foreach(var val in model)
+        {
+            int i = model.IndexOf(val);
+            <li @key="val" class="p-chips-token p-highlight">
+                @if(template is not null)
+                {
+                    @template(val)
+                }
+                else
+                {
+                    <span class="p-chips-token-icon pi pi-fw pi-times" @onclick="async(e)=>await removeItem(e, i)"></span>
+                    <span class="p-chips-token-label">@val</span>
+                }
+            </li>
+        }
+        <li class="p-chips-input-token">
+            <input @ref="inputElement" type="text" class="p-inputtext p-component" @onfocus="async(e)=>await onFocus(e)" @onblur="async(e)=>await onBlur(e)" @onkeydown="async(e)=>await onKeyDown(e)" disabled="@(disabled || maxedOut)">
+        </li>
+    </ul>
+</div>
+
+@code {
+    [Parameter] public List<string> model { get; set; } = new List<string>();
+    [Parameter] public EventCallback<List<string>> modelChanged { get; set; }
+    [Parameter] public bool disabled { get; set; }
+    [Parameter] public int? max { get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> focus { get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> blur { get; set; }
+    [Parameter] public EventCallback<List<string>> add{ get; set; }
+    [Parameter] public EventCallback<List<string>> remove{ get; set; }
+    [Parameter] public RenderFragment<string>? template{ get; set; }
+    private bool focused = false;
+    private bool maxedOut
+    {
+        get
+        {
+            return this.max != null && this.model != null && this.max == this.model.Count;
+        }
+    }
+
+    private IJSObjectReference? module;
+    private ElementReference inputElement;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./_content/PrimeBlazor/DomHandler.js");
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+    private async Task onWrapperClick(MouseEventArgs eventArgs)
+    {
+        if (module is not null)
+            await module.InvokeVoidAsync("elementFocus", inputElement);
+    }
+    private async Task onFocus(FocusEventArgs focusEventArgs)
+    {
+        this.focused = true;
+        await focus.InvokeAsync(focusEventArgs);
+    }
+    private async Task onBlur(FocusEventArgs focusEventArgs)
+    {
+        this.focused = false;
+        await blur.InvokeAsync(focusEventArgs);
+    }
+    private async Task onKeyDown(KeyboardEventArgs eventArgs)
+    {
+        string inputValue = await module.InvokeAsync<string>("getElementValue", inputElement);
+        switch (eventArgs.Key)
+        {
+            case "Backspace":
+                if (inputValue.Length == 0 && this.model.Count > 0)
+                {
+                    this.removeItem(eventArgs, this.model.Count - 1);
+                }
+                break;
+            case "Enter":
+                if (inputValue.Trim().Length > 0 && (this.max == null || this.max.Value > this.model.Count))
+                {
+                    List<string> values = new List<string>();
+                    values.AddRange(this.model);
+                    values.Add(inputValue);
+                    await modelChanged.InvokeAsync(values);
+                    await add.InvokeAsync(values);
+                }
+                await module.InvokeVoidAsync("clearElementValue", inputElement);
+                break;
+        }
+    }
+    private async Task removeItem(EventArgs eventArgs,int index)
+    {
+        if (this.disabled)
+        {
+            return;
+        }
+        List<string> values = new List<string>();
+        values.AddRange(this.model);
+        values.RemoveAt(index);
+        await modelChanged.InvokeAsync(values);
+        await remove.InvokeAsync(values);
+    }
+}

@@ -381,3 +381,9 @@ export function isVisible(element) {
 export function elementFocus(element) {
     element.focus();
 }
+export function getElementValue(element) {
+    return element.value;
+}
+export function clearElementValue(element) {
+    element.value = '';
+}
