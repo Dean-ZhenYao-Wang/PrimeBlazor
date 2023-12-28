@@ -86,3 +86,30 @@ class appmenuHelpers {
     }
 }
 window.appmenuHelpers = appmenuHelpers;
+
+window.sliderHelpers = {
+    dotNetHelper: [],
+    setDotNetHelper(id, value) {
+        this.dotNetHelper.push({ id: id, dotNetHelpe: value });
+    },
+    async addEventListener(element){
+        element.addEventListener("click", async function(event) {
+          await window.sliderHelpers.click(event.target.dataset.refid,event);
+        });
+    },
+    async click(id, event) {
+        if (this.disabled) {
+            return;
+        }
+        let hasClass
+        if (event.target.classList)
+            hasClass = event.target.classList.contains("p-slider-handle");
+        else
+            hasClass = new RegExp('(^| )' + "p-slider-handle" + '( |$)', 'gi').test(element.className);
+        let { dotNetHelpe } = this.dotNetHelper.find(q => q.id === id);
+        await dotNetHelpe.invokeMethodAsync('onBarClick', {PageX:event.pageX,PageY:event.pageY}, hasClass);
+    },
+    removeDotNetHelpe(id) {
+        this.dotNetHelper = this.dotNetHelper.filter(q => q.id !== id);
+    }
+}

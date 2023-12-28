@@ -1,6 +1,6 @@
 ﻿@implements IAsyncDisposable
 @inject IJSRuntime JS
-<div class="@containerClass" @onclick="onBarClick" @ref="containerRef">
+<div class="@containerClass" @ref="containerRef" data-refid="@Id">
     <span class="p-slider-range" style="@rangeStyle"></span>
     @if (!this.range)
     {
@@ -12,8 +12,8 @@
     }
 </div>
 
-
 @code {
+    private string Id = Guid.NewGuid().ToString();
     [Parameter] public double? model { get; set; }
     [Parameter] public EventCallback<double?> modelChanged { get; set; }
     [Parameter] public double[]? models{ get; set; }
@@ -176,22 +176,27 @@
 
     private IJSObjectReference? module;
     private ElementReference containerRef;
+    private DotNetObjectReference<Slider>? dotNetHelper;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import",
                 "./_content/PrimeBlazor/DomHandler.js");
+            dotNetHelper = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("sliderHelpers.setDotNetHelper",Id, dotNetHelper);
+            await JS.InvokeVoidAsync("sliderHelpers.addEventListener", containerRef);
         }
     }
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        // this.unbindDragListeners();
+        await this.unbindDragListeners();
         if (module is not null)
         {
             await module.DisposeAsync();
         }
         await unbindDragListeners();
+        await JS.InvokeVoidAsync("sliderHelpers.removeDotNetHelpe",Id);
     }
 
     private async Task updateDomData()
@@ -302,11 +307,8 @@
         else
             await change.InvokeAsync(modelValues.ToArray());
     }
-    private async Task onBarClick(MouseEventArgs eventArgs) {
-        if (this.disabled) {
-            return;
-        }
-        bool hasClass = await module.InvokeAsync<bool>("gethasClass", eventArgs, "p-slider-handle");
+    [JSInvokable]
+    public async Task onBarClick(MouseEventArgs eventArgs,bool hasClass) {        
         if(!hasClass){
             await this.updateDomData();
             this.onSlide(eventArgs);
@@ -320,7 +322,7 @@
         this.dragging = true;
         await this.updateDomData();
         this.handleIndex = index;
-        // await this.bindDragListeners();
+        await this.bindDragListeners();
     }
     private async Task onHandleKeyDown(KeyboardEventArgs eventArgs,int index) {
         this.handleIndex = index;

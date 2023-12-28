@@ -12,8 +12,8 @@
         <Slider @bind-model="value1" />
 
         <h3>Input: @value2</h3>
-        <Inputtext @bind-value="value2_str" type="number" />
-        <Slider @bind-model="value2" />
+        <Inputtext @bind-value="value2_str" type="number" changed="value2_strChanged" />
+        <Slider @bind-model="value2" change="value2Changed" />
 
         <h3>Step: @value3</h3>
         <Slider @bind-model="value3" step="20" />
@@ -35,5 +35,20 @@
     protected override void OnInitialized()
     {
         value2_str = this.value2.Value.ToString();
+    }
+    private void value2_strChanged(string newValue)
+    {
+        if (!newValue.Equals(value2.ToString()))
+        {
+            value2 = Convert.ToDouble(newValue);
+        }
+    }
+    private void value2Changed(double[] newValues)
+    {
+        string newValue = newValues[0].ToString();
+        if (!newValue.Equals(value2))
+        {
+            value2_str = newValues[0].ToString();
+        }
     }
 }
