@@ -1,0 +1,56 @@
+﻿<div role="progressbar" class="@containerClass" aria-valuemin="0" aria-valuenow="@value" aria-valuemax="100" style="@style">
+    @if (determinate)
+    {
+        <div class="p-progressbar-value p-progressbar-value-animate" style="@progressStyle"></div>
+    }
+    @if (determinate && value is not null)
+    {
+        <div class="p-progressbar-label">@($"{value}%")</div>
+    }
+    @if (indeterminate)
+    {
+        <div class="p-progressbar-indeterminate-container">
+            <div class="p-progressbar-value p-progressbar-value-animate"></div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? style{ get; set; }
+    [Parameter] public double? value { get; set; }
+    [Parameter] public string mode { get; set; } = "determinate";
+    [Parameter] public bool showValue { get; set; } = true;
+    private string containerClass
+    {
+        get
+        {
+            string container_Class = "p-progressbar p-component";
+            if (this.determinate)
+                container_Class += " p-progressbar-determinate";
+            if (this.indeterminate)
+                container_Class += " p-progressbar-indeterminate";
+            return container_Class;
+        }
+    }
+    private string progressStyle
+    {
+        get
+        {
+            return $"width:${this.value}%;display:block";
+        }
+    }
+    private bool indeterminate
+    {
+        get
+        {
+            return this.mode.Equals("indeterminate");
+        }
+    }
+    private bool determinate
+    {
+        get
+        {
+            return this.mode.Equals("determinate");
+        }
+    }
+}
