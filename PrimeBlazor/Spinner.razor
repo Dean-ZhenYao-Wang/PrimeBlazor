@@ -1,0 +1,198 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<span class="@containerClass" disabled="@disabled">
+    <input @ref="inputElement" class="@inputClass" value="@model" 
+        @oninput="async(e)=>await modelChanged.InvokeAsync(Convert.ToDouble(e.Value))"
+        @onfocus="()=>this.focused=true"
+        @onblur="()=>this.focused=false"
+        @onkeydown='async(e)=>{if(e.Code.Equals("ArrowUp")){await this.spin(1);}else if(e.Code.Equals("ArrowDown")){await this.spin(-1);}}'>
+    <button type="button" class="@upButtonClass" @onmousedown="async(e)=>await onButtonMouseDown(e, 1)" @onmouseup="onButtonMouseUp" @onmouseleave="onButtonMouseLeave"
+            @onkeydown="async(e)=>await onButtonKeyDown(e, 1)" @onkeyup="onButtonKeyUp" disabled="@disabled">
+        <span class="p-spinner-button-icon pi pi-caret-up"></span>
+    </button>
+    <button type="button" class="@downButtonClass" @onmousedown="async(e)=>await onButtonMouseDown(e, -1)" @onmouseup="onButtonMouseUp" @onmouseleave="onButtonMouseLeave"
+            @onkeydown="async(e)=>await onButtonKeyDown(e, -1)" @onkeyup="onButtonKeyUp" disabled="@disabled">
+        <span class="p-spinner-button-icon pi pi-caret-down"></span>
+    </button>
+</span>
+
+@code {
+    [Parameter] public double? model { get; set; }
+    [Parameter] public EventCallback<double?> modelChanged { get; set; }
+    [Parameter] public double step { get; set; } = 1;
+    [Parameter] public double? min { get; set; }
+    [Parameter] public double? max { get; set; }
+    [Parameter]public bool disabled{ get; set; }
+    private bool focused = false;
+    private Timer? timer=null;
+    private int? precision
+    {
+        get
+        {
+            if (Math.Floor(this.step) == 0)
+                return this.step.ToString().Split(new char[] { ',', '.' })[1].Length;
+            else 
+                return null;
+        }
+    }
+    private bool filled
+    {
+        get
+        {
+            return model is not null;
+        }
+    }
+    private string containerClass
+    {
+        get
+        {
+            string container_class = "p-spinner p-component";
+            if (this.filled)
+            {
+                container_class += " p-inputwrapper-filled";
+            }
+            if (this.focused)
+            {
+                container_class += " p-inputwrapper-focus";
+            }
+            return container_class;
+        }
+    }
+    private string inputClass
+    {
+        get
+        {
+            string input_class = "p-inputtext p-component p-spinner-input";
+            if (this.filled)
+            {
+                input_class += " p-filled";
+            }
+            if (this.disabled)
+            {
+                input_class += " p-disabled";
+            }
+            return input_class;
+        }
+    }
+    private string upButtonClass
+    {
+        get
+        {
+            string upButton_Class = "p-spinner-button p-spinner-button-up p-button p-component";
+            if (this.disabled)
+            {
+                upButton_Class += " p-disabled";
+            }
+            return upButton_Class;
+        }
+    }
+    private string downButtonClass
+    {
+        get
+        {
+            string downButton_Class = "p-spinner-button p-spinner-button-down p-button p-component";
+            if (this.disabled)
+            {
+                downButton_Class += " p-disabled";
+            }
+            return downButton_Class;
+        }
+    }
+    private IJSObjectReference? module;
+    private ElementReference inputElement;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./_content/PrimeBlazor/DomHandler.js");
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+
+    private async Task repeat(int? interval,int dir)
+    {
+        int i = interval == null ? 500 : interval.Value;
+        
+        this.clearTimer();
+        SetTimer(async () =>
+        {
+            await this.repeat(40, dir);
+        },i);
+        await this.spin(dir);
+    }
+    private void SetTimer(Action action,int delay)
+    {
+        timer = new Timer(_ =>
+        {
+            action();
+            timer?.Dispose();
+        }, null, delay, Timeout.Infinite);
+    }
+    private async Task spin(int dir)
+    {
+        double step = this.step * dir;
+        double currentValue;
+        double newValue;
+        if (this.model != null)
+            currentValue = this.model.Value;
+        else
+            currentValue = 0;
+        if (this.precision is not null)
+            newValue = this.toFixed(currentValue + step, this.precision);
+        else
+            newValue = currentValue + step;
+        if (this.min != null && newValue < this.min)
+        {
+            newValue = this.min.Value;
+        }
+        if (this.max != null && newValue > this.max)
+        {
+            newValue = this.max.Value;
+        }
+        await modelChanged.InvokeAsync(newValue);
+    }
+    private double toFixed(double value, int? precision)
+    {
+        double power = Math.Pow(10, precision==null?0:precision.Value);
+        return Math.Round(value * power) / power;
+    }
+    private async Task onButtonMouseDown(MouseEventArgs eventArgs,int direction)
+    {
+        if (module is not null)
+            await module.InvokeVoidAsync("elementFocus", inputElement);
+        await this.repeat(null, direction);
+    }
+    private void onButtonMouseUp() 
+    {
+        this.clearTimer();
+    }
+    private void onButtonMouseLeave() 
+    {
+        this.clearTimer();
+    }
+    private void onButtonKeyUp() 
+    {
+        this.clearTimer();
+    }
+   private async Task onButtonKeyDown(KeyboardEventArgs eventArgs,int direction)
+   {
+      if (eventArgs.Code.Equals("Space")  || eventArgs.Code.Equals("Enter"))
+      {
+         await this.repeat(null, direction);
+      }
+   }
+   private void clearTimer() 
+   {
+        if (timer != null)
+        {
+            timer.Dispose();
+        }
+   }
+}
