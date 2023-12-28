@@ -387,3 +387,15 @@ export function getElementValue(element) {
 export function clearElementValue(element) {
     element.value = '';
 }
+export function getBoundingClientRect(element) {
+    return element.getBoundingClientRect();
+}
+export function getOffsetWidth(element) {
+    return element.offsetWidth;
+}
+export function getOffsetHeight(element) {
+    return element.offsetHeight;
+}
+export function gethasClass(event, className) {
+    return hasClass(event.target, className);
+}

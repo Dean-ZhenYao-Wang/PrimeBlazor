@@ -1,0 +1,437 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="@containerClass" @onclick="onBarClick" @ref="containerRef">
+    <span class="p-slider-range" style="@rangeStyle"></span>
+    @if (!this.range)
+    {
+        <span class="p-slider-handle" style="@handleStyle" @onmousedown="async(e)=>await onHandleMouseDown(e,0)" @onkeydown="async(e)=>await onHandleKeyDown(e,0)" tabindex="0"></span>
+    }
+    else{
+        <span class="p-slider-handle" style="@rangeStartHandleStyle" @onmousedown="async(e)=>await onHandleMouseDown(e, 0)" @onkeydown="async(e)=>await onHandleKeyDown(e, 0)" tabindex="0"></span>
+        <span class="p-slider-handle" style="@rangeEndHandleStyle" @onmousedown="async(e)=>await onHandleMouseDown(e, 1)" @onkeydown="async(e)=>await onHandleKeyDown(e, 1)" tabindex="0"></span>
+    }
+</div>
+
+
+@code {
+    [Parameter] public double? model { get; set; }
+    [Parameter] public EventCallback<double?> modelChanged { get; set; }
+    [Parameter] public double[]? models{ get; set; }
+    [Parameter]public EventCallback<double[]> modelsChanged{ get; set; }
+    [Parameter] public bool disabled { get; set; }
+    [Parameter] public double? step { get; set; }
+    [Parameter] public bool range { get; set; }
+    [Parameter] public double min { get; set; } = 0;
+    [Parameter] public double max { get; set; } = 100;
+    [Parameter] public string orientation { get; set; } = "horizontal";
+    [Parameter] public EventCallback<double[]> change{ get; set; }
+    [Parameter] public EventCallback<double[]> slideend{ get; set; }
+    private bool dragging = false;
+    private int? handleIndex = null;
+    private double? initX = null;
+    private double? initY = null;
+    private double? barWidth = null;
+    private double? barHeight = null;
+
+    private BodyEventListener _bodyEventListener_mouseupListener;
+    private BodyEventListener _bodyEventListener_dragListener;
+    private string containerClass
+    {
+        get
+        {
+            string container_Class = "p-slider p-component";
+            switch (this.orientation)
+            {
+                case "horizontal":
+                    container_Class += " p-slider-horizontal";
+                    break;
+                case "vertical":
+                    container_Class += " p-slider-vertical";
+                    break;
+            }
+            return container_Class;
+        }
+    }
+    private bool horizontal
+    {
+        get
+        {
+            return this.orientation.Equals("horizontal");
+        }
+    }
+    private bool vertical
+    {
+        get
+        {
+            return this.orientation.Equals("vertical");
+        }
+    }
+    private string rangeStyle
+    {
+        get
+        {
+            if (this.range)
+            {
+                if (this.horizontal)
+                    return $"left: {this.rangeStartPosition}%;width: {this.rangeEndPosition - this.rangeStartPosition}%;";
+                else
+                    return $"bottom: {this.rangeStartPosition}%;height: {this.rangeEndPosition - this.rangeStartPosition}%;";
+            }
+            else
+            {
+                if (this.horizontal)
+                    return $"width: {this.handlePosition}%;";
+                else
+                    return $"height: {this.handlePosition}%;";
+            }
+        }
+    }
+    private string handleStyle
+    {
+        get
+        {
+            if (this.horizontal)
+                return $"left: {this.handlePosition}%;";
+            else if (this.vertical)
+                return $"bottom: {this.handlePosition}%;";
+            else
+                return string.Empty;
+        }
+    }
+    private double handlePosition
+    {
+        get
+        {
+            if (this.model == null)
+                return 0;
+            else
+            {
+                if (this.model.Value == 0)
+                    return 0;
+                else if (this.model < this.min)
+                    return 0;
+                else if (this.model > this.max)
+                    return 100;
+                else
+                    return (this.model.Value - this.min) * 100 / (this.max - this.min);
+            }
+        }
+    }
+    private double rangeStartPosition {
+        get
+        {
+            if(this.model == null)
+            {
+                if (this.models is not null)
+                    return (this.models[0] < this.min ? 0 : this.models[0] - this.min) * 100 / (this.max - this.min);
+                else
+                    return 0;
+            }
+            else
+            {
+                return (this.model.Value < this.min ? 0 : this.model.Value - this.min) * 100 / (this.max - this.min);
+            }
+        }
+    }
+    private double rangeEndPosition {
+        get
+        {
+            if(this.model == null)
+            {
+                if (this.models is not null)
+                    return (this.models[1] > this.max ? 0 : this.models[1] - this.min) * 100 / (this.max - this.min);
+                else
+                    return 0;
+            }
+            else
+            {
+                return (this.model.Value > this.max ? 0 : this.model.Value - this.min) * 100 / (this.max - this.min);
+            }
+        }
+    }
+    private string rangeStartHandleStyle
+    {
+        get
+        {
+            if (this.horizontal)
+                return $"left:{this.rangeStartPosition}%;";
+            else if (this.vertical)
+                return $"bottom:{this.rangeStartPosition}%;";
+            else
+                return string.Empty;
+        }
+    }
+    private string rangeEndHandleStyle
+    {
+        get
+        {
+            if (this.horizontal)
+                return $"left:{this.rangeEndPosition}%;";
+            else if (this.vertical)
+                return $"bottom:{this.rangeEndPosition}%;";
+            else
+                return string.Empty;
+        }
+    }
+
+    private IJSObjectReference? module;
+    private ElementReference containerRef;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./_content/PrimeBlazor/DomHandler.js");
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        // this.unbindDragListeners();
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+        await unbindDragListeners();
+    }
+
+    private async Task updateDomData()
+    {
+        Rect rect = await module.InvokeAsync<Rect>("getBoundingClientRect", containerRef);
+        this.initX = rect.left + await module.InvokeAsync<int>("getWindowScrollLeft");
+        this.initY = rect.top + await module.InvokeAsync<int>("getWindowScrollTop");
+        this.barWidth = await module.InvokeAsync<int>("getOffsetWidth", containerRef);
+        this.barHeight = await module.InvokeAsync<int>("getOffsetHeight", containerRef);
+    }
+    private async Task setValueFromHandlePosition(MouseEventArgs eventArgs,double handlePosition)
+    {
+        double newValue = (this.max - this.min) * (handlePosition / 100) + this.min;
+        if (this.range)
+        {
+            if (this.step is not null)
+                await this.handleStepChange(eventArgs, newValue, this.models[this.handleIndex.Value]);
+            else
+                await this.updateModel(eventArgs, newValue);
+        }
+        else
+        {
+            if (this.step != null)
+                await this.handleStepChange(eventArgs, newValue, this.model.Value);
+            else
+                await this.updateModel(eventArgs, newValue);
+        }
+    }
+    private void onSlide(MouseEventArgs eventArgs)
+    {
+        double handlePosition = this.horizontal ? ((eventArgs.PageX - this.initX.Value) * 100) / this.barWidth.Value : (((this.initY.Value + this.barHeight.Value) - eventArgs.PageY) * 100) / this.barHeight.Value;
+        this.setValueFromHandlePosition(eventArgs, handlePosition);
+    }
+    private async Task handleStepChange(MouseEventArgs eventArgs,double newValue,double oldValue) {
+        double diff = (newValue - oldValue);
+        double val = oldValue;
+
+        if (diff < 0)
+            val = oldValue + Math.Ceiling(newValue / this.step.Value - oldValue / this.step.Value) * this.step.Value;
+        else if (diff > 0)
+            val = oldValue + Math.Floor(newValue / this.step.Value - oldValue / this.step.Value) * this.step.Value;
+
+        await this.updateModel(eventArgs, val);
+    }
+    private async Task updateModel(EventArgs eventArgs,double value) {
+        double newValue = value;
+        List<double> modelValues = new List<double>();
+        double? modelValue=null;
+
+        if (this.range) {
+            if (this.handleIndex == 0) {
+                if (newValue < this.min)
+                    newValue = this.min;
+                else
+                { 
+                    if(this.models is not null)
+                    {
+                        if (value > this.models[1])
+                            newValue = this.models[1];
+                    }
+                    else
+                    {
+                        if (value > this.model)
+                            newValue = this.model.Value;
+                    }
+                }
+            }
+            else {
+                if (newValue > this.max)
+                    newValue = this.max;
+                else
+                {
+                    if(this.models is not null)
+                    {
+                        if (newValue < this.models[0])
+                            newValue = this.models[0];
+                    }
+                    else
+                    {
+                        if (newValue < this.model)
+                            newValue = this.model.Value;
+                    }
+                }
+            }
+            if(this.models is not null){
+                modelValues.AddRange(this.models);
+            }
+            else
+            {
+                modelValues.Add(this.model.Value);
+            }
+            modelValues[this.handleIndex.Value] = Math.Floor(value);
+        }
+        else {
+            if (newValue < this.min)
+                newValue = this.min;
+            else if (newValue > this.max)
+                newValue = this.max;
+
+            modelValue = Math.Floor(newValue);
+        }
+        if(modelValue is not null)
+            await modelChanged.InvokeAsync(modelValue.Value);
+        else
+            await modelsChanged.InvokeAsync(modelValues.ToArray());
+        if (modelValue is not null)
+            await change.InvokeAsync(new double[] { modelValue.Value });
+        else
+            await change.InvokeAsync(modelValues.ToArray());
+    }
+    private async Task onBarClick(MouseEventArgs eventArgs) {
+        if (this.disabled) {
+            return;
+        }
+        bool hasClass = await module.InvokeAsync<bool>("hasClass", eventArgs, "p-slider-handle");
+        if(!hasClass){
+            await this.updateDomData();
+            this.onSlide(eventArgs);
+        }
+    }
+    private async Task onHandleMouseDown(MouseEventArgs eventArgs,int index) {
+        if (this.disabled) {
+            return;
+        }
+
+        this.dragging = true;
+        await this.updateDomData();
+        this.handleIndex = index;
+        // await this.bindDragListeners();
+    }
+    private async Task onHandleKeyDown(KeyboardEventArgs eventArgs,int index) {
+        this.handleIndex = index;
+
+        switch (eventArgs.Code) {
+            //down
+            case "Dw":
+                if (this.vertical) {
+                    await this.decrementValue(eventArgs, index);
+                }
+                break;
+
+            //up
+            case "Up":
+                if (this.vertical) {
+                    await this.incrementValue(eventArgs, index);
+                }
+                break;
+
+            //left
+            case "Left":
+                if (this.horizontal) {
+                    await this.decrementValue(eventArgs, index);
+                }
+                break;
+
+            //right
+            case "Right":
+                if (this.horizontal) {
+                    await this.incrementValue(eventArgs, index);
+                }
+                break;
+        }
+    }
+    private async Task decrementValue(KeyboardEventArgs eventArgs,int index) {
+        double newValue;
+
+        if (this.range) {
+            if (this.step is not null)
+            {
+                newValue = this.models[index] - this.step.Value;
+            }
+
+            else
+                newValue = this.models[index] - 1;
+        }
+        else {
+            if (this.step is not null)
+                newValue = this.model.Value - this.step.Value;
+            else
+                newValue = this.model.Value - 1;
+        }
+
+        await this.updateModel(eventArgs, newValue);
+    }
+    private async Task incrementValue(KeyboardEventArgs eventArgs,int index) {
+        double newValue;
+
+        if (this.range) {
+            if (this.step is not null)
+                newValue = this.models[index] + this.step.Value;
+            else
+                newValue = this.models[index] + 1;
+        }
+        else {
+            if (this.step is not null)
+                newValue = this.model.Value + this.step.Value;
+            else
+                newValue = this.model.Value + 1;
+        }
+
+        await this.updateModel(eventArgs, newValue);
+    }
+    private async Task bindDragListeners() {
+        if (_bodyEventListener_dragListener == null)
+        {
+            _bodyEventListener_dragListener = new BodyEventListener(JS);
+            await _bodyEventListener_dragListener.Register("mousemove",(eventArgs)=>dragListener(eventArgs));                    
+        }
+        if (_bodyEventListener_mouseupListener == null)
+        {
+            _bodyEventListener_mouseupListener = new BodyEventListener(JS);
+            await _bodyEventListener_mouseupListener.Register("mouseup", (eventArgs)=>mouseupListener(eventArgs));
+        }
+    }
+    private void dragListener(MouseEventArgs eventArgs)
+    {
+        if (this.dragging)
+        {
+            this.onSlide(eventArgs);
+        }
+    }
+    private async void mouseupListener(MouseEventArgs eventArgs)
+    {
+        if (this.dragging)
+        {
+            this.dragging = false;
+            if (this.model is not null)
+                await slideend.InvokeAsync(new double[] { this.model.Value });
+            else
+                await slideend.InvokeAsync(this.models.ToArray());
+        }
+    }
+    private async Task unbindDragListeners() {
+        if(_bodyEventListener_dragListener is not null)
+        {
+            await _bodyEventListener_dragListener.DisposeAsync();
+        }
+        if(_bodyEventListener_mouseupListener is not null)
+        {
+           await _bodyEventListener_mouseupListener.DisposeAsync();
+        }
+    }
+}

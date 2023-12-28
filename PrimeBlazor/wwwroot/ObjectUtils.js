@@ -120,7 +120,7 @@ export async function optionKeyDown(dotNetHelper, event, option) {
     let item = event.currentTarget;
 
     switch (event.which) {
-        //up arrow
+        //down
         case 40:
             let nextItem = this.findNextItem(item);
             if (nextItem) {
@@ -130,7 +130,7 @@ export async function optionKeyDown(dotNetHelper, event, option) {
             event.preventDefault();
             break;
 
-        //down arrow
+        //up
         case 38:
             let prevItem = this.findPrevItem(item);
             if (prevItem) {

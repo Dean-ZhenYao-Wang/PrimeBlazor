@@ -1,5 +1,6 @@
-﻿<input class="@css @CssClass" id="@Id" disabled="@disabled" value="@value" @oninput="(async(e)=>await onInputEvent(e))" />
+﻿<input type="@type" class="@css @CssClass" id="@Id" disabled="@disabled" value="@value" @oninput="(async(e)=>await onInputEvent(e))" />
 @code {
+    [Parameter] public string type { get; set; } = "text";
     [Parameter]
     public string Id { get; set; } = Guid.NewGuid().ToString();
     [Parameter]
