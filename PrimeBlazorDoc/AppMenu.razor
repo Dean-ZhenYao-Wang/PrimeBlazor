@@ -1,4 +1,6 @@
-﻿<div class="layout-sidebar">
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="layout-sidebar @(active?"active":null)" id="primeblazorappmenu">
     <div class="layout-menu">
         <a @onclick="((e)=>toogleMenu(e,0))"
            class="@(activeMenuIndex==0?"active-menuitem":string.Empty)">
@@ -145,10 +147,41 @@
         </div>
     </div>
 </div>
+<script>
+    document.getElementById("primeblazorappmenu").addEventListener("click", async function (event) {
+        await window.appmenuHelpers.click(event);
+    })
+</script>
 @code {
+    [Parameter] public bool active { get; set; } = false;
+    [Parameter]public EventCallback<MouseEventArgs> menuitemClick{ get; set; }
     private int? activeMenuIndex = null;
+    private IJSObjectReference? module;
+    private DotNetObjectReference<AppMenu>? dotNetHelper;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./_content/PrimeBlazor/DomHandler.js");
+            dotNetHelper = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("appmenuHelpers.setDotNetHelper", dotNetHelper);
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
     private void toogleMenu(MouseEventArgs eventArgs, int index)
     {
         this.activeMenuIndex = this.activeMenuIndex == index ? null : index;
+    }
+    [JSInvokable]
+    public async Task onClick(MouseEventArgs eventArgs)
+    {
+        await menuitemClick.InvokeAsync(eventArgs);
     }
 }

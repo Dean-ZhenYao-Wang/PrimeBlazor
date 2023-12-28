@@ -74,3 +74,15 @@ window.QuillFunctions = {
         return quill.hasFocus();
     }
 }
+class appmenuHelpers {
+    static dotNetHelper;
+    static setDotNetHelper(value) {
+        appmenuHelpers.dotNetHelper = value;
+    }
+    static async click(event) {
+        if (event.target.nodeName === 'A') {
+            await this.dotNetHelper.invokeMethodAsync('onClick', event);
+        }
+    }
+}
+window.appmenuHelpers = appmenuHelpers;

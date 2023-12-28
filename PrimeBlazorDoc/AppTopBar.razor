@@ -1,5 +1,5 @@
 ﻿<div class="layout-topbar">
-    <a class="menu-button"><i class="pi pi-bars"></i></a>
+    <a class="menu-button" @onclick="async(e)=>await menubuttonClick.InvokeAsync(e)"><i class="pi pi-bars"></i></a>
     <NavLink href="/" class="logo">
         <img alt="logo" src="./assets/images/primevue-logo.png">
     </NavLink>
@@ -15,3 +15,6 @@
         <li><NavLink href="/support">Support</NavLink></li>
     </ul>
 </div>
+@code{
+    [Parameter] public EventCallback<MouseEventArgs> menubuttonClick{get;set;}
+}

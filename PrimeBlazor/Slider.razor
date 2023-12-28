@@ -306,7 +306,7 @@
         if (this.disabled) {
             return;
         }
-        bool hasClass = await module.InvokeAsync<bool>("hasClass", eventArgs, "p-slider-handle");
+        bool hasClass = await module.InvokeAsync<bool>("gethasClass", eventArgs, "p-slider-handle");
         if(!hasClass){
             await this.updateDomData();
             this.onSlide(eventArgs);

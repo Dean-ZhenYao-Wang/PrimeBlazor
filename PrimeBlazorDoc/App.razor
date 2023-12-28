@@ -1,8 +1,9 @@
 ﻿<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <div class="layout-wrapper">
-            <AppTopBar />
-            <AppMenu />
+            <AppTopBar menubuttonClick="onMenuButtonClick" />
+            <AppMenu active="sidebarActive" menuitemClick="onMenuItemClick" />
+            <div class="layout-mask @(sidebarActive?"layout-mask-active":null)" @onclick="onMaskClick"></div>
             <div class="layout-content">
 
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
@@ -20,3 +21,18 @@
         </LayoutView>
     </NotFound>
 </Router>
+@code {
+    private bool sidebarActive = false;
+    private void onMenuButtonClick(MouseEventArgs eventArgs)
+    {
+        this.sidebarActive = !this.sidebarActive;
+    }
+    private void onMenuItemClick(MouseEventArgs mouseEventArgs)
+    {
+        this.sidebarActive = false;
+    }
+    private void onMaskClick(MouseEventArgs eventArgs)
+    {
+        this.sidebarActive = false;
+    }
+}

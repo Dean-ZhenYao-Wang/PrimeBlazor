@@ -399,3 +399,6 @@ export function getOffsetHeight(element) {
 export function gethasClass(event, className) {
     return hasClass(event.target, className);
 }
+export function getEventTargetNodeName(event) {
+    return event.target.nodeName;
+}
