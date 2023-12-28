@@ -1,8 +1,10 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
+﻿@inject NavigationManager navigationManager
+@implements IDisposable
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <div class="layout-wrapper">
             <AppTopBar menubuttonClick="onMenuButtonClick" />
-            <AppMenu active="sidebarActive" menuitemClick="onMenuItemClick" />
+            <AppMenu active="sidebarActive"/>
             <div class="layout-mask @(sidebarActive?"layout-mask-active":null)" @onclick="onMaskClick"></div>
             <div class="layout-content">
 
@@ -22,14 +24,29 @@
     </NotFound>
 </Router>
 @code {
+    private string currentRoute;
     private bool sidebarActive = false;
+    protected override void OnInitialized()
+    {
+        currentRoute = navigationManager.Uri;
+        navigationManager.LocationChanged += HandleLocationChanged;
+    }
+    private void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        if (!currentRoute.Equals(e.Location))
+        {
+            this.sidebarActive = false;
+        }
+        currentRoute = e.Location;
+
+    }
+    void IDisposable.Dispose()
+    {
+        navigationManager.LocationChanged -= HandleLocationChanged;
+    }
     private void onMenuButtonClick(MouseEventArgs eventArgs)
     {
         this.sidebarActive = !this.sidebarActive;
-    }
-    private void onMenuItemClick(MouseEventArgs mouseEventArgs)
-    {
-        this.sidebarActive = false;
     }
     private void onMaskClick(MouseEventArgs eventArgs)
     {

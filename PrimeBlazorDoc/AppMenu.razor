@@ -1,6 +1,6 @@
 ﻿@implements IAsyncDisposable
 @inject IJSRuntime JS
-<div class="layout-sidebar @(active?"active":null)" id="primeblazorappmenu">
+<div class="layout-sidebar @(active?"active":null)">
     <div class="layout-menu">
         <a @onclick="((e)=>toogleMenu(e,0))"
            class="@(activeMenuIndex==0?"active-menuitem":string.Empty)">
@@ -147,11 +147,6 @@
         </div>
     </div>
 </div>
-<script>
-    document.getElementById("primeblazorappmenu").addEventListener("click", async function (event) {
-        await window.appmenuHelpers.click(event);
-    })
-</script>
 @code {
     [Parameter] public bool active { get; set; } = false;
     [Parameter]public EventCallback<MouseEventArgs> menuitemClick{ get; set; }
@@ -178,10 +173,5 @@
     private void toogleMenu(MouseEventArgs eventArgs, int index)
     {
         this.activeMenuIndex = this.activeMenuIndex == index ? null : index;
-    }
-    [JSInvokable]
-    public async Task onClick(MouseEventArgs eventArgs)
-    {
-        await menuitemClick.InvokeAsync(eventArgs);
     }
 }
