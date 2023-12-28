@@ -257,6 +257,15 @@
         "resources/primevue.css",
         "resources/primevue.min.css"
       ]
+    },
+    {
+      "library": "quill@1.3.7",
+      "destination": "wwwroot/quill/",
+      "files": [
+        "quill.min.js",
+        "quill.snow.min.css",
+        "quill.bubble.min.css"
+      ]
     }
   ]
 }

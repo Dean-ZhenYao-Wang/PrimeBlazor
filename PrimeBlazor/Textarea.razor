@@ -9,7 +9,7 @@
           cols="@cols"></textarea>
 
 @code {
-    private ElementReference element { get; set; }
+    private ElementReference element;
     [Parameter] public string value { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> valueChanged { get; set; }
     [Parameter] public bool autoResize { get; set; }

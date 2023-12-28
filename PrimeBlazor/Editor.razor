@@ -1,0 +1,102 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="p-editor-container">
+    <div @ref="toolbarElement" class="p-editor-toolbar">
+        @if (toolbar == null)
+        {
+            <span class="ql-formats">
+                <select class="ql-header" defaultValue="0">
+                    <option value="1">Heading</option>
+                    <option value="2">Subheading</option>
+                    <option value="0">Normal</option>
+                </select>
+                <select class="ql-font">
+                    <option></option>
+                    <option value="serif"></option>
+                    <option value="monospace"></option>
+                </select>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-bold"></button>
+                <button class="ql-italic"></button>
+                <button class="ql-underline"></button>
+            </span>
+            <span class="ql-formats">
+                <select class="ql-color"></select>
+                <select class="ql-background"></select>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-list" value="ordered"></button>
+                <button class="ql-list" value="bullet"></button>
+                <select class="ql-align">
+                    <option defaultValue></option>
+                    <option value="center"></option>
+                    <option value="right"></option>
+                    <option value="justify"></option>
+                </select>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-link"></button>
+                <button class="ql-image"></button>
+                <button class="ql-code-block"></button>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-clean"></button>
+            </span>
+        }
+        else
+        {
+            @toolbar
+        }
+    </div>
+    <div @ref="editorElement" class="p-editor-content" style="@editorStyle"></div>
+</div>
+
+@code {
+    private string QuillId = Guid.NewGuid().ToString();
+    private ElementReference toolbarElement;
+    private ElementReference editorElement;
+    [Parameter] public RenderFragment? toolbar { get; set; }
+    [Parameter] public string? model { get; set; } = null;
+    [Parameter] public EventCallback<string> modelChanged { get; set; }
+    [Parameter] public string? placeholder { get; set; }
+    [Parameter] public bool isReadonly { get; set; }
+    [Parameter] public string[]? formats { get; set; }
+    [Parameter] public string? editorStyle { get; set; }
+    [Parameter] public EventCallback<QuillTextChange> textChanged { get; set; }
+    private DotNetObjectReference<Editor>? dotNetHelper;
+    private string? oldModel = null;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("QuillFunctions.createQuill", QuillId, editorElement, toolbarElement, isReadonly, formats);
+            await JS.InvokeVoidAsync("QuillFunctions.on", QuillId, "text-change", editorElement, dotNetHelper);
+        }
+        if (this.model != null)
+        {
+            bool hasFocus = await JS.InvokeAsync<bool>("QuillFunctions.hasFocus", QuillId);
+
+            if(!this.model.Equals(this.oldModel)&&!hasFocus)
+                await this.renderValue(this.model);            
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("QuillFunctions.removeQuill", QuillId);
+    }
+    [JSInvokable]
+    public async Task textChange(QuillTextChange data)
+    {
+        await modelChanged.InvokeAsync(data.htmlValue);
+        await textChanged.InvokeAsync(data);
+    }
+    private async Task renderValue(string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+            await JS.InvokeVoidAsync("QuillFunctions.pasteHTML", QuillId, value);
+        else
+            await JS.InvokeVoidAsync("QuillFunctions.setText", QuillId, "");
+    }
+}

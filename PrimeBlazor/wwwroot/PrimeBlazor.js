@@ -34,3 +34,43 @@
         }.bind(this);
     }
 };
+window.QuillFunctions = {
+    quillArray:[],
+    createQuill: function (quillId,editorElement,toolbarElement,readonly,formats) {
+        let options = {
+            modules: {
+                toolbar: toolbarElement
+            },
+            readOnly: readonly,
+            theme: 'snow',
+            formats: formats
+        };
+        let model = new Quill(editorElement, options);
+        this.quillArray.push({ id: quillId, o: model })
+    },
+    on: function (quillId, eventName, editorElement, dotNetRef) {
+        let { o:quill } = this.quillArray.find(q => q.id === quillId);
+        quill.on(eventName, async (delta, source) => {
+            let html = editorElement.children[0].innerHTML;
+            if (html === '<p><br></p>') {
+                html = '';
+            }
+            await dotNetRef.invokeMethodAsync('textChange', { htmlValue: html, textValue: quill.getText(), delta: delta, source: source });
+        });
+    },
+    pasteHTML(quillId, value) {
+        let { o: quill } = this.quillArray.find(q => q.id === quillId);
+        quill.pasteHTML(value);
+    },
+    setText(quillId, value) {
+        let { o: quill } = this.quillArray.find(q => q.id === quillId);
+        quill.setText(value);
+    },
+    removeQuill(quillId) {
+        this.quillArray = this.quillArray.filter(q => q.id !== quillId);
+    },
+    hasFocus(quillId) {
+        let { o: quill } = this.quillArray.find(q => q.id === quillId);
+        return quill.hasFocus();
+    }
+}
