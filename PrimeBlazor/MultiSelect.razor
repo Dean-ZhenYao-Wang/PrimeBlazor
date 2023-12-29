@@ -27,10 +27,10 @@
                 <div class="p-multiselect-header">
                     <div class="p-checkbox p-component" @onclick="async(e)=>await onToggleAll(e)">
                         <div class="p-hidden-accessible">
-                            <input type="checkbox" readonly>
+                            <input type="checkbox" readonly @onfocus="onHeaderCheckboxFocus" @onblur="onHeaderCheckboxBlur">
                         </div>
-                        <div class="p-checkbox-box p-component @(allSelected?"'p-highlight":null)">
-                            <span class="p-checkbox-icon p-c @(allSelected?"pi pi-check":null)"></span>
+                        <div class="p-checkbox-box p-component @(async()=>await allSelected()?"'p-highlight":null) @(headerCheckboxFocused?"p-focus":null)">
+                            <span class="p-checkbox-icon p-c @(async()=>await allSelected()?"pi pi-check":null)"></span>
                         </div>
                     </div>
                     <div class="p-multiselect-filter-container">
@@ -75,6 +75,7 @@
 @code {
     private ElementReference itemsWrapper;
     private ElementReference focusInput;
+    private bool headerCheckboxFocused= false;
     [Parameter] public List<TItem> model { get; set; } = new List<TItem>();
     [Parameter] public EventCallback<List<TItem>> modelChanged { get; set; }
     [Parameter] public List<TItem> options { get; set; } = new List<TItem>();
@@ -147,7 +148,7 @@
         {
             foreach(var val in this.model)
             {
-                if(await JS.InvokeAsync<bool>("ObjectUtils.equals", val, optionValue, this.dataKey))
+                if(await JS.InvokeAsync<bool>("", val, optionValue, this.dataKey))
                 {
                     selected = true;
                     break;
@@ -163,6 +164,13 @@
     private void onBlur()
     {
         this.focused = false;
+    }
+    private void onHeaderCheckboxFocus() 
+    {
+        this.headerCheckboxFocused = true;
+    }
+    private void   onHeaderCheckboxBlur() {
+        this.headerCheckboxFocused = false;
     }
     private async Task onClick(EventArgs eventArgs)
     {
@@ -206,7 +214,7 @@
     }
     private async Task onToggleAll(MouseEventArgs eventArgs)
     {
-        List<TItem> value = this.allSelected ? new List<TItem>() : this.visibleOptions;
+        List<TItem> value =await this.allSelected() ? new List<TItem>() : this.visibleOptions;
         await modelChanged.InvokeAsync(value);
         await change.InvokeAsync(value);
     }
@@ -244,7 +252,7 @@
         {
             return;
         }
-        bool selected = false; //this.isSelected(option);
+        bool selected =await this.isSelected(option);
         bool valueChanged = false;
         List<TItem> value = new List<TItem>();
         if(selected)
@@ -335,15 +343,23 @@
                 return this.options;
         }
     }
-    private bool allSelected
+    private async Task<bool> allSelected()
     {
-        get
-        {
-            if (!string.IsNullOrWhiteSpace(this.filterValue) && this.filterValue.Trim().Length > 0)
-                return this.model != null && this.model.Count > 0 && this.visibleOptions != null && this.model.Count == this.visibleOptions.Count;
+        if (!string.IsNullOrWhiteSpace(this.filterValue) && this.filterValue.Trim().Length > 0)
+            {
+                bool allSelected = true;
+                foreach(var option in this.visibleOptions)
+                {
+                    if (!await this.isSelected(option))
+                    {
+                        allSelected = false;
+                        break;
+                    }
+                }
+                return allSelected;
+            }
             else
                 return this.model != null && this.options != null && this.model.Count > 0 && this.model.Count == this.options.Count;
-        }
     }
     private string containerClass
     {
