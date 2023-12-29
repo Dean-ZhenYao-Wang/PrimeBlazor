@@ -102,7 +102,7 @@
     {
         get
         {
-            if (!string.IsNullOrWhiteSpace(this.filterValue))
+            if (!string.IsNullOrWhiteSpace(this.filterValue)&&this.filterValue.Trim().Length>0)
                 return this.options.Where(m => this.getOptionLabel(m).ToLower().IndexOf(this.filterValue.ToLower()) > -1).ToList();
             else
                 return this.options;

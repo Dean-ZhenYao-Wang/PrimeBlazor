@@ -14,8 +14,8 @@
         <Dropdown @bind-value="selectedCity2" options="cities" optionLabel="Name" editable="true" />@selectedCity2?.Name
 
         <h3>Advanced with Templating, Filtering and Clear Icon</h3>
-        <Dropdown @bind-value="selectedCar" options="cars" optionLabel="Brand" placeholder="Select a Car" filter="true" showClear="true" Context="option">
-            <template>
+        <Dropdown @bind-value="selectedCar" options="cars" optionLabel="Brand" placeholder="Select a Car" filter="true" showClear="true">
+            <template Context="option">
                 <div className="p-clearfix p-dropdown-car-option">
                     <img alt="@option.Brand" src="/demo/images/car/@(option.Brand).png" />
                     <span>@option.Brand</span>

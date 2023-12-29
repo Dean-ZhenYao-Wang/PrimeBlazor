@@ -6,7 +6,16 @@
         <input @ref="focusInput" type="text" role="listbox" readonly disabled="@disabled" @onfocus="onFocus" @onblur="onBlur" @onkeydown="async(e)=>await onKeyDown(e)" tabindex="@tabindex" />
     </div>
     <div class="p-multiselect-label-container">
-        <label class="labelClass">@labelClass</label>
+        <label class="@labelClass">
+            @if(valueTemplate is not null)
+            {
+                @valueTemplate(this.model)
+            }
+            else
+            {
+                @label
+            }
+        </label>
     </div>
     <div class="p-multiselect-trigger">
         <span class="p-multiselect-trigger-icon pi pi-chevron-down p-c"></span>
@@ -15,6 +24,23 @@
         @if (overlayVisible)
         {
             <div @ref="overlay" class="p-multiselect-panel">
+                <div class="p-multiselect-header">
+                    <div class="p-checkbox p-component" @onclick="async(e)=>await onToggleAll(e)">
+                        <div class="p-hidden-accessible">
+                            <input type="checkbox" readonly>
+                        </div>
+                        <div class="p-checkbox-box p-component @(allSelected?"'p-highlight":null)">
+                            <span class="p-checkbox-icon p-c @(allSelected?"pi pi-check":null)"></span>
+                        </div>
+                    </div>
+                    <div class="p-multiselect-filter-container">
+                        <input type="text" @bind-value="filterValue" class="p-multiselect-filter p-component p-inputtext p-component" placeholder="filterPlaceholder">
+                        <span class="p-multiselect-filter-icon pi pi-search"></span>
+                    </div>
+                    <button class="p-multiselect-close p-link" @onclick="onCloseClick">
+                        <span class="p-multiselect-close-icon pi pi-times" />
+                    </button>
+                </div>
                 <div @ref="itemsWrapper" class="p-multiselect-items-wrapper" style="@(string.IsNullOrWhiteSpace(scrollHeight)?"max-height":null)">
                     <ul class="p-multiselect-items p-multiselect-list p-component">
                         @foreach(var option in visibleOptions)
@@ -27,14 +53,14 @@
                                         <span class="p-checkbox-icon p-c @(async()=>await isSelected(option)?"pi pi-check":null)"></span>
                                     </div>
                                 </div>
-                                @if(template is not null)
+                                @if(optionTemplate is not null)
                                 {
-                                    @template(option)
+                                    @optionTemplate(option)
                                 }
                                 else
                                 {
-                                    <div name="option" option="option" index="@i">
-                                        @getOptionLabel(option)
+                                    <div name="option" index="@i">
+                                       <span>@getOptionLabel(option)</span>
                                     </div>
                                 }
                             </li>
@@ -64,7 +90,8 @@
     [Parameter] public string scrollHeight { get; set; } = "200px";
     [Parameter] public string? filterPlaceholder { get; set; }
     [Parameter] public EventCallback<List<TItem>> change{ get; set; }
-    [Parameter] public RenderFragment<TItem>? template{ get; set; }
+    [Parameter] public RenderFragment<List<TItem>>? valueTemplate{ get; set; }
+    [Parameter] public RenderFragment<TItem>? optionTemplate{ get; set; }
     private bool focused = false;
     private string? filterValue = null;
     public bool overlayVisible = false;
@@ -116,7 +143,7 @@
         bool selected = false;
         TItem optionValue =(TItem)this.getOptionValue(option);
 
-        if (this.model.Count > 0)
+        if (this.model!=null&&this.model.Count > 0)
         {
             foreach(var val in this.model)
             {
@@ -145,13 +172,18 @@
             await focusInput.FocusAsync();
         }
     }
+    private void onCloseClick() 
+    {
+        this.overlayVisible = false;
+    }
     private async Task onKeyDown(KeyboardEventArgs eventArgs)
-    {switch (eventArgs.Key)
+    {
+        switch (eventArgs.Key)
         {
             case "ArrowDw":
-                if (this.visibleOptions.Count > 0 && this.overlayVisible && eventArgs.AltKey)
+                if (this.visibleOptions.Count > 0 && !this.overlayVisible && eventArgs.AltKey)
                 {
-                    this.overlayVisible = false;
+                    this.overlayVisible = true;
                 }
                 break;
             case "":
@@ -171,6 +203,12 @@
                 this.overlayVisible = false;
                 break;
         }
+    }
+    private async Task onToggleAll(MouseEventArgs eventArgs)
+    {
+        List<TItem> value = this.allSelected ? new List<TItem>() : this.visibleOptions;
+        await modelChanged.InvokeAsync(value);
+        await change.InvokeAsync(value);
     }
     private async Task<IJSObjectReference?> findNextItem(IJSObjectReference? item)
     {
@@ -219,7 +257,7 @@
                 }
                 else
                 {
-                    if (this.model.Count > 0)
+                    if (this.model!=null&&this.model.Count > 0)
                     {
                         value.AddRange(this.model);
                     }
@@ -232,7 +270,7 @@
     }
     private async Task onOptionKeyDown(KeyboardEventArgs eventArgs,TItem option) 
     {
-        
+
         IJSObjectReference listItem = await JS.InvokeAsync<IJSObjectReference>("DomHandler",eventArgs);
         switch (eventArgs.Key)
         {
@@ -291,10 +329,20 @@
     {
         get
         {
-            if (!string.IsNullOrWhiteSpace(this.filterValue))
+            if (!string.IsNullOrWhiteSpace(this.filterValue)&&this.filterValue.Trim().Length>0)
                 return this.options.Where(m => this.getOptionLabel(m).ToLower().IndexOf(this.filterValue.ToLower()) > -1).ToList();
             else
                 return this.options;
+        }
+    }
+    private bool allSelected
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(this.filterValue) && this.filterValue.Trim().Length > 0)
+                return this.model != null && this.model.Count > 0 && this.visibleOptions != null && this.model.Count == this.visibleOptions.Count;
+            else
+                return this.model != null && this.options != null && this.model.Count > 0 && this.model.Count == this.options.Count;
         }
     }
     private string containerClass
@@ -341,7 +389,7 @@
         get { 
             string label_str="";
 
-            if (this.model.Count>0) {
+            if (this.model!=null&&this.model.Count>0) {
                 for (int i = 0; i < this.model.Count; i++) {
                     if (i != 0) {
                         label_str += ",";

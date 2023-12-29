@@ -12,8 +12,8 @@
         <Chips @bind-model="value1" />
 
         <h3>Template</h3>
-        <Chips @bind-model="value2" Context="value">
-            <template>
+        <Chips @bind-model="value2">
+            <template Context="value">
                 <div>
                     <span>@value - (active) </span>
                     <i class="pi pi-user-plus" style="font-size: 14px"></i>

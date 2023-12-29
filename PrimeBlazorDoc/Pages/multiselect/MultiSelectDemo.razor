@@ -10,25 +10,79 @@
     <div class="content-section implementation">
         <h3 class="first">Basic</h3>
         <MultiSelect @bind-model="selectedCars1" options="cars" optionLabel="brand" placeholder="Select Brands" />
+
+        <h3>Advanced with Templating and Filtering</h3>
+        <MultiSelect @bind-model="selectedCars2" options="cars" optionLabel="brand" placeholder="Select a Car" filter="true">
+            <valueTemplate Context="value">
+                @if (value != null)
+                {
+                    foreach (var option in value)
+                    {
+                        <div class="p-multiselect-car-token" @key="option.Brand">
+                            <img alt="option.brand" src="/demo/images/car/@(option.Brand).png" />
+                            <span>@option.Brand</span>
+                        </div>
+                        <div class="p-multiselect-empty-car-token" v-if="!value || value.length === 0">
+                            Select Brands
+                        </div>
+                    }
+                }
+                
+            </valueTemplate>
+            <optionTemplate Context="option">
+                <div class="p-multiselect-car-option">
+                    <img alt="@option.Brand" :src="/demo/images/car/@(option.Brand).png" />
+                    <span>@option.Brand</span>
+                </div>
+            </optionTemplate>
+        </MultiSelect>
     </div>
 </div>
 
-<style lang="scss">
-    .p-multiselect {
-        min-width: 12em;
+<style lang="scss" scoped>
+.p-multiselect {
+    min-width: 15em;
+}
+
+.p-multiselect-car-option {
+    display: inline-block;
+    vertical-align: middle;
+
+    img {
+        vertical-align: middle;
+        margin-right: .5em;
+        width: 24px;
     }
 
-    .p-multiselect-car-option {
-        img {
-            vertical-align: middle;
-            margin-right: .5em;
-            width: 24px;
-        }
-
-        span {
-            margin-top: .125em;
-        }
+    span {
+        margin-top: .125em;
     }
+}
+.p-multiselect-car-token,
+.p-multiselect-empty-car-token {
+    padding: 2px 4px;
+    margin: 0 0.286em 0 0;
+    display: inline-block;
+    vertical-align: middle;
+    height: 1.857em;
+    border-radius: 3px;
+}
+
+.p-multiselect-car-token img {
+    width: 20px;
+    vertical-align: middle;
+    margin-right: .5em
+}
+
+.p-multiselect-car-token {
+    background: #007ad9;
+    color: #ffffff;
+}
+
+.p-multiselect-empty-car-token {
+    background: #d95f00;
+    color: #ffffff;
+}
 </style>
 @code {
     private List<Models.Car>? selectedCars1 = null;

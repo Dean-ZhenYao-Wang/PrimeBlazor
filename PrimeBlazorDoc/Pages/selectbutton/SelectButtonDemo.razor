@@ -17,8 +17,8 @@
         <p>Selected Cars: <span style="font-weight: bold">@selectedCars</span></p>
 
         <h3>Custom Content</h3>
-        <SelectButton @bind-model="selectedCar" options="cars" optionLabel="Brand" Context="option">
-            <template>
+        <SelectButton @bind-model="selectedCar" options="cars" optionLabel="Brand" >
+            <template Context="option">
                 <div style="text-align: center; padding: 1em; width: 125px">
                     <img alt="@option?.Brand" src="/demo/images/car/@(option?.Brand).png" style="width:48px" />
                     <div style="margin-top: 1em">@option?.Brand</div>
