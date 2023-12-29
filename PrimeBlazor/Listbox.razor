@@ -54,7 +54,6 @@
     [Parameter] public RenderFragment<TItem>? template { get; set; }
     private string label = string.Empty;
     private bool optionTouched = false;
-    private IJSObjectReference? module;
 
     private string filterValue = string.Empty;
 
@@ -80,16 +79,10 @@
         if (firstRender)
         {
             dotNetHelper = DotNetObjectReference.Create(this);
-            module = await JS.InvokeAsync<IJSObjectReference>("import",
-                "./_content/PrimeBlazor/ObjectUtils.js");
         }
     }
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (module is not null)
-        {
-            await module.DisposeAsync();
-        }
         dotNetHelper?.Dispose();
     }
     private string getOptionLabel(TItem option)
@@ -265,6 +258,6 @@
     }
     private async Task onOptionKeyDown(KeyboardEventArgs eventArgs,TItem option)
     {
-        await module.InvokeVoidAsync("optionKeyDown", dotNetHelper, eventArgs, option);
+        await JS.InvokeVoidAsync("ObjectUtils.optionKeyDown", dotNetHelper, eventArgs, option);
     }
 }

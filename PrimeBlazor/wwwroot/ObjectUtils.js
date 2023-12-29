@@ -1,12 +1,12 @@
-﻿import { hasClass } from './DomHandler.js'
-export function equals(obj1, obj2, field) {
+﻿export default class ObjectUtils {
+static equals(obj1, obj2, field) {
     if (field)
         return (this.resolveFieldData(obj1, field) === this.resolveFieldData(obj2, field));
     else
         return this.equalsByValue(obj1, obj2);
 }
 
-export function equalsByValue(obj1, obj2) {
+static equalsByValue(obj1, obj2) {
     if (obj1 === null && obj2 === null) {
         return true;
     }
@@ -53,7 +53,7 @@ export function equalsByValue(obj1, obj2) {
     return false;
 }
 
-export function resolveFieldData(data, field) {
+static resolveFieldData(data, field) {
     if (data && field) {
         if (field.indexOf('.') === -1) {
             return data[field];
@@ -71,7 +71,7 @@ export function resolveFieldData(data, field) {
         return null;
     }
 }
-export function filter(value, fields, filterValue) {
+static filter(value, fields, filterValue) {
     var filteredItems = [];
 
     if (value) {
@@ -88,7 +88,7 @@ export function filter(value, fields, filterValue) {
     return filteredItems;
 }
 
-export function reorderArray(value, from, to) {
+static reorderArray(value, from, to) {
     let target;
     if (value && (from !== to)) {
         if (to >= value.length) {
@@ -101,7 +101,7 @@ export function reorderArray(value, from, to) {
     }
 }
 
-export function findIndexInList(value, list) {
+static findIndexInList(value, list) {
     let index = -1;
 
     if (list) {
@@ -116,7 +116,7 @@ export function findIndexInList(value, list) {
     return index;
 }
 
-export async function optionKeyDown(dotNetHelper, event, option) {
+static async optionKeyDown(dotNetHelper, event, option) {
     let item = event.currentTarget;
 
     switch (event.which) {
@@ -147,23 +147,23 @@ export async function optionKeyDown(dotNetHelper, event, option) {
             break;
     }
 }
-export function findNextItem(item) {
+static findNextItem(item) {
     let nextItem = item.nextElementSibling;
 
     if (nextItem)
-        return hasClass(nextItem, 'p-disabled') ? this.findNextOption(nextItem) : nextItem;
+        return window.DomHandler.hasClass(nextItem, 'p-disabled') ? this.findNextOption(nextItem) : nextItem;
     else
         return null;
 }
-export function findPrevItem(item) {
+static findPrevItem(item) {
     let prevItem = item.previousElementSibling;
 
     if (prevItem)
-        return hasClass(prevItem, 'p-disabled') ? this.findPrevItem(prevItem) : prevItem;
+        return window.DomHandler.hasClass(prevItem, 'p-disabled') ? this.findPrevItem(prevItem) : prevItem;
     else
         return null;
 }
-export function contains(value, list) {
+static contains(value, list) {
     if (value != null && list && list.length) {
         for (let val of list) {
             if (this.equals(value, val))
@@ -173,84 +173,5 @@ export function contains(value, list) {
 
     return false;
 }
-//export default class filterConstraints {
-
-//    startsWith(value, filter) {
-//        if (filter === undefined || filter === null || filter.trim() === '') {
-//            return true;
-//        }
-
-//        if (value === undefined || value === null) {
-//            return false;
-//        }
-
-//        let filterValue = filter.toLowerCase();
-//        return value.toString().toLowerCase().slice(0, filterValue.length) === filterValue;
-//    }
-
-//    contains(value, filter) {
-//        if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
-//            return true;
-//        }
-
-//        if (value === undefined || value === null) {
-//            return false;
-//        }
-
-//        return value.toString().toLowerCase().indexOf(filter.toLowerCase()) !== -1;
-//    }
-
-//    endsWith(value, filter) {
-//        if (filter === undefined || filter === null || filter.trim() === '') {
-//            return true;
-//        }
-
-//        if (value === undefined || value === null) {
-//            return false;
-//        }
-
-//        let filterValue = filter.toString().toLowerCase();
-//        return value.toString().toLowerCase().indexOf(filterValue, value.toString().length - filterValue.length) !== -1;
-//    }
-
-//    equals(value, filter) {
-//        if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
-//            return true;
-//        }
-
-//        if (value === undefined || value === null) {
-//            return false;
-//        }
-
-//        return value.toString().toLowerCase() === filter.toString().toLowerCase();
-//    }
-
-//    notEquals(value, filter) {
-//        if (filter === undefined || filter === null || (typeof filter === 'string' && filter.trim() === '')) {
-//            return false;
-//        }
-
-//        if (value === undefined || value === null) {
-//            return true;
-//        }
-
-//        return value.toString().toLowerCase() !== filter.toString().toLowerCase();
-//    }
-
-//    in(value, filter) {
-//        if (filter === undefined || filter === null || filter.length === 0) {
-//            return true;
-//        }
-
-//        if (value === undefined || value === null) {
-//            return false;
-//        }
-
-//        for (let i = 0; i < filter.length; i++) {
-//            if (filter[i] === value)
-//                return true;
-//        }
-
-//        return false;
-//    }
-//}
+}
+window.ObjectUtils = ObjectUtils;

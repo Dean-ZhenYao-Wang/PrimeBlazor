@@ -174,15 +174,12 @@
         }
     }
 
-    private IJSObjectReference? module;
     private ElementReference containerRef;
     private DotNetObjectReference<Slider>? dotNetHelper;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            module = await JS.InvokeAsync<IJSObjectReference>("import",
-                "./_content/PrimeBlazor/DomHandler.js");
             dotNetHelper = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("sliderHelpers.setDotNetHelper",Id, dotNetHelper);
             await JS.InvokeVoidAsync("sliderHelpers.addEventListener", containerRef);
@@ -191,21 +188,17 @@
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         await this.unbindDragListeners();
-        if (module is not null)
-        {
-            await module.DisposeAsync();
-        }
         await unbindDragListeners();
         await JS.InvokeVoidAsync("sliderHelpers.removeDotNetHelpe",Id);
     }
 
     private async Task updateDomData()
     {
-        Rect rect = await module.InvokeAsync<Rect>("getBoundingClientRect", containerRef);
-        this.initX = rect.left + await module.InvokeAsync<int>("getWindowScrollLeft");
-        this.initY = rect.top + await module.InvokeAsync<int>("getWindowScrollTop");
-        this.barWidth = await module.InvokeAsync<int>("getOffsetWidth", containerRef);
-        this.barHeight = await module.InvokeAsync<int>("getOffsetHeight", containerRef);
+        Rect rect = await JS.InvokeAsync<Rect>("DomHandler.getBoundingClientRect", containerRef);
+        this.initX = rect.left + await JS.InvokeAsync<int>("DomHandler.getWindowScrollLeft");
+        this.initY = rect.top + await JS.InvokeAsync<int>("DomHandler.getWindowScrollTop");
+        this.barWidth = await JS.InvokeAsync<int>("DomHandler.getOffsetWidth", containerRef);
+        this.barHeight = await JS.InvokeAsync<int>("DomHandler.getOffsetHeight", containerRef);
     }
     private async Task setValueFromHandlePosition(MouseEventArgs eventArgs,double handlePosition)
     {

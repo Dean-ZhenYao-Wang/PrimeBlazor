@@ -1,5 +1,4 @@
-﻿@implements IAsyncDisposable
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 <span class="@containerClass" disabled="@disabled">
     <input @ref="inputElement" class="@inputClass" value="@model" 
         @oninput="async(e)=>await modelChanged.InvokeAsync(Convert.ToDouble(e.Value))"
@@ -98,23 +97,7 @@
             return downButton_Class;
         }
     }
-    private IJSObjectReference? module;
     private ElementReference inputElement;
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            module = await JS.InvokeAsync<IJSObjectReference>("import",
-                "./_content/PrimeBlazor/DomHandler.js");
-        }
-    }
-    async ValueTask IAsyncDisposable.DisposeAsync()
-    {
-        if (module is not null)
-        {
-            await module.DisposeAsync();
-        }
-    }
 
     private async Task repeat(int? interval,int dir)
     {
@@ -165,8 +148,7 @@
     }
     private async Task onButtonMouseDown(MouseEventArgs eventArgs,int direction)
     {
-        if (module is not null)
-            await module.InvokeVoidAsync("elementFocus", inputElement);
+        await JS.InvokeVoidAsync("DomHandler.elementFocus", inputElement);
         await this.repeat(null, direction);
     }
     private void onButtonMouseUp() 

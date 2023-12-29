@@ -1,5 +1,4 @@
-﻿@implements IAsyncDisposable
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 <div class="layout-sidebar @(active?"active":null)">
     <div class="layout-menu">
         <a @onclick="((e)=>toogleMenu(e,0))"
@@ -17,6 +16,7 @@
                 <NavLink href="/inputswitch">&#9679; InputSwitch</NavLink>
                 <NavLink href="/inputtext">&#9679; InputText</NavLink>
                 <NavLink href="/listbox">&#9679; Listbox</NavLink>
+                <NavLink href="/password">&#9679; Password</NavLink>
                 <NavLink href="/radiobutton">&#9679; RadioButton</NavLink>
                 <NavLink href="/rating">&#9679; Rating</NavLink>
                 <NavLink href="/selectbutton">&#9679; SelectButton</NavLink>
@@ -151,23 +151,13 @@
     [Parameter] public bool active { get; set; } = false;
     [Parameter]public EventCallback<MouseEventArgs> menuitemClick{ get; set; }
     private int? activeMenuIndex = null;
-    private IJSObjectReference? module;
     private DotNetObjectReference<AppMenu>? dotNetHelper;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            module = await JS.InvokeAsync<IJSObjectReference>("import",
-                "./_content/PrimeBlazor/DomHandler.js");
             dotNetHelper = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("appmenuHelpers.setDotNetHelper", dotNetHelper);
-        }
-    }
-    async ValueTask IAsyncDisposable.DisposeAsync()
-    {
-        if (module is not null)
-        {
-            await module.DisposeAsync();
         }
     }
     private void toogleMenu(MouseEventArgs eventArgs, int index)

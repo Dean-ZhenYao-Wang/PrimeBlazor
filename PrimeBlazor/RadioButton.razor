@@ -1,5 +1,4 @@
 ﻿@typeparam TItem
-@implements IAsyncDisposable
 @inject IJSRuntime JS
 <div class="p-radiobutton p-component" @onclick="onClick">
     <div class="p-hidden-accessible">
@@ -31,23 +30,7 @@
             return this.model != null && this.model.Equals(this.value);
         }
     }
-    private IJSObjectReference? module;
     private ElementReference inputElement;
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            module = await JS.InvokeAsync<IJSObjectReference>("import",
-                "./_content/PrimeBlazor/DomHandler.js");
-        }
-    }
-    async ValueTask IAsyncDisposable.DisposeAsync()
-    {
-        if (module is not null)
-        {
-            await module.DisposeAsync();
-        }
-    }
     private async Task onClick(MouseEventArgs mouseEvent)
     {
         if (!this.disabled)
@@ -55,8 +38,7 @@
             await click.InvokeAsync(mouseEvent);
             await input.InvokeAsync(this.value);
             await modelChanged.InvokeAsync(this.value);
-            if (module is not null)
-                await module.InvokeVoidAsync("elementFocus", inputElement);
+            await JS.InvokeVoidAsync("DomHandler.elementFocus", inputElement);
             
             if (!this.isChecked)
             {

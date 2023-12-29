@@ -1,5 +1,4 @@
 ﻿@typeparam TItem
-@implements IAsyncDisposable
 @inject IJSRuntime JS
 <div class="p-checkbox p-component" @onclick="onClick">
     <div class="p-hidden-accessible">
@@ -33,23 +32,7 @@
             return this.model != null && this.model.Contains(this.value);
         }
     }
-    private IJSObjectReference? module;
     private ElementReference inputElement;
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            module = await JS.InvokeAsync<IJSObjectReference>("import",
-                "./_content/PrimeBlazor/DomHandler.js");
-        }
-    }
-    async ValueTask IAsyncDisposable.DisposeAsync()
-    {
-        if (module is not null)
-        {
-            await module.DisposeAsync();
-        }
-    }
     private async Task onClick(MouseEventArgs mouseEvent)
     {
         if (!this.disabled)
@@ -64,8 +47,7 @@
             await input.InvokeAsync(newModelValue);
             await modelChanged.InvokeAsync(newModelValue);
             await change.InvokeAsync(mouseEvent);
-            if (module is not null)
-                await module.InvokeVoidAsync("elementFocus", inputElement);
+            await JS.InvokeVoidAsync("DomHandler.elementFocus", inputElement);
         }
     }
     private async Task onFocus(FocusEventArgs focusEventArgs)

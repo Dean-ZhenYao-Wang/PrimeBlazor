@@ -1,5 +1,4 @@
-﻿@implements IAsyncDisposable
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 <div class="p-chips p-component">
     <ul class="p-inputtext @(disabled?"p-disabled":null) @(focused?"p-focus":null)" @onclick="async(e)=>await onWrapperClick(e)">
         @foreach(var val in model)
@@ -42,27 +41,10 @@
         }
     }
 
-    private IJSObjectReference? module;
     private ElementReference inputElement;
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            module = await JS.InvokeAsync<IJSObjectReference>("import",
-                "./_content/PrimeBlazor/DomHandler.js");
-        }
-    }
-    async ValueTask IAsyncDisposable.DisposeAsync()
-    {
-        if (module is not null)
-        {
-            await module.DisposeAsync();
-        }
-    }
     private async Task onWrapperClick(MouseEventArgs eventArgs)
     {
-        if (module is not null)
-            await module.InvokeVoidAsync("elementFocus", inputElement);
+        await JS.InvokeVoidAsync("DomHandler.elementFocus", inputElement);
     }
     private async Task onFocus(FocusEventArgs focusEventArgs)
     {
@@ -76,7 +58,7 @@
     }
     private async Task onKeyDown(KeyboardEventArgs eventArgs)
     {
-        string inputValue = await module.InvokeAsync<string>("getElementValue", inputElement);
+        string inputValue = await JS.InvokeAsync<string>("DomHandler.getElementValue", inputElement);
         switch (eventArgs.Key)
         {
             case "Backspace":
@@ -94,7 +76,7 @@
                     await modelChanged.InvokeAsync(values);
                     await add.InvokeAsync(values);
                 }
-                await module.InvokeVoidAsync("clearElementValue", inputElement);
+                await JS.InvokeVoidAsync("DomHandler.clearElementValue", inputElement);
                 break;
         }
     }

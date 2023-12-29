@@ -1,5 +1,4 @@
-﻿@implements IAsyncDisposable
-@inject IJSRuntime JS
+﻿@inject IJSRuntime JS
 <div class="p-checkbox p-component" @onclick="async(e)=>await onClick(e)">
     <div class="p-hidden-accessible">
         <input @ref="inputElement" id="@inputId" type="checkbox" name="@name" checked="@(model==true)" disabled="@disabled" @onfocus="async(e)=>await onFocus(e)" @onblur="async(e)=>await onBlur(e)"
@@ -44,24 +43,6 @@
             return icon_str;
         }
     }
-
-
-    private IJSObjectReference? module;
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            module = await JS.InvokeAsync<IJSObjectReference>("import",
-                "./_content/PrimeBlazor/DomHandler.js");
-        }
-    }
-    async ValueTask IAsyncDisposable.DisposeAsync()
-    {
-        if (module is not null)
-        {
-            await module.DisposeAsync();
-        }
-    }
     private async Task onClick(MouseEventArgs eventArgs)
     {
         if (!this.disabled)
@@ -82,8 +63,7 @@
             await click.InvokeAsync(eventArgs);
             await modelChanged.InvokeAsync(newValue);
             await change.InvokeAsync();
-            if (module is not null)
-                await module.InvokeVoidAsync("elementFocus", inputElement);
+            await JS.InvokeVoidAsync("DomHandler.elementFocus", inputElement);
         }
     }
     private async Task onFocus(FocusEventArgs eventArgs)
