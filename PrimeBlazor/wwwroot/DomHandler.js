@@ -18,12 +18,12 @@
 
     static getWindowScrollTop() {
         let doc = document.documentElement;
-        return (doc.scrollTop) - (doc.clientTop || 0);
+        return (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
     }
 
     static getWindowScrollLeft() {
         let doc = document.documentElement;
-        return (doc.scrollLeft) - (doc.clientLeft || 0);
+        return (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
     }
 
     static getOuterWidth(el, margin) {
@@ -58,6 +58,21 @@
         }
     }
 
+    static getClientHeight(el, margin) {
+        if (el) {
+            let height = el.clientHeight;
+
+            if (margin) {
+                let style = getComputedStyle(el);
+                height += parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+            }
+
+            return height;
+        } else {
+            return 0;
+        }
+    }
+
     static getViewport() {
         let win = window,
             d = document,
@@ -73,8 +88,8 @@
         var rect = el.getBoundingClientRect();
 
         return {
-            top: rect.top + document.body.scrollTop,
-            left: rect.left + document.body.scrollLeft
+            top: rect.top + (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0),
+            left: rect.left + (window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0),
         };
     }
 
@@ -128,10 +143,14 @@
     }
 
     static hasClass(element, className) {
-        if (element.classList)
-            return element.classList.contains(className);
-        else
-            return new RegExp('(^| )' + className + '( |$)', 'gi').test(element.className);
+        if (element) {
+            if (element.classList)
+                return element.classList.contains(className);
+            else
+                return new RegExp('(^| )' + className + '( |$)', 'gi').test(element.className);
+        }
+
+        return false;
     }
 
     static find(element, selector) {
@@ -172,13 +191,21 @@
         let viewport = this.getViewport();
         let top, left;
 
-        if (targetOffset.top + targetOuterHeight + elementOuterHeight > viewport.height)
+        if (targetOffset.top + targetOuterHeight + elementOuterHeight > viewport.height) {
             top = targetOffset.top + windowScrollTop - elementOuterHeight;
-        else
-            top = targetOuterHeight + targetOffset.top + windowScrollTop;
+            element.style.transformOrigin = 'bottom';
 
-        if (targetOffset.left + targetOuterWidth + elementOuterWidth > viewport.width)
-            left = targetOffset.left + windowScrollLeft + targetOuterWidth - elementOuterWidth;
+            if (top < 0) {
+                top = windowScrollTop;
+            }
+        }
+        else {
+            top = targetOuterHeight + targetOffset.top + windowScrollTop;
+            element.style.transformOrigin = 'top';
+        }
+
+        if (targetOffset.left + elementOuterWidth > viewport.width)
+            left = Math.max(0, targetOffset.left + windowScrollLeft + targetOuterWidth - elementOuterWidth);
         else
             left = targetOffset.left + windowScrollLeft;
 
@@ -187,26 +214,73 @@
     }
 
     static relativePosition(element, target) {
-        var elementDimensions = element.offsetParent ? { width: element.offsetWidth, height: element.offsetHeight } : this.getHiddenElementDimensions(element);
-        var targetHeight = target.offsetHeight;
-        var targetWidth = target.offsetWidth;
-        var targetOffset = target.getBoundingClientRect();
-        var viewport = this.getViewport();
-        var top, left;
+        let elementDimensions = element.offsetParent ? { width: element.offsetWidth, height: element.offsetHeight } : this.getHiddenElementDimensions(element);
+        const targetHeight = target.offsetHeight;
+        const targetOffset = target.getBoundingClientRect();
+        const viewport = this.getViewport();
+        let top, left;
 
-        if ((targetOffset.top + targetHeight + elementDimensions.height) > viewport.height)
+        if ((targetOffset.top + targetHeight + elementDimensions.height) > viewport.height) {
             top = -1 * (elementDimensions.height);
-        else
+            element.style.transformOrigin = 'bottom';
+            if (targetOffset.top + top < 0) {
+                top = -1 * targetOffset.top;
+            }
+        }
+        else {
             top = targetHeight;
+            element.style.transformOrigin = 'top';
+        }
 
-        if ((targetOffset.left + elementDimensions.width) > viewport.width)
-            left = targetWidth - elementDimensions.width;
-        else
+        if (elementDimensions.width > viewport.width) {
+            // element wider then viewport and cannot fit on screen (align at left side of viewport)
+            left = targetOffset.left * -1;
+        }
+        else if ((targetOffset.left + elementDimensions.width) > viewport.width) {
+            // element wider then viewport but can be fit on screen (align at right side of viewport)
+            left = (targetOffset.left + elementDimensions.width - viewport.width) * -1;
+        }
+        else {
+            // element fits on screen (align with target)
             left = 0;
+        }
 
         element.style.top = top + 'px';
         element.style.left = left + 'px';
     }
+
+    static getParents(element, parents = []) {
+        return element['parentNode'] === null ? parents : this.getParents(element.parentNode, parents.concat([element.parentNode]));
+    }
+
+    static getScrollableParents(element) {
+        let scrollableParents = [];
+
+        if (element) {
+            let parents = this.getParents(element);
+            const overflowRegex = /(auto|scroll)/;
+            const overflowCheck = (node) => {
+                let styleDeclaration = window['getComputedStyle'](node, null);
+                return overflowRegex.test(styleDeclaration.getPropertyValue('overflow')) || overflowRegex.test(styleDeclaration.getPropertyValue('overflowX')) || overflowRegex.test(styleDeclaration.getPropertyValue('overflowY'));
+            };
+
+            for (let parent of parents) {
+                let scrollSelectors = parent.nodeType === 1 && parent.dataset['scrollselectors'];
+                if (scrollSelectors) {
+                    let selectors = scrollSelectors.split(',');
+                    for (let selector of selectors) {
+                        let el = this.findSingle(parent, selector);
+                        if (el && overflowCheck(el)) {
+                            scrollableParents.push(el);
+                        }
+                    }
+                }
+            }
+        }
+
+        return scrollableParents;
+    }
+
     static getHiddenElementOuterHeight(element) {
         element.style.visibility = 'hidden';
         element.style.display = 'block';
@@ -378,6 +452,94 @@
 
     static isVisible(element) {
         return element.offsetParent != null;
+    }
+
+    static invokeElementMethod(element, methodName, args) {
+        (element)[methodName].apply(element, args);
+    }
+
+    static getFocusableElements(element) {
+        let focusableElements = DomHandler.find(element, `button:not([tabindex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden]), 
+                [href][clientHeight][clientWidth]:not([tabindex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden]), 
+                input:not([tabindex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden]), select:not([tabindex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden]), 
+                textarea:not([tabindex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden]), [tabIndex]:not([tabIndex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden]), 
+                [contenteditable]:not([tabIndex = "-1"]):not([disabled]):not([style*="display:none"]):not([hidden])`
+        );
+
+        let visibleFocusableElements = [];
+        for (let focusableElement of focusableElements) {
+            if (getComputedStyle(focusableElement).display != "none" && getComputedStyle(focusableElement).visibility != "hidden")
+                visibleFocusableElements.push(focusableElement);
+        }
+
+        return visibleFocusableElements;
+    }
+
+    static getFirstFocusableElement(element) {
+        const focusableElements = this.getFocusableElements(element);
+        return focusableElements.length > 0 ? focusableElements[0] : null;
+    }
+
+    static getPreviousElementSibling(element, selector) {
+        let previousElement = element.previousElementSibling;
+
+        while (previousElement) {
+            if (previousElement.matches(selector)) {
+                return previousElement;
+            } else {
+                previousElement = previousElement.previousElementSibling;
+            }
+        }
+
+        return null;
+    }
+
+    static getNextElementSibling(element, selector) {
+        let nextElement = element.nextElementSibling;
+
+        while (nextElement) {
+            if (nextElement.matches(selector)) {
+                return nextElement;
+            } else {
+                nextElement = nextElement.nextElementSibling;
+            }
+        }
+
+        return null;
+    }
+
+    static isClickable(element) {
+        const targetNode = element.nodeName;
+        const parentNode = element.parentElement && element.parentElement.nodeName;
+
+        return (targetNode == 'INPUT' || targetNode == 'BUTTON' || targetNode == 'A' ||
+            parentNode == 'INPUT' || parentNode == 'BUTTON' || parentNode == 'A' ||
+            this.hasClass(element, 'p-button') || this.hasClass(element.parentElement, 'p-button') ||
+            this.hasClass(element.parentElement, 'p-checkbox') || this.hasClass(element.parentElement, 'p-radiobutton')
+        );
+    }
+
+    static applyStyle(element, style) {
+        if (typeof style === 'string') {
+            element.style.cssText = style;
+        }
+        else {
+            for (let prop in style) {
+                element.style[prop] = style[prop];
+            }
+        }
+    }
+
+    static isIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window['MSStream'];
+    }
+
+    static isAndroid() {
+        return /(android)/i.test(navigator.userAgent);
+    }
+
+    static isTouchDevice() {
+        return (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0));
     }
 
     static elementFocus(element) {

@@ -1,0 +1,69 @@
+﻿@page "/dropdown"
+<div>
+    <div class="content-section introduction">
+        <div class="feature-intro">
+            <h1>Dropdown</h1>
+            <p>Dropdown is used to select an item from a list of options.</p>
+        </div>
+    </div>
+
+    <div class="content-section implementation">
+        <h3 class="first">Basic</h3>
+        <Dropdown @bind-value="selectedCity1" options="cities" optionLabel="Name" placeholder="Select a City"/>@selectedCity1?.Name
+       @*  <h3>Editable</h3>
+        <Dropdown @bind-value="selectedCity2" options="cities" optionLabel="name" editable="true" />@selectedCity2?.Name
+
+        <h3>Advanced with Templating, Filtering and Clear Icon</h3>
+        <Dropdown @bind-value="selectedCar" options="cars" optionLabel="Brand" placeholder="Select a Car" filter="true" showClear="true" Context="option">
+            <template>
+                <div className="p-clearfix p-dropdown-car-option">
+                    <img alt="@option.Brand" src="/demo/images/car/@(option.Brand).png" />
+                    <span>@option.Brand</span>
+                </div>
+            </template>
+        </Dropdown> *@
+    </div>
+</div>
+<style lang="scss">
+.p-dropdown {
+    width: 12em;
+}
+
+.p-dropdown-car-option {
+    img {
+        vertical-align: middle;
+        margin-right: .5em;
+        width: 24px;
+    }
+
+    span {
+        float: right;
+        margin-top: .125em;
+    }
+}
+</style>
+@code {
+    private Models.City? selectedCity1 = null;
+    private Models.City? selectedCity2 = null;
+    private Models.Car? selectedCar = null;
+    private List<Models.City?> cities = new List<Models.City?>()
+    {
+        new Models.City{Name="New York",Code="NY" },
+        new Models.City{Name="Rome",Code="RM" },
+        new Models.City{Name="London",Code="LDN" },
+        new Models.City{Name="Istanbul",Code="IST" },
+        new Models.City{Name="Paris",Code="PRS" }
+    };
+    private List<Models.Car?> cars = new List<Models.Car?>()
+    {
+        new Models.Car(){Brand="Audi", Value= "Audi"},
+                new Models.Car(){Brand= "Bmw", Value= "Bmw"},
+                new Models.Car(){Brand= "Fiat", Value= "Fiat"},
+                new Models.Car(){Brand= "Honda", Value= "Honda"},
+                new Models.Car(){Brand= "Jaguar", Value= "Jaguar"},
+                new Models.Car(){Brand= "Mercedes", Value= "Mercedes"},
+                new Models.Car(){Brand= "Renault", Value= "Renault"},
+                new Models.Car(){Brand= "Volkswagen", Value= "Volkswagen"},
+                new Models.Car(){Brand= "Volvo", Value= "Volvo"}
+    };
+}

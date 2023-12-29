@@ -1,0 +1,488 @@
+﻿@typeparam TItem
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div @ref="container" class="@containerClass">
+    @* <div class="p-hidden-accessible">
+        <select required="@required" aria-hidden="true" tabindex="-1">
+            @foreach(TItem option in visibleOptions)
+            {
+                <option @key="getOptionLabel(option)" value="@getOptionValue(option)">@getOptionLabel(option)</option>
+            }
+        </select>
+    </div> *@
+    <div class="p-hidden-accessible">
+        <input @ref="focusInput" type="text" role="listbox" readonly disabled="@disabled" @onfocus="onFocus" @onblur="onBlur" @onkeydown="async(e)=>await onKeyDown(e)" tabindex="@tabindex" />
+    </div>
+    @if (editable)
+    {        
+        <input type="text" class="p-dropdown-label p-inputtext" disabled="@disabled" @onfocus="onFocus" @onblur="onBlur" placeholder="@placeholder" value="@editableInputValue" @oninput="async(e)=>await onEditableInput(e)">
+    }
+    else
+    {
+        <label class="@labelClass" @onclick="async(e)=>await onLabelClick()">@label</label>
+    }
+    @if (showClear&&value is not null)
+    {
+        <i class="p-dropdown-clear-icon pi pi-times" @onclick="async(e)=>await clear(e)"></i>
+    }
+    <div class="p-dropdown-trigger" @onclick="async(e)=>await onDropdownClick()">
+        <span class="p-dropdown-trigger-icon pi pi-chevron-down p-clickable"></span>
+    </div>
+    <transition name="p-input-overlay" @ondragenter="async()=>await onOverlayEnter()">
+        @if (overlayVisible)
+        {
+            <div @ref="overlay" class="p-dropdown-panel">
+                @if (filter)
+                {
+                    <div class="p-dropdown-filter-container">
+                        <input type="text" @bind="filterValue" autoComplete="off" class="p-dropdown-filter p-inputtext p-component" placeholder="@filterPlaceholder" @onkeydown="async(e)=>await onFilterKeyDown(e)" />
+                        <span class="p-dropdown-filter-icon pi pi-search"></span>
+                    </div>
+                }
+                <div @ref="itemsWrapper" class="p-dropdown-items-wrapper" style="@(!string.IsNullOrWhiteSpace(scrollHeight)?"max-height":null)">
+                    <ul class="p-dropdown-items p-dropdown-list p-component">
+                        @foreach(var option in visibleOptions)
+                        {
+                            int i = visibleOptions.IndexOf(option);
+                            <li class="p-dropdown-item @(isSelected(option)?"p-highlight":null) @(isOptionDisabled(option)?"p-disabled":null)"
+                                aria-label="@getOptionLabel(option)" @key="getOptionLabel(option)" @onclick="async(e)=>await onOptionSelect(e, option)">
+                                @if(template is not null)
+                                {
+                                    @template(option)
+                                }
+                                else
+                                {
+                                    <div name="option" option="option" index="@i">
+                                        @getOptionLabel(option)
+                                    </div>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+    </transition>
+</div>
+
+@code {
+    [Parameter]public RenderFragment<TItem>? template{ get; set; }
+    [Parameter] public TItem? value { get; set; }
+    [Parameter] public EventCallback<TItem> valueChanged { get; set; }
+    [Parameter] public List<TItem> options { get; set; } = new List<TItem>();
+    [Parameter] public string? dataKey { get; set; } = null;
+    [Parameter] public bool filter { get; set; }
+    [Parameter] public string? optionLabel { get; set; } = null;
+    [Parameter] public string? optionValue { get; set; } = null;
+    [Parameter] public string? optionDisabled { get; set; } = null;
+    [Parameter] public bool disabled { get; set; }
+    [Parameter] public bool required{ get; set; }
+    [Parameter] public int tabindex{ get; set; }
+    [Parameter] public bool editable{ get; set; }
+    [Parameter] public string? placeholder{ get; set; }
+    [Parameter] public bool showClear{ get; set; }
+    [Parameter] public string scrollHeight { get; set; } = "200px";
+    [Parameter] public string? filterPlaceholder{ get; set; }
+    [Parameter] public EventCallback<TItem> change{ get; set; }
+    private string Id = Guid.NewGuid().ToString();
+    private bool focused = false;
+    private string? filterValue = null;
+    public bool overlayVisible = false;
+    private Timer? timer=null;
+    private Timer? searchTimeout = null;
+    private string previousSearchChar;
+    private string currentSearchChar;
+    private string? searchValue;
+
+    private ElementReference focusInput;
+    private ElementReference overlay;
+    private ElementReference container;
+    private ElementReference itemsWrapper;
+
+    private List<TItem> visibleOptions
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(this.filterValue))
+                return this.options.Where(m => this.getOptionLabel(m).ToLower().IndexOf(this.filterValue.ToLower()) > -1).ToList();
+            else
+                return this.options;
+        }
+    }
+    private string containerClass
+    {
+        get
+        {
+            string container_class = "p-dropdown p-component p-unselectable-text";
+            if (this.disabled)
+                container_class += " p-disabled";
+            if (this.showClear && !this.disabled)
+                container_class += " p-dropdown-clearable";
+            if (this.focused)
+                container_class += " p-focus";
+            return container_class;
+        }
+    }
+    private string labelClass
+    {
+        get
+        {
+            string label_class = "p-dropdown-label p-inputtext";
+            if (string.IsNullOrWhiteSpace(this.label) && !string.IsNullOrWhiteSpace(this.placeholder))
+                label_class = " p-placeholder";
+            if (string.IsNullOrWhiteSpace(this.placeholder))
+                label_class = " p-dropdown-label-empty";
+            return label_class;
+        }
+    }
+    private string label
+    {
+        get
+        {
+            TItem? selectedOption = this.getSelectedOption();
+            if (selectedOption != null)
+                return this.getOptionLabel(selectedOption);
+            else
+                return string.IsNullOrWhiteSpace(this.placeholder) ? "p-dropdown" : this.placeholder;
+        }
+    }
+    private string? editableInputValue
+    {
+        get
+        {
+            TItem? selectionOption = this.getSelectedOption();
+            if (selectionOption!=null)
+                return this.getOptionLabel(selectionOption);
+            else
+                return this.value?.ToString();
+        }
+    }
+    private IJSObjectReference module;
+    private DotNetObjectReference<Dropdown<TItem>> dotNetHelper;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/Dropdown.razor.js");
+        }
+        else
+        {
+            if (this.overlayVisible && !string.IsNullOrWhiteSpace(this.filterValue))
+            {
+                await this.alignOverlay();
+            }
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+            await module.DisposeAsync();
+       await this.unbindOutsideClickListener();
+    }
+
+
+    private string getOptionLabel(TItem option)
+    {
+        return ObjectUtils.ResolveFieldData(option, this.optionLabel).ToString();
+    }
+    private object getOptionValue(TItem option)
+    {
+        if( !string.IsNullOrWhiteSpace(this.optionValue)){
+            return ObjectUtils.ResolveFieldData(option, this.optionValue);
+        }
+        else
+        {
+            return option;            
+        }
+    }
+    private bool isOptionDisabled(TItem option)
+    {
+        return !string.IsNullOrWhiteSpace(this.optionDisabled) ? (bool)ObjectUtils.ResolveFieldData(option, this.optionDisabled) : false;
+    }
+    private TItem? getSelectedOption()
+    {
+        TItem? selectedOption=default(TItem);
+        if (this.value != null && this.options.Count > 0)
+        {
+            foreach(TItem option in this.options)
+            {
+                if (ObjectUtils.Equals(this.value, this.getOptionValue(option), this.dataKey))
+                {
+                    selectedOption = option;
+                    break;
+                }
+            }
+        }
+        return selectedOption;
+    }
+    private bool isSelected(TItem option)
+    {
+        bool selected = false;
+        TItem optionValue =(TItem)this.getOptionValue(option);
+
+        selected = ObjectUtils.Equals(this.value,optionValue,this.dataKey);
+
+        return selected;
+    }
+    private int getSelectedOptionIndex()
+    {
+        int selectedOptionIndex = -1;
+        if (this.value != null && this.visibleOptions.Count > 0)
+        {
+            for(int i = 0; i < this.visibleOptions.Count; i++)
+            {
+                if (ObjectUtils.Equals(this.value, this.getOptionValue(this.visibleOptions[i]), this.dataKey))
+                {
+                    selectedOptionIndex = i;
+                    break;
+                }
+            }
+        }
+        return selectedOptionIndex;
+    }
+    private void onFocus()
+    {
+        this.focused = true;
+    }
+    private void onBlur()
+    {
+        this.focused = false;
+    }
+    private async Task onKeyDown(KeyboardEventArgs eventArgs)
+    {
+        switch (eventArgs.Code)
+        {
+            case "Dw":
+              await this.onDownKey(eventArgs);
+                break;
+            case "Up":
+               await this.onUpKey(eventArgs);
+                break;
+            case "Space":
+                if (!this.overlayVisible)
+                {
+                    this.overlayVisible = true;
+                }
+                break;
+            case "Enter":
+            case "Esc":
+                if (this.overlayVisible)
+                {
+                   await this.hideOverlay();
+                }
+                break;
+            case "Tab":
+                await this.hideOverlay();
+                break;
+            default:
+                await  this.search(eventArgs);
+                break;
+        }
+    }
+    private async Task onFilterKeyDown(KeyboardEventArgs eventArgs)
+    {
+        switch (eventArgs.Code)
+        {
+            case "Dw":
+                await this.onDownKey(eventArgs);
+                break;
+            case "Up":
+                await this.onUpKey(eventArgs);
+                break;
+            case "Enter":
+            case "Esc":
+                if (this.overlayVisible)
+                {
+                    await this.hideOverlay();
+                }
+                break;
+        } 
+    }
+    private async Task onDownKey(KeyboardEventArgs eventArgs)
+    {
+        if (this.visibleOptions.Count>0)
+        {
+            if (!this.overlayVisible && eventArgs.AltKey)
+            {
+                this.overlayVisible = true;
+            }
+            else
+            {
+                TItem? nextOption = this.findNextOption(this.getSelectedOptionIndex());
+                if (nextOption != null)
+                {
+                    await this.updateModel(eventArgs, (TItem)this.getOptionValue(nextOption));
+                }
+            }
+        }
+    }
+    private async Task onUpKey(KeyboardEventArgs eventArgs)
+    {
+        if (this.visibleOptions.Count > 0)
+        {
+            TItem? prevOption = this.findPrevOption(this.getSelectedOptionIndex());
+            if (prevOption != null)
+            {
+                await this.updateModel(eventArgs, (TItem)this.getOptionValue(prevOption));
+            }
+        }
+    }
+    private TItem? findNextOption(int index)
+    {
+        int i = index + 1;
+        if (i == this.visibleOptions.Count)
+        {
+            return default(TItem);
+        }
+        TItem option = this.visibleOptions[i];
+        if (this.isOptionDisabled(option))
+            return this.findNextOption(i);
+        else
+            return option;
+    }
+    private TItem? findPrevOption(int index)
+    {
+        int i = index - 1;
+        if (i < 0)
+        {
+            return default(TItem);
+        }
+        TItem option = this.visibleOptions[i];
+        if (this.isOptionDisabled(option))
+            return this.findPrevOption(i);
+        else
+            return option;
+    }
+    private async Task onLabelClick()
+    {
+        if (!this.overlayVisible)
+        {
+            this.overlayVisible = true;
+        }
+        await this.focusInput.FocusAsync();
+    }
+    private async Task onDropdownClick()
+    {
+        if (!this.overlayVisible)
+        {
+            this.overlayVisible = true;
+        }
+        await this.focusInput.FocusAsync();
+    }
+    private async Task onOptionSelect(MouseEventArgs eventArgs,TItem option)
+    {
+        object value = this.getOptionValue(option);
+        await this.updateModel(eventArgs, (TItem)value);
+        SetTimer(async () =>
+        {
+            await this.hideOverlay();
+        },100);
+    }
+    private void SetTimer(Action action,int delay)
+    {
+        timer = new Timer(_ =>
+        {
+            action();
+            timer?.Dispose();
+        }, null, delay, Timeout.Infinite);
+    }
+    private async Task onEditableInput(ChangeEventArgs eventArgs)
+    {
+        await valueChanged.InvokeAsync((TItem)(object)this.editableInputValue);
+    }
+    private async Task onOverlayEnter()
+    {
+        await this.alignOverlay();
+        await this.bindOutsideClickListener();
+    }
+    private async Task alignOverlay()
+    {
+        await JS.InvokeVoidAsync("DomHandler.relativePosition",overlay,container);
+    }
+    private async Task clear(MouseEventArgs eventArgs)
+    {
+        await this.updateModel(eventArgs, default(TItem));
+    }
+    private async Task updateModel(EventArgs eventArgs,TItem? value)
+    {
+        await valueChanged.InvokeAsync(value);
+        await change.InvokeAsync(value);
+    }
+    private async Task bindOutsideClickListener()
+    {
+        await module.InvokeVoidAsync("bindOutsideClickListener", Id, overlay, dotNetHelper);
+    }
+    private async Task unbindOutsideClickListener()
+    {
+        await module.InvokeVoidAsync("unbindOutsideClickListener", Id);
+    }
+    [JSInvokable]
+    public async Task hideOverlay()
+    {
+        this.overlayVisible = false;
+        await this.unbindOutsideClickListener();
+    }
+    private async Task search(KeyboardEventArgs eventArgs)
+    {
+        if (this.visibleOptions.Count == 0)
+        {
+            return;
+        }
+        if (this.searchTimeout!=null)
+        {
+            this.searchTimeout.Dispose();
+        }
+        string _char = eventArgs.Key;
+        this.previousSearchChar = this.currentSearchChar;
+        this.currentSearchChar = _char;
+        if (this.previousSearchChar.Equals(this.currentSearchChar))
+            this.searchValue = this.currentSearchChar;
+        else
+            this.searchValue = !string.IsNullOrWhiteSpace(this.searchValue) ? this.searchValue + _char : _char;
+        int searchIndex = this.getSelectedOptionIndex();
+        TItem? newOption = this.searchOption(++searchIndex);
+        if (newOption != null)
+        {
+            await this.updateModel(eventArgs, (TItem)this.getOptionValue(newOption));
+        }
+        SetSearchTimeout(() =>
+        {
+            this.searchValue = null;
+        },250);
+    }
+    private void SetSearchTimeout(Action action,int delay)
+    {
+        searchTimeout = new Timer(_ =>
+        {
+            action();
+            searchTimeout?.Dispose();
+        }, null, delay, Timeout.Infinite);
+    }
+    private TItem? searchOption(int index)
+    {
+        TItem? option = default(TItem);
+        if (!string.IsNullOrWhiteSpace(this.searchValue))
+        {
+            option = this.searchOptionInRange(index, this.visibleOptions.Count);
+            if (option == null)
+            {
+                option = this.searchOptionInRange(0, index);
+            }
+        }
+        return option;
+    }
+    private TItem? searchOptionInRange(int start,int end)
+    {
+        for(int i = start; i < end; i++)
+        {
+            TItem opt = this.visibleOptions[i];
+            string label = this.getOptionLabel(opt).ToLower();
+            if (label.StartsWith(this.searchValue.ToLower()))
+            {
+                return opt;
+            }
+        }
+        return default(TItem);
+    }
+}
