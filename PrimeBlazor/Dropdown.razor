@@ -2,14 +2,14 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 <div @ref="container" class="@containerClass">
-    @* <div class="p-hidden-accessible">
-        <select required="@required" aria-hidden="true" tabindex="-1">
+    <div class="p-hidden-accessible">
+        <select aria-hidden="true" tabindex="-1">
             @foreach(TItem option in visibleOptions)
             {
                 <option @key="getOptionLabel(option)" value="@getOptionValue(option)">@getOptionLabel(option)</option>
             }
         </select>
-    </div> *@
+    </div>
     <div class="p-hidden-accessible">
         <input @ref="focusInput" type="text" role="listbox" readonly disabled="@disabled" @onfocus="onFocus" @onblur="onBlur" @onkeydown="async(e)=>await onKeyDown(e)" tabindex="@tabindex" />
     </div>
@@ -76,7 +76,6 @@
     [Parameter] public string? optionValue { get; set; } = null;
     [Parameter] public string? optionDisabled { get; set; } = null;
     [Parameter] public bool disabled { get; set; }
-    [Parameter] public bool required{ get; set; }
     [Parameter] public int tabindex{ get; set; }
     [Parameter] public bool editable{ get; set; }
     [Parameter] public string? placeholder{ get; set; }
