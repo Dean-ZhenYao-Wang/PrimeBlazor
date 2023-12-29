@@ -1,0 +1,26 @@
+﻿@page "/fullcalendar"
+@inject Service.EventService eventService
+<div>
+    <div class="content-section introduction">
+        <div class="feature-intro">
+            <h1>FullCalendar</h1>
+            <p>An event calendar based on the <a href="https://fullcalendar.io/">FullCalendar</a> library.</p>
+        </div>
+    </div>
+
+    <div class="content-section implementation">
+        <FullCalendar events="events" />
+    </div>
+</div>
+
+@code {
+    private List<Models.Event>? events = null;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            events = await eventService.getEvents();
+            StateHasChanged();
+        }
+    }
+}

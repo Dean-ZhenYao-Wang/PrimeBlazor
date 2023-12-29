@@ -1,0 +1,31 @@
+﻿@typeparam TItem
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div @ref="container"></div>
+
+@code {
+    private ElementReference container;
+    [Parameter] public List<TItem>? events{ get; set; }
+    [Parameter] public object? options{ get; set; }
+    private string Id = Guid.NewGuid().ToString();
+    private IJSObjectReference module;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/FullCalendar.razor.js");
+            await module.InvokeVoidAsync("mounted", Id, container, options, events);
+        }
+        else
+        {
+            await module.InvokeVoidAsync("events", Id, this.events);
+            await module.InvokeVoidAsync("updated", Id, container, options, events);
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await module.InvokeVoidAsync("beforeDestroy", Id);
+        if (module is not null)
+            await module.DisposeAsync();
+    }
+}
