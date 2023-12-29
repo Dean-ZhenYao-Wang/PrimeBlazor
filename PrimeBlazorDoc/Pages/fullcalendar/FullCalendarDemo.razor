@@ -9,12 +9,23 @@
     </div>
 
     <div class="content-section implementation">
-        <FullCalendar events="events" />
+        <FullCalendar events="events" options="options"/>
     </div>
 </div>
 
 @code {
     private List<Models.Event>? events = null;
+    private object options = new
+    {
+        defaultDate="2024-01-01",
+        header = new
+        {
+            left="prev,next",
+            center="title",
+            right="month,agendaWeek,agendaDay"
+        },
+        editable=true
+    };
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
