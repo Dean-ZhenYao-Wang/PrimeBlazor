@@ -1,9 +1,9 @@
 ﻿var outsideClickListener = [];
-export function bindOutsideClickListener(id,overlayVisible,overlay,dotNetHelper) {
+export function bindOutsideClickListener(id, overlayVisible, overlay, dotNetHelper) {
     if (!outsideClickListener.some(o => o.id === id)) {
-        let outsideClick =async (event) => {
-            if (overlayVisible&&overlay && !overlay.contains(event.target)) {
-                await dotNetHelper.invokeMethodAsync('setOverlayVisible',false);
+        let outsideClick = async (event) => {
+            if (overlayVisible && overlay && !overlay.contains(event.target)) {
+                await dotNetHelper.invokeMethodAsync('setOverlayVisible', false);
             }
         }
         outsideClickListener.push({ id: id, o: outsideClick })

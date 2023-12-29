@@ -12,7 +12,7 @@
         <Slider @bind-model="value1" />
 
         <h3>Input: @value2</h3>
-        <Inputtext @bind-value="value2_str" type="number" changed="value2_strChanged" />
+        <Inputtext @bind-model="value2_str" type="number" changed="value2_strChanged" />
         <Slider @bind-model="value2" change="value2Changed" />
 
         <h3>Step: @value3</h3>

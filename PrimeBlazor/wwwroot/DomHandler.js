@@ -560,11 +560,25 @@
     static getOffsetHeight(element) {
         return element.offsetHeight;
     }
-    static gethasClass(event, className) {
-        return hasClass(event.target, className);
+    static getEventTarget(event) {
+        return document.elementFromPoint(event.clientX, event.clientY);
+    }
+    static getEventTargetHasClass(event, className) {
+        let target = this.getEventTarget(event);
+        return this.hasClass(target, className);
     }
     static getEventTargetNodeName(event) {
-        return event.target.nodeName;
+        let target = this.getEventTarget(event);
+        return target.nodeName;
+    }
+    static elementContainsTargetElement(element, event) {
+        if (!element || element.__internalId == null)
+            return false;
+        let targetElement = this.getEventTarget(event);
+        return element.contains(targetElement);
+    }
+    static nextElementSibling(element) {
+        return element.nextElementSibling;
     }
 }
 window.DomHandler = DomHandler;

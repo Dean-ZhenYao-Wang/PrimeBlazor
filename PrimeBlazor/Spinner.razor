@@ -165,7 +165,7 @@
     }
    private async Task onButtonKeyDown(KeyboardEventArgs eventArgs,int direction)
    {
-      if (eventArgs.Code.Equals("Space")  || eventArgs.Code.Equals("Enter"))
+      if (eventArgs.Key.Equals("")  || eventArgs.Key.Equals("Enter"))
       {
          await this.repeat(null, direction);
       }

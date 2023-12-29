@@ -1,7 +1,7 @@
 ﻿@typeparam TItem
 @implements IAsyncDisposable
 @inject IJSRuntime JS
-<div @ref="container" class="@containerClass">
+<div @ref="container" class="@containerClass" @onclick="onClick">
     <div class="p-hidden-accessible">
         <select aria-hidden="true" tabindex="-1">
             @foreach(TItem option in visibleOptions)
@@ -19,16 +19,16 @@
     }
     else
     {
-        <label class="@labelClass" @onclick="async(e)=>await onLabelClick()">@label</label>
+        <label class="@labelClass">@label</label>
     }
     @if (showClear&&value is not null)
     {
-        <i class="p-dropdown-clear-icon pi pi-times" @onclick="async(e)=>await clear(e)"></i>
+        <i class="p-dropdown-clear-icon pi pi-times" @onclick="async(e)=>await onClearClick(e)"></i>
     }
-    <div class="p-dropdown-trigger" @onclick="async(e)=>await onDropdownClick()">
+    <div class="p-dropdown-trigger">
         <span class="p-dropdown-trigger-icon pi pi-chevron-down p-clickable"></span>
     </div>
-    <transition name="p-input-overlay" @ondragenter="async()=>await onOverlayEnter()">
+    <transition name="p-input-overlay" @ondragenter="async()=>await onOverlayEnter()" @ondragleave="async()=>await onOverlayLeave()">
         @if (overlayVisible)
         {
             <div @ref="overlay" class="p-dropdown-panel">
@@ -177,7 +177,8 @@
     {
         if (module is not null)
             await module.DisposeAsync();
-       await this.unbindOutsideClickListener();
+        await this.unbindOutsideClickListener();
+        dotNetHelper?.Dispose();
     }
 
 
@@ -250,29 +251,29 @@
     }
     private async Task onKeyDown(KeyboardEventArgs eventArgs)
     {
-        switch (eventArgs.Code)
+        switch (eventArgs.Key)
         {
-            case "Dw":
-              await this.onDownKey(eventArgs);
+            case "ArrowDw":
+                await this.onDownKey(eventArgs);
                 break;
-            case "Up":
-               await this.onUpKey(eventArgs);
+            case "ArrowUp":
+                await this.onUpKey(eventArgs);
                 break;
-            case "Space":
+            case "":
                 if (!this.overlayVisible)
                 {
                     this.overlayVisible = true;
                 }
                 break;
             case "Enter":
-            case "Esc":
+            case "Escape":
                 if (this.overlayVisible)
                 {
-                   await this.hideOverlay();
+                    this.overlayVisible = true;
                 }
                 break;
             case "Tab":
-                await this.hideOverlay();
+                this.overlayVisible = true;
                 break;
             default:
                 await  this.search(eventArgs);
@@ -281,19 +282,19 @@
     }
     private async Task onFilterKeyDown(KeyboardEventArgs eventArgs)
     {
-        switch (eventArgs.Code)
+        switch (eventArgs.Key)
         {
-            case "Dw":
+            case "ArrowDw":
                 await this.onDownKey(eventArgs);
                 break;
-            case "Up":
+            case "ArrowUp":
                 await this.onUpKey(eventArgs);
                 break;
             case "Enter":
-            case "Esc":
+            case "Escape":
                 if (this.overlayVisible)
                 {
-                    await this.hideOverlay();
+                    this.overlayVisible = false;
                 }
                 break;
         } 
@@ -353,29 +354,30 @@
         else
             return option;
     }
-    private async Task onLabelClick()
+    private async Task onClearClick(MouseEventArgs eventArgs)
     {
-        if (!this.overlayVisible)
-        {
-            this.overlayVisible = true;
-        }
-        await this.focusInput.FocusAsync();
+        this.updateModel(eventArgs,default(TItem));
     }
-    private async Task onDropdownClick()
+    private async Task onClick(MouseEventArgs eventArgs)
     {
-        if (!this.overlayVisible)
+        bool hasClass =await JS.InvokeAsync<bool>("DomHandler.getEventTargetHasClass",eventArgs,"p-dropdown-clear-icon");
+        if (hasClass)
         {
-            this.overlayVisible = true;
+            return;
+        }else if(!await JS.InvokeAsync<bool>("DomHandler.elementContainsTargetElement", overlay, eventArgs))
+        {
+            this.overlayVisible = !this.overlayVisible;
+            await focusInput.FocusAsync();
         }
-        await this.focusInput.FocusAsync();
     }
     private async Task onOptionSelect(MouseEventArgs eventArgs,TItem option)
     {
         object value = this.getOptionValue(option);
         await this.updateModel(eventArgs, (TItem)value);
-        SetTimer(async () =>
+        await focusInput.FocusAsync();
+        SetTimer(() =>
         {
-            await this.hideOverlay();
+            this.overlayVisible = false;
         },100);
     }
     private void SetTimer(Action action,int delay)
@@ -390,6 +392,10 @@
     {
         await valueChanged.InvokeAsync((TItem)(object)this.editableInputValue);
     }
+    private async Task onOverlayLeave()
+    {
+        await this.unbindOutsideClickListener();
+    }
     private async Task onOverlayEnter()
     {
         await this.alignOverlay();
@@ -398,10 +404,6 @@
     private async Task alignOverlay()
     {
         await JS.InvokeVoidAsync("DomHandler.relativePosition",overlay,container);
-    }
-    private async Task clear(MouseEventArgs eventArgs)
-    {
-        await this.updateModel(eventArgs, default(TItem));
     }
     private async Task updateModel(EventArgs eventArgs,TItem? value)
     {
@@ -412,15 +414,14 @@
     {
         await module.InvokeVoidAsync("bindOutsideClickListener", Id, overlay, dotNetHelper);
     }
+    [JSInvokable]
+    public async Task setOverlayVisible(bool val)
+    {
+        this.overlayVisible = val;
+    }
     private async Task unbindOutsideClickListener()
     {
         await module.InvokeVoidAsync("unbindOutsideClickListener", Id);
-    }
-    [JSInvokable]
-    public async Task hideOverlay()
-    {
-        this.overlayVisible = false;
-        await this.unbindOutsideClickListener();
     }
     private async Task search(KeyboardEventArgs eventArgs)
     {

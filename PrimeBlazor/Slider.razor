@@ -320,30 +320,30 @@
     private async Task onHandleKeyDown(KeyboardEventArgs eventArgs,int index) {
         this.handleIndex = index;
 
-        switch (eventArgs.Code) {
+        switch (eventArgs.Key) {
             //down
-            case "Dw":
+            case "ArrowDw":
                 if (this.vertical) {
                     await this.decrementValue(eventArgs, index);
                 }
                 break;
 
             //up
-            case "Up":
+            case "ArrowUp":
                 if (this.vertical) {
                     await this.incrementValue(eventArgs, index);
                 }
                 break;
 
             //left
-            case "Left":
+            case "ArrowLeft":
                 if (this.horizontal) {
                     await this.decrementValue(eventArgs, index);
                 }
                 break;
 
             //right
-            case "Right":
+            case "ArrowRight":
                 if (this.horizontal) {
                     await this.incrementValue(eventArgs, index);
                 }
