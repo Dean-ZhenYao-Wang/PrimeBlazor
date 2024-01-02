@@ -98,6 +98,11 @@
         return ++this.zindex;
     }
 
+    static elementGenerateZIndex(element) {
+        element.zindex = element.zindex || 999;
+        return ++element.zindex;
+    }
+
     static getCurrentZIndex() {
         return this.zindex;
     }
@@ -585,6 +590,9 @@
             return true;
         else
             return false;
+    }
+    static setElementZIndex(element,index) {
+        element.style.zIndex=index
     }
 }
 window.DomHandler = DomHandler;

@@ -1,0 +1,129 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<transition name="p-dialog" @onmouseenter="onEnter" @onmouseleave="onLeave" @ref="transition">
+    @if (visible)
+    {
+        <div @ref="container" class="@containerClass" style="@style">
+            @if (showHeader)
+            {
+                <div class="p-dialog-titlebar">
+                    @if(header is not null){
+                        @header
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrWhiteSpace(headerStr))
+                        {
+                        <span class="p-panel-title">@headerStr</span>                    
+                        }
+                    }
+                    <div class="p-dialog-titlebar-icons">
+                        <button class="p-dialog-titlebar-icon p-dialog-titlebar-close p-link" @onclick="async(e)=>await close(e)" v-if="closable">
+                            <span class="p-dialog-titlebar-close-icon pi pi-times"></span>
+                        </button>
+                    </div>
+                </div>
+            }
+            <div class="p-dialog-content" style="@(contentStyle)">
+                @body
+            </div>
+            <div class="p-dialog-footer">
+                @if(footer is not null)
+                {
+                    @footer
+                }
+                else
+                {
+                    @footerStr
+                }
+            </div>        
+        </div>
+    }
+</transition>
+
+@code {
+    [Parameter] public string? style{ get; set; }
+    [Parameter] public bool visible { get; set; }
+    [Parameter] public EventCallback<bool> visibleChanged{ get; set; }
+    [Parameter] public string headerStr { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? header{ get; set; }
+    [Parameter] public RenderFragment? footer { get; set; }
+    [Parameter] public string footerStr { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? body{ get; set; }
+    [Parameter] public bool modal { get; set; }
+    [Parameter] public bool rtl { get; set; }
+    [Parameter] public string? contentStyle { get; set; }
+    [Parameter] public bool closable { get; set; } = true;
+    [Parameter] public bool showHeader { get; set; } = true;
+    [Parameter] public int baseZIndex { get; set; } = 0;
+    [Parameter] public bool autoZIndex { get; set; } = true;
+    [Parameter] public EventCallback<bool> visibleUpdate { get; set; }
+    private IJSObjectReference module;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/Dialog.razor.js");
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+            await module.DisposeAsync();
+    }
+
+    private async Task close(MouseEventArgs mouseEvent)
+    {
+        await visibleChanged.InvokeAsync(false);
+    }
+    [Parameter] public EventCallback show{ get; set; }
+    private ElementReference transition;
+    private async Task onEnter()
+    {
+        await show.InvokeAsync();
+        if (this.autoZIndex)
+        {
+            int tIndex = await JS.InvokeAsync<int>("DomHandler.elementGenerateZIndex", transition);
+            await JS.InvokeVoidAsync("DomHandler.setElementZIndex",this.container, (this.baseZIndex + tIndex));
+        }
+        await this.focus();
+        if (this.modal)
+        {
+            await this.enableModality();
+        }
+    }
+    [Parameter] public EventCallback hide{ get; set; }
+    private async Task onLeave()
+    {
+        await hide.InvokeAsync();
+        if (this.modal)
+        {
+            await this.disableModality();
+        }
+    }
+
+    private ElementReference container;
+    private async Task focus()
+    {
+        await module.InvokeVoidAsync("focus",this.container);
+    }
+    [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
+    private async Task enableModality()
+    {
+        await module.InvokeVoidAsync("enableModality", this.Id,this.container);
+    }
+    private async Task disableModality()
+    {
+        await module.InvokeVoidAsync("disableModality", this.Id);
+    }
+    private string containerClass
+    {
+        get
+        {
+            string str = "p-dialog p-component";
+            if (this.rtl)
+                str += " p-dialog-rtl";
+            return str;
+        }
+    }
+}
