@@ -580,5 +580,11 @@
     static nextElementSibling(element) {
         return element.nextElementSibling;
     }
+    static elementIsNull(element) {
+        if (!element || element.__internalId == null)
+            return true;
+        else
+            return false;
+    }
 }
 window.DomHandler = DomHandler;
