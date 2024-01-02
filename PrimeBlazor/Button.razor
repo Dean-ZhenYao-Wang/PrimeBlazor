@@ -1,9 +1,11 @@
-﻿<button class="@buttonClass" style="@style" @onclick="onclick">
+﻿<button class="@buttonClass" style="@style" @onclick="onclick" @ref=refButton>
     <span v-if="icon" class="@iconClass"></span>
     <span class="p-button-text p-c"> @(string.IsNullOrWhiteSpace(this.label) ? "p-btn" : this.label)</span>
 </button>
 
 @code {
+    private ElementReference refButton{ get; set; }
+    [Parameter] public ElementReference? refElement{ get; set; }
     [Parameter] public string label { get; set; } = string.Empty;
     [Parameter] public string icon { get; set; } = string.Empty;
     [Parameter] public string iconPos { get; set; } = "left";
@@ -59,5 +61,10 @@
             }
             return icon_class;
         }
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if(refElement is not null)
+            refElement = this.refButton;
     }
 }

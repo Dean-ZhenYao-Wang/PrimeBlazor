@@ -1,0 +1,35 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<div class="p-chart">
+    <canvas id="@Id" @ref="canvas" width="@width" height="@height"></canvas>
+</div>
+
+@code {
+    private string Id = Guid.NewGuid().ToString();
+    private ElementReference canvas;
+    [Parameter] public string type{ get; set; }
+    [Parameter] public object? data{ get; set; }
+    [Parameter] public object? options{ get; set; }
+    [Parameter] public int width { get; set; }
+    [Parameter] public int height{ get; set; }
+
+    private IJSObjectReference module;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/Chart.razor.js");
+            await module.InvokeVoidAsync("mounted", Id, canvas,type,data,options);
+        }
+        else
+        {
+            await module.InvokeVoidAsync("reinit", Id, canvas, type, data, options);
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await module.InvokeVoidAsync("beforeDestroy", Id);
+        if (module is not null)
+            await module.DisposeAsync();
+    }
+}

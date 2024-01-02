@@ -1,0 +1,120 @@
+﻿@page "/inputgroup"
+<div>
+    <div class="content-section introduction">
+        <div class="feature-intro">
+            <h1>InputGroup</h1>
+            <p>Text, icon, buttons and other content can be grouped next to an input.</p>
+        </div>
+    </div>
+
+    <div class="content-section implementation">
+        <h3 class="first">Addons</h3>
+        <div class="p-grid p-fluid">
+            <div class="p-col-12 p-md-4">
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">
+                        <i class="pi pi-user"></i>
+                    </span>
+                    <Inputtext placeholder="Username" />
+                </div>
+            </div>
+
+            <div class="p-col-12 p-md-4">
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">$</span>
+                    <Inputtext placeholder="Price" />
+                    <span class="p-inputgroup-addon">.00</span>
+                </div>
+            </div>
+
+            <div class="p-col-12 p-md-4">
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">W</span>
+                    <Inputtext placeholder="Website" />
+                </div>
+            </div>
+        </div>
+
+        <h3>Multiple Addons</h3>
+        <div class="p-grid">
+            <div class="p-col-12">
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">
+                        <i class="pi pi-clock"></i>
+                    </span>
+                    <span class="p-inputgroup-addon">
+                        <i class="pi pi-star"></i>
+                    </span>
+                    <Inputtext placeholder="Price" />
+                    <span class="p-inputgroup-addon">$</span>
+                    <span class="p-inputgroup-addon">.00</span>
+                </div>
+            </div>
+        </div>
+
+        <h3>Button Addons</h3>
+        <div class="p-grid p-fluid">
+            <div class="p-col-12 p-md-4">
+                <div class="p-inputgroup">
+                    <Button label="Search" />
+                    <Inputtext placeholder="Keyword" />
+                </div>
+            </div>
+
+            <div class="p-col-12 p-md-4">
+                <div class="p-inputgroup">
+                    <Inputtext placeholder="Keyword" />
+                    <Button icon="pi pi-search" CssClass="p-button-warning" />
+                </div>
+            </div>
+
+            <div class="p-col-12 p-md-4">
+                <div class="p-inputgroup">
+                    <Button icon="pi pi-check" CssClass="p-button-success" />
+                    <Inputtext placeholder="Vote" />
+                    <Button icon="pi pi-times" CssClass="p-button-danger" />
+                </div>
+            </div>
+        </div>
+
+        <h3>Checkbox and RadioButton</h3>
+        <div class="p-grid p-fluid">
+            <div class="p-col-12 p-md-4">
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">
+                        <Checkbox @bind-value="checked1" />
+                    </span>
+                    <Inputtext placeholder="Username" />
+                </div>
+            </div>
+
+            <div class="p-col-12 p-md-4">
+                <div class="p-inputgroup">
+                    <Inputtext placeholder="Price" />
+                    <span class="p-inputgroup-addon">
+                        <RadioButton name="rb1" value='"rb1"' @bind-model="radioValue1" />
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-col-12 p-md-4">
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon">
+                        <Checkbox @bind-value="checked2" />
+                    </span>
+                    <Inputtext placeholder="Website" />
+                    <span class="p-inputgroup-addon">
+                        <RadioButton name="rb2" value='"rb2"' @bind-model="radioValue2" />
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool checked1 = false;
+    private bool checked2 = false;
+    private string radioValue1 = "";
+    private string radioValue2 = "";
+}

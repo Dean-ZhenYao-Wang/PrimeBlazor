@@ -1,4 +1,4 @@
-﻿<input type="@type" class="@css @CssClass" id="@Id" disabled="@disabled" value="@value" @oninput="(async(e)=>await onInputEvent(e))" />
+﻿<input type="@type" class="@css @CssClass" id="@Id" disabled="@disabled" value="@value" @oninput="(async(e)=>await onInputEvent(e))" placeholder="@placeholder" />
 @code {
     [Parameter] public string type { get; set; } = "text";
     [Parameter]
@@ -14,6 +14,8 @@
     [Parameter]
     public EventCallback<string> modelChanged { get; set; }
     [Parameter]public EventCallback<string>changed{ get; set; }
+    [Parameter]
+    public string placeholder { get; set; } = string.Empty;
     private async Task onInputEvent(ChangeEventArgs eventArgs)
     {
         await modelChanged.InvokeAsync(eventArgs.Value?.ToString());

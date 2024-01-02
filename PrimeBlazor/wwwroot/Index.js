@@ -7,6 +7,7 @@ window.dayGridPlugin = dayGridPlugin;
 window.timeGridPlugin = timeGridPlugin;
 window.listPlugin = listPlugin;
 window.Calendar = Calendar;
+
 window.bodyEventListener = {
     eventHandlers: {},
     register(eventName, dotNetRef) {

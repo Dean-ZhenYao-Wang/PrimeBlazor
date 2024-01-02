@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="aritxhy5.dol~" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="wwwroot\.babelrc" />
     <None Include="wwwroot\webpack.config.js" />
   </ItemGroup>
@@ -19,9 +23,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
   </ItemGroup>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="cd wwwroot&#xD;&#xA;npx webpack&#xD;&#xA;cd ../" />
-  </Target>
 
 </Project>

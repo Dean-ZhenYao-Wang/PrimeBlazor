@@ -1,0 +1,59 @@
+﻿@page "/chart/combo"
+<div>
+    <div class="content-section introduction">
+        <div class="feature-intro">
+            <h1>Combo Chart</h1>
+            <p>Different chart types can be combined in the same graph.</p>
+        </div>
+    </div>
+
+    <div class="content-section implementation">
+        <Chart type="bar" data="chartData" options="chartOptions" />
+    </div>
+</div>
+
+@code {
+    private object chartData = new
+    {
+        labels = new string[] { "January", "February", "March", "April", "May", "June", "July" },
+        datasets = new object[]
+            {
+                new {
+                     type = "line",
+                     label = "Dataset 1",
+                     borderColor = "#AA5493",
+                     borderWidth = 2,
+                     fill = false,
+                     data = new int[] { 50, 25, 12, 48, 56, 76, 42 }
+                },
+                new {
+                     type = "bar",
+                     label = "Dataset 2",
+                     backgroundColor = "#2f4860",
+                     data = new int[] { 21, 84, 24, 75, 37, 65, 34 },
+                     borderColor = "white",
+                     borderWidth = 2
+                },
+                new {
+                     type = "bar",
+                     label = "Dataset 3",
+                     backgroundColor = "#00bb7e",
+                     data = new int[] {  41, 52, 24, 74, 23, 21, 32}
+                }
+            }
+    };
+    private object chartOptions = new
+    {
+        responsive = true,
+        title = new
+        {
+            display = true,
+            text = "Combo Bar Line Chart"
+        },
+        tooltips = new
+        {
+            mode = "index",
+            intersect = true
+        }
+    };
+}

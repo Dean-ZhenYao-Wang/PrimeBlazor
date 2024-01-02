@@ -19,7 +19,7 @@
     [Parameter] public bool autofocus { get; set; }
     [Parameter] public string autocomplete { get; set; } = string.Empty;
     [Parameter] public bool disabled { get; set; }
-    [Parameter] public EventCallback<ICollection<TItem>?> input { get; set; }
+    [Parameter] public EventCallback<TItem?> valueChanged { get; set; }
     [Parameter] public EventCallback<MouseEventArgs> click { get; set; }
     [Parameter] public EventCallback<MouseEventArgs> change{ get; set; }
     [Parameter] public EventCallback<FocusEventArgs> focus{ get; set; }
@@ -44,7 +44,7 @@
                 newModelValue = this.model != null && this.model.Count() > 0 ? this.model.Append(this.value).ToList() :new List<TItem>(){this.value};
 
             await click.InvokeAsync(mouseEvent);
-            await input.InvokeAsync(newModelValue);
+            await valueChanged.InvokeAsync(newModelValue[0]);
             await modelChanged.InvokeAsync(newModelValue);
             await change.InvokeAsync(mouseEvent);
             await JS.InvokeVoidAsync("DomHandler.elementFocus", inputElement);
