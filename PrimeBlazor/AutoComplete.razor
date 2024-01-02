@@ -1,0 +1,279 @@
+﻿@typeparam TItem
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+<span class="@containerClass">
+    <input @ref="inputRef" 
+        @oninput="async(e)=>await input(e)" 
+        @onfocus="async(e)=>await focusEvent(e)"
+        @onblur="async(e)=>await blurEvent(e)"
+        class="@inputClass" value="@inputValue" type="text" autoComplete="off">
+    <i className="p-autocomplete-loader pi pi-spinner pi-spin" style="display:@(this.searching?"none":"block");"></i>
+    <transition name="p-input-overlay" @onmouseenter="async()=>await onOverlayEnter()" @onmouseleave="async()=>await onOverlayLeave()">
+    @if(this.overlayVisible)
+        {
+            <div @ref="overlay" class="p-autocomplete-panel" style="max-height:@(this.scrollHeight);">
+                <ul class="p-autocomplete-items p-autocomplete-list p-component">
+               @foreach (var item in suggestions)
+               {
+                   int i = suggestions.IndexOf(item);
+                    <li class="p-autocomplete-list-item" @key="i" @onclick="async(e)=>await onItemClick(e, item)">
+                            @if(ChildContent is not null)
+                            {
+                                @ChildContent(item)
+                            }
+                            else
+                            {
+                                @(getItemContent(item))
+                            }
+                    </li>
+               }
+            </ul>
+        </div>
+    }
+    </transition>
+</span>
+@code {
+    [Parameter] public RenderFragment<TItem>? ChildContent{ get; set; }
+    [Parameter] public TItem? model { get; set; }
+    [Parameter] public EventCallback<TItem?> modelChanged{ get; set; }
+    [Parameter] public List<TItem> suggestions { get; set; } = new List<TItem>();
+    [Parameter]
+    public bool dropdown{ get; set; }
+    [Parameter]
+    public bool multiple{ get; set; }
+    [Parameter]
+    public bool disabled{ get; set; }
+    [Parameter]
+    public string? field{ get; set; }
+    [Parameter]
+    public string scrollHeight { get; set; } = "200px";
+    [Parameter]
+    public int minLength { get; set; } = 1;
+    [Parameter]
+    public int delay { get; set; } = 300;
+    private bool searching = false;
+    private bool focused = false;
+    private bool filled = false;
+    private bool overlayVisible = false;
+    private IJSObjectReference module;
+    private DotNetObjectReference<AutoComplete<TItem>> dotNetHelper;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/AutoComplete.razor.js");
+
+        }
+        else
+        {
+            if (this.searching)
+            {
+                if (this.suggestions.Count > 0)
+                {
+                    this.showOverlay();
+                }
+                else
+                {
+                    this.hideOverlay();
+                }
+            }
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+            await module.DisposeAsync();
+        await this.unbindOutsideClickListener();
+        dotNetHelper?.Dispose();
+    }
+    private async Task onOverlayEnter()
+    {
+        this.alignOverlay();
+        await this.bindOutsideClickListener();
+    }
+    private async Task onOverlayLeave()
+    {
+        await this.unbindOutsideClickListener();
+    }
+    private ElementReference overlay;
+    private ElementReference inputRef;
+    private async void alignOverlay()
+    {
+        await JS.InvokeVoidAsync("DomHandler.relativePosition", this.overlay, this.inputRef);
+    }
+    [Parameter]
+    public string Id{ get; set; } = Guid.NewGuid().ToString();
+    private async Task bindOutsideClickListener()
+    {
+        await module.InvokeVoidAsync("bindOutsideClickListener", this.Id, this.overlayVisible, this.overlay, this.multiple,this.inputRef);
+    }
+    private async Task unbindOutsideClickListener()
+    {
+        await module.InvokeVoidAsync("unbindOutsideClickListener", this.Id);
+    }
+    [Parameter] public EventCallback<object> select{ get; set; }
+    private async Task onItemClick(MouseEventArgs eventArgs,TItem item) 
+    {
+        if (this.multiple) {
+            /*this.inputEl.value = '';
+            if (!this.isSelected(option)) {
+                let newValue = this.props.value ? [...this.props.value, option] : [option];
+                this.updateModel(event, newValue);
+            }*/
+        }
+        else {
+            await modelChanged.InvokeAsync(item);
+        }
+
+        await select.InvokeAsync(item);
+
+        await this.focusevent();
+        this.hideOverlay();
+    }
+    private object getItemContent(object item) 
+    {
+        return !string.IsNullOrWhiteSpace(this.field) ? ObjectUtils.ResolveFieldData(item, this.field) : item;
+    }
+    private void showOverlay()
+    {
+        this.overlayVisible = true;
+    }
+    private void hideOverlay() 
+    {
+        this.overlayVisible = false;
+    }
+    private ElementReference multiInput;
+    private async Task focusevent() 
+    {
+        if (this.multiple) 
+            await this.multiInput.FocusAsync();
+        else
+            await this.inputRef.FocusAsync();
+    }
+    [Parameter]public EventCallback<string> complete{ get; set; }
+    private async Task search(ChangeEventArgs eventArgs,string query,string source)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return;
+        }
+        if (source.Equals("input") && query.Trim().Length == 0)
+        {
+            return;
+        }
+        this.searching = true;
+        await complete.InvokeAsync(query);
+    }
+    [Parameter] public EventCallback clear{ get; set; }
+    private Timer? timer=null;
+    private void SetTimer(Action action,int delay)
+    {
+        timer = new Timer(_ =>
+        {
+            action();
+            timer?.Dispose();
+        }, null, delay, Timeout.Infinite);
+    }
+    private async Task input(ChangeEventArgs eventArgs)
+    {
+        timer?.Dispose();
+
+        string query = (string)eventArgs.Value;
+        if (!this.multiple)
+        {
+            await this.search(eventArgs, query, "input");
+        }
+        if (query.Length == 0)
+        {
+            this.hideOverlay();
+            await this.clear.InvokeAsync();
+        }
+        else
+        {
+            if (query.Length > this.minLength)
+            {
+                SetTimer(async () =>
+                {
+                    await this.search(eventArgs, query, "input");
+                },this.delay);
+            }
+            else
+            {
+                // this.hidePanel();
+            }
+        }
+    }
+    [Parameter]public EventCallback<FocusEventArgs> focus{ get; set; }
+    private async Task focusEvent(FocusEventArgs eventArgs)
+    {
+        this.focused = true;
+        await this.focus.InvokeAsync(eventArgs);
+    }
+    [Parameter]public EventCallback<FocusEventArgs> blur{ get; set; }
+    private async Task blurEvent(FocusEventArgs eventArgs)
+    {
+        this.focused = false;
+        await this.blur.InvokeAsync(eventArgs);
+    }
+    private string containerClass
+    {
+        get
+        {
+            string str = "p-autocomplete p-component";
+            if (this.dropdown)
+            {
+                str += " p-autocomplete-dd";
+            }
+            if (this.multiple)
+            {
+                str += " p-autocomplete-multiple";
+            }
+            if (this.filled)
+            {
+                str += " p-inputwrapper-filled";
+            }
+            if (this.focused)
+            {
+                str += " p-inputwrapper-focus";
+            }
+            return str;
+        }
+    }
+    private string inputClass
+    {
+        get
+        {
+            string str = "p-autocomplete-input p-inputtext p-component";
+            if (this.dropdown)
+            {
+                str += " p-autocomplete-dd-input";
+            }
+            if (this.disabled)
+            {
+                str += " p-disabled";
+            }
+            return str;
+        }
+    }
+    private object inputValue
+    {
+        get
+        {
+            if (this.model != null)
+            {
+                if (!string.IsNullOrWhiteSpace(this.field))
+                {
+                    var resolvedFieldData = ObjectUtils.ResolveFieldData(this.model, this.field);
+                    return resolvedFieldData != null ? resolvedFieldData : this.model;
+                }
+                else
+                    return this.model;
+            }
+            else
+            {
+                return "";
+            }
+        }
+    }
+}
