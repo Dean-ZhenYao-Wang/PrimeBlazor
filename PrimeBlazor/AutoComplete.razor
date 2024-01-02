@@ -163,7 +163,7 @@
     {
         await this.focusevent();
 
-        string query = await module.InvokeAsync<string>("getInputElementValue", this.multiple, this.inputRef, this.inputMultiple);
+        string query = await JS.InvokeAsync<string>("DomHandler.getElementValue",this.inputRef);
         if (this.dropdownMode.Equals("blank"))
         {
             await this.search("", "dropdown");
