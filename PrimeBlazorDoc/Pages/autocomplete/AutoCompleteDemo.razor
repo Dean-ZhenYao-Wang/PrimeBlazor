@@ -10,8 +10,8 @@
 
     <div class="content-section implementation">
         <h3 class="first">Basic</h3>
-        <AutoComplete @bind-model="country" suggestions="filteredCountriesBasic" complete="async(e)=> searchCountryBasic(e)" field="name" />
-        <span style="marginLeft: .5em">Country:@(country==null?"none":country.name)</span>
+        <AutoComplete @bind-model="selectedCountry" suggestions="filteredCountriesBasic" complete="async(e)=>await searchCountryBasic(e)" field="name" />
+        <span style="marginLeft: .5em">Country:@(selectedCountry == null ? "none" : selectedCountry.name)</span>
 
         <h3>Dropdown and Templating</h3>
         <AutoComplete @bind-model="brand" suggestions="filteredBrands" complete="async(e)=>searchBrand(e)" placeholder="Hint: type 'v' or 'f'" dropdown="true">
@@ -22,7 +22,19 @@
                 </div>
             </template>
         </AutoComplete>
-        <span style="marginLeft: .5em">Brand: @(brand==null?"none":brand)</span>
+        <span style="marginLeft: .5em">Brand: @(brand==null?"none":brand) </span>
+
+       @*  <h3>Multiple</h3>
+        <span class="p-fluid">
+        <AutoComplete multiple="true" @bind-model="selectedCountries" suggestions="filteredCountriesMultiple" complete="async(e)=>await searchCountryMultiple(e)" field="name" />
+        </span>
+        <ul>
+        @foreach(var c in selectedCountries)
+        {
+            int i = selectedCountries.IndexOf(c);
+            <li @key="i">@c</li>
+        }
+        </ul> *@
     </div>
 </div>
 <style lang="scss">
@@ -42,8 +54,10 @@
 </style>
 @code {
     private List<Models.Countries>? countries = null;
-    private Models.Countries? country = null;
+    private Models.Countries? selectedCountry = null;
     private List<Models.Countries>? filteredCountriesBasic = null;
+    private List<Models.Countries> selectedCountries = new List<Models.Countries>();
+    private List<Models.Countries>? filteredCountriesMultiple = null;
     private List<string>? brands = null;
     private string? brand = null;
     private List<string>? filteredBrands = null;
@@ -56,10 +70,17 @@
             StateHasChanged();
         }
     }
+    private async Task<List<Models.Countries>> searchCountry(string query)
+    {
+        return this.countries.Where(m => m.name.ToLower().StartsWith(query.ToLower())).ToList();
+    }
     private async Task searchCountryBasic(string query)
     {
-        var results = await this.countryService.getCountries();
-        this.filteredCountriesBasic = results.Where(m => m.name.ToLower().StartsWith(query.ToLower())).ToList();
+        this.filteredCountriesBasic = await this.searchCountry(query);
+    }
+    private async Task searchCountryMultiple(string query)
+    {
+        this.filteredCountriesMultiple =await this.searchCountry(query);
     }
     private async Task searchBrand(string query)
     {
