@@ -34,7 +34,10 @@
     </ul>        
 }
     <i class="p-autocomplete-loader pi pi-spinner pi-spin" style="display:@(this.searching?"none":"block");"></i>
-    <Button ref="dropdownButton" type="button" icon="pi pi-fw pi-chevron-down" class="p-autocomplete-dropdown" :disabled="disabled" @click="onDropdownClick" v-if="dropdown"/>
+    @if (dropdown)
+    {
+        <Button refElement="dropdownButton" icon="pi pi-fw pi-chevron-down" CssClass="p-autocomplete-dropdown" disabled="disabled" onclick="async(e)=>await onDropdownClick(e)"/>
+    }
     <transition name="p-input-overlay" @onmouseenter="async()=>await onOverlayEnter()" @onmouseleave="async()=>await onOverlayLeave()">
     @if(this.overlayVisible)
         {
@@ -43,7 +46,7 @@
                @foreach (var item in suggestions)
                {
                    int i = suggestions.IndexOf(item);
-                    <li class="p-autocomplete-list-item" @key="i" @onclick="async(e)=>await selectItem(e, item)">
+                    <li class="p-autocomplete-list-item" @key="i" @onclick="async()=>await selectItem(item)">
                             @if(template is not null)
                             {
                                 @template(item)
