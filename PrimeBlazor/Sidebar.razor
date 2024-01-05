@@ -1,0 +1,106 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<transition name="p-sidebar" @onmouseenter="onEnter" @onmouseleave="onLeave" @ref="transition">
+    @if (visible)
+    {
+        <div @ref="container" class="@containerClass" style="@style">
+            <button class="p-sidebar-closee p-link" @onclick="async()=>await hideEvent()" v-if="closable">
+                <span class="p-sidebar-close-icon pi pi-times"></span>
+            </button>
+            @ChildContent
+        </div>
+    }
+</transition>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? style { get; set; }
+    [Parameter] public bool visible { get; set; } = false;
+    [Parameter] public EventCallback<bool> visibleChanged { get; set; }
+    [Parameter] public string position { get; set; } = "left";
+    [Parameter] public int baseZIndex { get; set; } = 0;
+    [Parameter] public bool autoZIndex { get; set; } = true;
+    [Parameter] public bool dismissable { get; set; } = true;
+    [Parameter] public bool showCloseIcon { get; set; } = true;
+    [Parameter] public bool modal { get; set; } = true;
+    private IJSObjectReference module;
+    private DotNetObjectReference<Sidebar>? dotNetHelper;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/Sidebar.razor.js");
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await module.InvokeVoidAsync("unbindMaskClickListener",this.Id);
+        if (module is not null)
+            await module.DisposeAsync();
+    }
+    [JSInvokable]
+    public async Task hideEvent()
+    {
+        await visibleChanged.InvokeAsync(false);
+    }
+    [Parameter] public EventCallback show { get; set; }
+    private ElementReference transition;
+    private async Task onEnter()
+    {
+        await show.InvokeAsync();
+        if (this.autoZIndex)
+        {
+            int tIndex = await JS.InvokeAsync<int>("DomHandler.elementGenerateZIndex", transition);
+            await JS.InvokeVoidAsync("DomHandler.setElementZIndex", this.container, (this.baseZIndex + tIndex));
+        }
+        await this.focus();
+        if (this.modal && !this.fullScreen)
+        {
+            await this.enableModality();
+        }
+    }
+    [Parameter] public EventCallback hide { get; set; }
+    private async Task onLeave()
+    {
+        await hide.InvokeAsync();
+        if (this.modal && !this.fullScreen)
+        {
+            await this.disableModality();
+        }
+    }
+
+    private ElementReference container;
+    private async Task focus()
+    {
+        await module.InvokeVoidAsync("focus", this.container);
+    }
+    [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
+    private async Task enableModality()
+    {
+        await module.InvokeVoidAsync("enableModality", this.Id, this.container, this.dismissable, this.dotNetHelper);
+    }
+    private async Task disableModality()
+    {
+        await module.InvokeVoidAsync("disableModality", this.Id);
+    }
+    private string containerClass
+    {
+        get
+        {
+            string str = "p-sidebar p-component p-sidebar-" + this.position;
+            if (this.visible)
+            {
+                str += " p-sidebar-active";
+            }
+            return str;
+        }
+    }
+    private bool fullScreen
+    {
+        get
+        {
+            return this.position.Equals("full");
+        }
+    }
+}
