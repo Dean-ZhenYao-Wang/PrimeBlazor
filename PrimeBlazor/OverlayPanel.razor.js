@@ -1,6 +1,7 @@
 ﻿export default class OverlayPanel {
     constructor() {
-        outsideClickListener = []
+        outsideClickListener = [];
+        resizeListener = [];
     }
     static async toggle(target, componmentId) {
         let thisComponent = document.getElementById(componmentId);
@@ -18,22 +19,20 @@
     static async show(dotNetHelper) {
         await dotNetHelper.invokeMethodAsync('show');
     }
-    static async onEnter(componmentId, appendTo, container, baseZIndex, dismissable) {
+    static async onEnter(componmentId, appendTo, container, baseZIndex) {
         this.appendContainer(appendTo, container);
         let thisComponent = document.getElementById(componmentId);
         this.alignOverlay(container, thisComponent.target);
-        if (dismissable) {
-            let visible = await thisComponent.dotNetHelper.invokeMethodAsync('getVisible')
-            await this.bindOutsideClickListener(componmentId, visible, container, thisComponent);
-        }
+        let visible = await thisComponent.dotNetHelper.invokeMethodAsync('getVisible')
+        await this.bindOutsideClickListener(componmentId, visible, container, thisComponent);
+        this.bindResizeListener(componmentId);
         if (autoZIndex) {
             container.style.zIndex = String(baseZIndex + DomHandler.generateZIndex());
         }
     }
-    static onLeave(componmentId, dismissable) {
-        if (dismissable) {
-            this.unbindOutsideClickListener(componmentId);
-        }
+    static onLeave(componmentId) {
+        this.unbindOutsideClickListener(componmentId);
+        this.unbindResizeListener(componmentId);
     }
     static alignOverlay(container, target) {
         window.DomHandler.absolutePosition(container, target);
@@ -59,6 +58,25 @@
             this.outsideClickListener = this.outsideClickListener.filter(o => o.id !== componmentId);
         }
     }
+    static bindResizeListener(componmentId) {
+        if (!this.resizeListener.some(o => o.id === componmentId)) {
+            let resize = (event) => {
+                console.log('x');
+                if (this.visible) {
+                    this.visible = false;
+                }
+            };
+            this.resizeListener.push({ id: componmentId, resize: resize })
+            window.addEventListener('resize', resize);
+        }
+    }
+    static unbindResizeListener(componmentId) {
+        if (this.resizeListener.some(o => o.id === componmentId)) {
+            let { resize } = this.resizeListener.find(o => o.id === componmentId);
+            window.removeEventListener('resize', resizeListener);
+            this.resizeListener = this.resizeListener.filter(o => o.id !== componmentId);
+        }
+    }
     static isTargetClicked(thisComponent,event) {
         return thisComponent.target && (thisComponent.target === event.target || thisComponent.target.contains(event.target));
     }
@@ -82,6 +100,7 @@
     }
     static beforeDestroy(componmentId, appendTo, container, dismissable) {
         this.restoreAppend(appendTo, container);
+        this.unbindResizeListener(componmentId);
         if (dismissable) {
             this.unbindOutsideClickListener(componmentId);
         }

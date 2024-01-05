@@ -64,11 +64,11 @@
     }
     private async Task onEnter()
     {
-        await JS.InvokeVoidAsync("OverlayPanel.onEnter", this.Id,this.appendTo, this.container, this.baseZIndex,this.dismissable);
+        await JS.InvokeVoidAsync("OverlayPanel.onEnter", this.Id,this.appendTo, this.container, this.baseZIndex);
     }
     private async Task onLeave()
     {
-        await JS.InvokeVoidAsync("OverlayPanel.onLeave", this.Id,this.dismissable);
+        await JS.InvokeVoidAsync("OverlayPanel.onLeave", this.Id);
     }
     private async Task beforeDestory()
     {
