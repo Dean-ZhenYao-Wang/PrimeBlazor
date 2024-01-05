@@ -13,7 +13,7 @@
         }
         @if (toggleable)
         {
-            <a tabindex="0" @onclick="toggle" @onkeydown="toggleKeyDown">
+            <a tabindex="0" @onclick="toggleEvent" @onkeydown="toggleKeyDown">
                 <span class="p-fieldset-toggler pi pi-minus"></span>
                 @if (Legendtemplate is not null)
                 {
@@ -41,21 +41,23 @@
     [Parameter] public bool collapsed { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Legendtemplate { get; set; }
+    [Parameter] public EventCallback<bool> toggle { get; set; }
     private bool d_collapsed;
     public override Task SetParametersAsync(ParameterView parameters)
     {
         parameters.TryGetValue(nameof(collapsed), out d_collapsed);
         return base.SetParametersAsync(parameters);
     }
-    private void toggle()
+    private async void toggleEvent()
     {
         this.d_collapsed = !this.d_collapsed;
+        await toggle.InvokeAsync(this.d_collapsed);
     }
     private void toggleKeyDown(KeyboardEventArgs eventArgs)
     {
         if (eventArgs.Key.Equals("Enter"))
         {
-            this.toggle();
+            this.toggleEvent();
         }
     }
 }

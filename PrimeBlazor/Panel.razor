@@ -10,7 +10,7 @@
         }
         @if (toggleable)
         {
-            <a tabindex="0" class="p-panel-titlebar-icon p-panel-titlebar-toggler" @onclick="toggle" @onkeydown="toggleKeyDown">
+            <a tabindex="0" class="p-panel-titlebar-icon p-panel-titlebar-toggler" @onclick="toggleEvent" @onkeydown="toggleKeyDown">
                 <span class="@(!d_collapsed?"pi pi-minus":"pi pi-plus")"></span>
             </a>
         }
@@ -31,21 +31,23 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Headertemplate { get; set; }
     [Parameter] public string? style { get; set; } = null;
+    [Parameter] public EventCallback<bool> toggle{ get; set; }
     private bool d_collapsed;
     public override Task SetParametersAsync(ParameterView parameters)
     {
         parameters.TryGetValue(nameof(collapsed), out d_collapsed);
         return base.SetParametersAsync(parameters);
     }
-    private void toggle()
+    private async void toggleEvent()
     {
         this.d_collapsed = !this.d_collapsed;
+        await toggle.InvokeAsync(this.d_collapsed);
     }
     private void toggleKeyDown(KeyboardEventArgs eventArgs)
     {
         if (eventArgs.Key.Equals("Enter"))
         {
-            this.toggle();
+            this.toggleEvent();
         }
     }
 }
