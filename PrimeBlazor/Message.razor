@@ -1,0 +1,50 @@
+<div class="@containerClass">
+    <div class="p-messages-wrapper">
+        <span class="@iconClass"></span>
+        <div class="p-messages-text">
+            @ChildContent
+        </div>
+        <button class="p-messages-close p-link">
+            <i class="p-messages-close-icon pi pi-times-circle"></i>
+        </button>
+    </div>
+</div>
+@code {
+    [Parameter] public string summary { get; set; }
+    [Parameter] public string detail { get; set; }
+    [Parameter] public string severity { get; set; } = "info";
+    [Parameter] public bool closable { get; set; } = true;
+    [Parameter] public bool sticky { get; set; } = true;
+    [Parameter] public int life { get; set; } = 3000;
+    [Parameter] public RenderFragment? ChildContent{ get; set; }
+    private string containerClass
+    {
+        get
+        {
+            return "p-messages p-component p-messages-" + this.severity;
+        }
+    }
+    private string iconClass
+    {
+        get
+        {
+            string str = "p-messages-icon pi";
+            switch (this.severity)
+            {
+                case "info":
+                    str += " pi-check";
+                    break;
+                case "success":
+                    str += " pi-info-circle";
+                    break;
+                case "warn":
+                    str += " pi-exclamation-triangle";
+                    break;
+                case "error":
+                    str += " pi-times";
+                    break;
+            }
+            return str;
+        }
+    }
+}
