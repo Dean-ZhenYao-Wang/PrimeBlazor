@@ -60,8 +60,7 @@
     }
     static bindResizeListener(componmentId) {
         if (!this.resizeListener.some(o => o.id === componmentId)) {
-            let resize = (event) => {
-                console.log('x');
+            let resize = () => {
                 if (this.visible) {
                     this.visible = false;
                 }
