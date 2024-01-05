@@ -1,0 +1,27 @@
+﻿@page "/overlaypanel"
+@inject IJSRuntime JS
+<div>
+    <div class="content-section introduction">
+        <div class="feature-intro">
+            <h1>OverlayPanel</h1>
+            <p>OverlayPanel is a container component that can overlay other components on page.</p>
+        </div>
+    </div>
+
+    <div class="content-section implementation">
+        <Button label="Toggle" @ref=button onclick="async()=>await toggle(button)" />
+
+        <OverlayPanel @ref="op">
+            <img src="/demo/images/nature/nature1.jpg" alt="Nature Image">
+        </OverlayPanel>
+    </div>
+</div>
+
+@code {
+    private OverlayPanel? op;
+    private Button? button;
+    private async Task toggle(Button target)
+    {
+        await op.toggle(target.refElement);
+    }
+}

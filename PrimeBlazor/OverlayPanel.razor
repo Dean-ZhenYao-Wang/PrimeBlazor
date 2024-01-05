@@ -1,0 +1,68 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<transition id="@Id" @ref=overlayPanel name="p-overlaypanel" @onmouseenter="onEnter" @onmouseleave="onLeave">
+    @if (visible)
+    {
+        <div class="p-overlaypanel p-component" @ref="container">
+            <div class="p-overlaypanel-content">
+                @ChildContent
+            </div>
+        </div>        
+    }
+</transition>
+@code {
+    [Parameter] public int baseZIndex { get; set; } = 0;
+    [Parameter] public bool autoZIndex { get; set; } = true;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    private bool visible = false;
+    [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
+    private ElementReference overlayPanel;
+    private ElementReference container;
+    private DotNetObjectReference<OverlayPanel>? dotNetHelper;
+    private IJSObjectReference module;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/OverlayPanel.razor.js");
+            await JS.InvokeVoidAsync("assignDotNetHelper", overlayPanel,dotNetHelper);
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await this.beforeDestory();
+        dotNetHelper?.Dispose();
+    }
+    public async Task toggle(ElementReference? target)
+    {
+        await JS.InvokeVoidAsync("OverlayPanel.toggle", target, this.Id);
+    }
+    [JSInvokable]
+    public bool getVisible()
+    {
+        return this.visible;
+    }
+    [JSInvokable]
+    public void hide()
+    {
+        this.visible = false;
+    }
+    [JSInvokable]
+    public void show()
+    {
+        this.visible = true;
+    }
+    private async Task onEnter()
+    {
+        await JS.InvokeVoidAsync("OverlayPanel.onEnter", this.Id, this.container, this.baseZIndex);
+    }
+    private async Task onLeave()
+    {
+        await JS.InvokeVoidAsync("OverlayPanel.onLeave", this.Id);
+    }
+    private async Task beforeDestory()
+    {
+        await JS.InvokeVoidAsync("OverlayPanel.beforeDestroy",this.Id);
+    }
+}

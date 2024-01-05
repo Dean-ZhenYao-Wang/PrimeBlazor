@@ -123,3 +123,7 @@ window.sliderHelpers = {
         this.dotNetHelper = this.dotNetHelper.filter(q => q.id !== id);
     }
 }
+
+window.assignDotNetHelper = (element, dotNetHelper) => {
+    element.dotNetHelper = dotNetHelper;
+}

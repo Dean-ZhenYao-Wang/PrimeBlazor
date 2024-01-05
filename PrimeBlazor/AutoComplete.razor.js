@@ -6,7 +6,7 @@ export function bindOutsideClickListener(id, overlayVisible, overlay, multiple, 
                 await dotNetHelper.invokeMethodAsync('hideOverlay');
             }
         };
-        outsideClickListener.push({ id: id, o: outsideClick })
+        outsideClickListener.push({ id: id, outsideClick: outsideClick })
         document.addEventListener('click', outsideClick);
     }
 }

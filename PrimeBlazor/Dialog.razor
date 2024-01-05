@@ -18,7 +18,7 @@
                         }
                     }
                     <div class="p-dialog-titlebar-icons">
-                        <button class="p-dialog-titlebar-icon p-dialog-titlebar-close p-link" @onclick="async(e)=>await close(e)" v-if="closable">
+                        <button class="p-dialog-titlebar-icon p-dialog-titlebar-close p-link" @onclick="async()=>await close()" v-if="closable">
                             <span class="p-dialog-titlebar-close-icon pi pi-times"></span>
                         </button>
                     </div>
@@ -72,7 +72,7 @@
             await module.DisposeAsync();
     }
 
-    private async Task close(MouseEventArgs mouseEvent)
+    private async Task close()
     {
         await visibleChanged.InvokeAsync(false);
     }
