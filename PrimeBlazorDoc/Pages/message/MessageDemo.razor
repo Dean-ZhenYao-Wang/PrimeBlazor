@@ -7,16 +7,71 @@
         </div>
     </div>
 
-    <div class="content-section impleme
-        ntation">
+    <div class="content-section impleme implementation">
         <h3 class="first">Severities</h3>
         <Message severity="success">Order Submitted</Message>
         <Message severity="info">PrimeVue Rocks</Message>
         <Message severity="warn">There are unsaved changes</Message>
         <Message severity="error">Validation Failed</Message>
+
+        <h3>Dynamic</h3>
+        <Button label="Show" onclick="addMessages" />
+        <Button label="Clear" onclick="removeMessages" CssClass="p-button-secondary" />
+        @foreach (var msg in messages)
+        {
+            <Message severity="@msg.Severity" @key="msg.Content">@msg.Content</Message>
+        }
+
+        <h3>Auto Dismiss</h3>
+        <Message severity="warn" life="5000" sticky="false">This message will hide in 5 seconds.</Message>
+
+        <h3>Validation Message</h3>
+        <div class="p-grid">
+            <div class="p-col-12">
+                <Inputtext placeholder="Username" CssClass="p-error" />
+                <PrimeBlazor.ValidationMessage>Field is required</PrimeBlazor.ValidationMessage>
+            </div>
+            <div class="p-col-12">
+                <Inputtext placeholder="Email" CssClass="p-error" closable="false" />
+                <PrimeBlazor.ValidationMessage />
+            </div>
+        </div>
     </div>
 </div>
 
-@code {
+<style lang="scss">
+    button.p-button {
+        margin-right: .5em;
+    }
 
+    .p-inputtext {
+        margin-right: .25em;
+    }
+</style>
+@code {
+    private List<Models.Message>? messages = new List<Models.Message>();
+    private int count = 0;
+    private void addMessages()
+    {
+        this.messages = new List<Models.Message>()
+        {
+            new Models.Message()
+            {
+                Severity="info",
+                Content="Dynamic Info Message"
+            },new Models.Message()
+            {
+                Severity="success",
+                Content="Dynamic Success Message"
+            },new Models.Message()
+            {
+                Severity="warn",
+                Content="Dynamic Warning Message"
+            }
+        };
+    }
+    private void removeMessages()
+    {
+        this.messages = null;
+    }
 }

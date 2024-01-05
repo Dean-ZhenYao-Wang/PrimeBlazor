@@ -1,5 +1,7 @@
-﻿<input type="@type" class="@css @CssClass" id="@Id" disabled="@disabled" value="@value" @oninput="(async(e)=>await onInputEvent(e))" placeholder="@placeholder" />
+﻿<input type="@type" closable="@closable" class="@css @CssClass" id="@Id" disabled="@disabled" value="@value" @oninput="(async(e)=>await onInputEvent(e))" placeholder="@placeholder" />
 @code {
+    [Parameter]
+    public bool closable{ get; set; }
     [Parameter] public string type { get; set; } = "text";
     [Parameter]
     public string Id { get; set; } = Guid.NewGuid().ToString();

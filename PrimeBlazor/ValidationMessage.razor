@@ -1,30 +1,13 @@
-<transition name="p-messages">
-    @if (this.visible)
-    {
-        <div class="@containerClass">
-            <div class="p-messages-wrapper">
-                <span class="@iconClass"></span>
-                <div class="p-messages-text">
-                    @ChildContent
-                </div>
-                @if (this.closable)
-                {
-                    <button class="p-messages-close p-link" @onclick="()=>this.visible=false">
-                        <i class="p-messages-close-icon pi pi-times"></i>
-                    </button>
-                }
-            </div>
-        </div>
-    }
-</transition>
-@code {
-    [Parameter] public string severity { get; set; } = "info";
-    [Parameter] public bool closable { get; set; } = true;
+<div aria-live="polite" class="p-message p-component p-message-error">
+    <span class="@iconClass"></span>
+    <span class="p-message-text">@ChildContent</span>
+</div>
+@code{
+    [Parameter] public string severity { get; set; } = "error";
     [Parameter] public bool sticky { get; set; } = true;
     [Parameter] public int life { get; set; } = 3000;
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    private Timer? timer = null;
-    private bool visible = true;
+    [Parameter] public RenderFragment? ChildContent{ get; set; }
+    private bool visible=true;
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
@@ -38,6 +21,7 @@
             }
         }
     }
+    private Timer? timer = null;
     private void SetTimer(Action action, int delay)
     {
         timer = new Timer(_ =>
@@ -46,18 +30,16 @@
             timer?.Dispose();
         }, null, delay, Timeout.Infinite);
     }
-    private string containerClass
-    {
+    private string containerClass{
         get
         {
-            return "p-messages p-component p-messages-" + this.severity;
+            return "p-message p-component p-message-" + this.severity;
         }
     }
-    private string iconClass
-    {
+    private string iconClass{
         get
         {
-            string str = "p-messages-icon pi";
+            string str = "p-message-icon pi";
             switch (this.severity)
             {
                 case "info":
