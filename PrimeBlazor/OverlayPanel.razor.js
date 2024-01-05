@@ -18,18 +18,22 @@
     static async show(dotNetHelper) {
         await dotNetHelper.invokeMethodAsync('show');
     }
-    static async onEnter(componmentId,appendTo, container, baseZIndex) {
+    static async onEnter(componmentId, appendTo, container, baseZIndex, dismissable) {
         this.appendContainer(appendTo, container);
         let thisComponent = document.getElementById(componmentId);
         this.alignOverlay(container, thisComponent.target);
-        let visible = await thisComponent.dotNetHelper.invokeMethodAsync('getVisible')
-        await this.bindOutsideClickListener(componmentId, visible, container, thisComponent);
+        if (dismissable) {
+            let visible = await thisComponent.dotNetHelper.invokeMethodAsync('getVisible')
+            await this.bindOutsideClickListener(componmentId, visible, container, thisComponent);
+        }
         if (autoZIndex) {
             container.style.zIndex = String(baseZIndex + DomHandler.generateZIndex());
         }
     }
-    static onLeave(componmentId) {
-        this.unbindOutsideClickListener(componmentId);
+    static onLeave(componmentId, dismissable) {
+        if (dismissable) {
+            this.unbindOutsideClickListener(componmentId);
+        }
     }
     static alignOverlay(container, target) {
         window.DomHandler.absolutePosition(container, target);
@@ -73,9 +77,11 @@
             }
         }
     }
-    static beforeDestroy(componmentId, appendTo, container) {
+    static beforeDestroy(componmentId, appendTo, container, dismissable) {
         this.restoreAppend(appendTo, container);
-        this.unbindOutsideClickListener(componmentId);
+        if (dismissable) {
+            this.unbindOutsideClickListener(componmentId);
+        }
         let thisComponent = document.getElementById(componmentId);
         thisComponent.target = null;
     }
