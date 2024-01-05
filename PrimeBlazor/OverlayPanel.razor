@@ -11,6 +11,7 @@
     }
 </transition>
 @code {
+    [Parameter] public string appendTo{ get; set; }
     [Parameter] public int baseZIndex { get; set; } = 0;
     [Parameter] public bool autoZIndex { get; set; } = true;
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -63,6 +64,6 @@
     }
     private async Task beforeDestory()
     {
-        await JS.InvokeVoidAsync("OverlayPanel.beforeDestroy",this.Id);
+        await JS.InvokeVoidAsync("OverlayPanel.beforeDestroy", this.Id, this.appendTo, this.container);
     }
 }

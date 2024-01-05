@@ -18,7 +18,8 @@
     static async show(dotNetHelper) {
         await dotNetHelper.invokeMethodAsync('show');
     }
-    static async onEnter(componmentId, container, baseZIndex) {
+    static async onEnter(componmentId,appendTo, container, baseZIndex) {
+        this.appendContainer(appendTo, container);
         let thisComponent = document.getElementById(componmentId);
         this.alignOverlay(container, thisComponent.target);
         let visible = await thisComponent.dotNetHelper.invokeMethodAsync('getVisible')
@@ -54,7 +55,26 @@
     static isTargetClicked(thisComponent,event) {
         return thisComponent.target && (thisComponent.target === event.target || thisComponent.target.contains(event.target));
     }
-    static beforeDestroy(componmentId) {
+    static appendContainer(appendTo,container) {
+        if (appendTo) {
+            if (appendTo === 'body') {
+                document.body.appendChild(container);
+            } else {
+                document.getElementById(appendTo).appendChild(container);
+            }
+        }
+    }
+    static restoreAppend(appendTo, container) {
+        if (container && appendTo) {
+            if (this.appendTo === 'body') {
+                document.body.removeChild(container);
+            } else {
+                document.getElementById(appendTo).removeChild(container);
+            }
+        }
+    }
+    static beforeDestroy(componmentId, appendTo, container) {
+        this.restoreAppend(appendTo, container);
         this.unbindOutsideClickListener(componmentId);
         let thisComponent = document.getElementById(componmentId);
         thisComponent.target = null;
