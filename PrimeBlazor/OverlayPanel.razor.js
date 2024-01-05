@@ -37,6 +37,9 @@
     }
     static alignOverlay(container, target) {
         window.DomHandler.absolutePosition(container, target);
+        if (window.DomHandler.getOffset(container).top < window.DomHandler.getOffset(target).top) {
+            window.DomHandler.addClass(container, 'p-overlaypanel-flipped');
+        }
     }
     static async bindOutsideClickListener(componmentId, visible, container, thisComponent) {
         if (!this.outsideClickListener.some(o => o.id === componmentId)) {

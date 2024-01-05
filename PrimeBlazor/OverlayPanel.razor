@@ -1,6 +1,6 @@
 ﻿@implements IAsyncDisposable
 @inject IJSRuntime JS
-<transition id="@Id" @ref=overlayPanel name="p-overlaypanel" @onmouseenter="onEnter" @onmouseleave="onLeave">
+<transition id="@Id" @ref=overlayPanel name="p-overlaypanel" @onmouseenter="async()=> await onEnter()" @onmouseleave="async()=> await onLeave()">
     @if (visible)
     {
         <div class="p-overlaypanel p-component" @ref="container">
@@ -64,7 +64,7 @@
     }
     private async Task onEnter()
     {
-        await JS.InvokeVoidAsync("OverlayPanel.onEnter", this.Id, this.container, this.baseZIndex,this.dismissable);
+        await JS.InvokeVoidAsync("OverlayPanel.onEnter", this.Id,this.appendTo, this.container, this.baseZIndex,this.dismissable);
     }
     private async Task onLeave()
     {
