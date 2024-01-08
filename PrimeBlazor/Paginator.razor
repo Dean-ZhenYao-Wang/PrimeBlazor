@@ -68,7 +68,9 @@
     [Parameter] public RenderFragment<PageState>? RightTemplate { get; set; }
     [Parameter] public int totalRecords { get; set; } = 0;
     [Parameter] public int rows { get; set; } = 0;
+    [Parameter] public EventCallback<int> rowsChanged{ get; set; }
     [Parameter] public int first { get; set; } = 0;
+    [Parameter] public EventCallback<int> firstChanged{ get; set; }
     [Parameter] public int pageLinkSize { get; set; } = 5;
     [Parameter] public List<int> rowsPerPageOptions { get; set; }
     [Parameter] public string template { get; set; } = "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown";
@@ -168,6 +170,8 @@
 
                 };
             await onchange.InvokeAsync(newPageState);
+            await firstChanged.InvokeAsync(first);
+            await rowsChanged.InvokeAsync(rows);
         }
     }
     private async Task changePageToFirst(MouseEventArgs mouseEvent)
