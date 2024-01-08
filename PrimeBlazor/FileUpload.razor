@@ -211,6 +211,7 @@ else if (isBasic)
     {
         if (this.maxFileSize != null && file.Size > this.maxFileSize.Value)
         {
+            this.messages.Add(this.invalidFileSizeMessage.Replace("{0}", file.Name).Replace("{1}", this.formatSize(this.maxFileSize.Value)));
             return false;
         }
         return true;

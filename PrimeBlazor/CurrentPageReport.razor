@@ -1,0 +1,11 @@
+<span class="p-paginator-current">@text</span>
+@code{
+    [Parameter]public int pageCount{get;set;}
+    [Parameter] public int page{get;set;}
+    [Parameter]public string template{get;set;} ="({currentPage} of {totalPages})";
+    private string text=string.Empty;
+    protected override void OnAfterRender(bool firstRender)
+    {
+        this.text = this.template.Replace("{currentPage}", $"{this.page + 1}").Replace("{totalPages}", $"{this.pageCount}");
+    }
+}

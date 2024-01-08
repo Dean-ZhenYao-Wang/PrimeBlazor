@@ -1,0 +1,25 @@
+@typeparam TItem
+<Dropdown  @bind-value="selectedRow" options="rowOptions" optionLabel="label" onchange="changeEvent"></Dropdown>
+@code{
+    [Parameter]
+    public List<TItem> options{get;set;}
+    [Parameter]public int value{get;set;}
+    [Parameter] public EventCallback<object> change{ get; set; }
+    private object? selectedRow =null;
+    public async Task changeEvent(object data)
+    {
+        await change.InvokeAsync(data);
+    }
+    private List<object> rowOptions
+    {
+        get
+        {
+            List<object> newOptions = new List<object>();
+            foreach (var option in this.options)
+            {
+                newOptions.Add(new { label = option, code = option });
+            }
+            return newOptions;
+        }
+    }
+}

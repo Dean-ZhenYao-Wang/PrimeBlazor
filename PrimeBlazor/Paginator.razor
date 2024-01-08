@@ -1,0 +1,167 @@
+<div class="p-paginator p-component p-unselectable-text">
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        foreach (var item in templateItems)
+        {
+            int i = templateItems.IndexOf(item);
+            if (item.Equals("FirstPageLink"))
+            {
+                <FirstPageLink @key="i" onclick="changePageToFirst" disabled="isFirstPage" />
+            }
+            if (item.Equals("PrevPageLink"))
+            {
+                <PrevPageLink @key="i" onclick="changePageToPrev" disabled="isFirstPage" />
+            }
+            if (item.Equals("NextPageLink"))
+            {
+                <NextPageLink @key="i" onclick="changePageToNext" disabled="isLastPage" />
+            }
+            if (item.Equals("LastPageLink"))
+            {
+                <LastPageLink @key="i" onclick="changePageToLast" disabled="isLastPage" />
+            }
+            if (item.Equals("PageLinks"))
+            {
+                <PageLinks @key="i" value="updatePageLinks" page="page" onclick="pageLinkClick" />
+            }
+            if (item.Equals("CurrentPageReport"))
+            {
+                <CurrentPageReport @key="i" template="currentPageReportTemplate" page="page" pageCount="pageCount" />
+            }
+        }
+    }
+</div>
+@code {
+    [Parameter] public int totalRecords { get; set; } = 0;
+    [Parameter] public int rows { get; set; } = 0;
+    [Parameter] public int first { get; set; } = 0;
+    [Parameter] public int pageLinkSize { get; set; } = 5;
+    [Parameter] public List<object> rowsPerPageOptions { get; set; }
+    [Parameter] public string template { get; set; } = "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown";
+    [Parameter] public string currentPageReportTemplate { get; set; } = "({currentPage} of {totalPages})";
+    [Parameter] public EventCallback<PageState> onchange { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    private List<string> templateItems
+    {
+        get
+        {
+            List<string> keys = new List<string>();
+            this.template.Split(" ").ToList().ForEach(m =>
+            {
+                keys.Add(m.Trim());
+            });
+            return keys;
+        }
+    }
+    private int page
+    {
+        get
+        {
+            return (int)(Math.Floor((double)this.first / this.rows));
+        }
+    }
+    private int pageCount
+    {
+        get
+        {
+            int count = (int)Math.Ceiling((double)this.totalRecords / this.rows);
+            return count == 0 ? 1 : count;
+        }
+    }
+    private bool isFirstPage
+    {
+        get
+        {
+            return this.page == 0;
+        }
+    }
+    private bool isLastPage
+    {
+        get
+        {
+            return this.page == this.pageCount - 1;
+        }
+    }
+    private int[] calculatePageLinkBoundaries
+    {
+        get
+        {
+            var numberOfPages = this.pageCount;
+            var visiblePages = Math.Min(this.pageLinkSize, numberOfPages);
+
+            //calculate range, keep current in middle if necessary
+            var start = Math.Max(0, (int)Math.Ceiling((double)this.page - ((visiblePages) / 2)));
+            var end = Math.Min(numberOfPages - 1, start + visiblePages - 1);
+
+            //check when approaching to last page
+            var delta = this.pageLinkSize - (end - start + 1);
+            start = Math.Max(0, start - delta);
+
+            return new int[] { start, end };
+        }
+    }
+
+    private List<int> updatePageLinks
+    {
+        get
+        {
+            var pageLinks = new List<int>();
+            var boundaries = this.calculatePageLinkBoundaries;
+            var start = boundaries[0];
+            var end = boundaries[1];
+
+            for (var i = start; i <= end; i++)
+            {
+                pageLinks.Add(i + 1);
+            }
+
+            return pageLinks;
+        }
+    }
+    private async Task changePage(int first, int rows)
+    {
+        var pc = this.pageCount;
+        var p = (int)Math.Floor((double)first / rows);
+
+        if (p >= 0 && p < pc)
+        {
+            PageState newPageState = new PageState()
+                {
+                    first = first,
+                    rows = rows,
+                    page = p,
+                    pageCount = pc
+
+                };
+            await onchange.InvokeAsync(newPageState);
+        }
+    }
+    private async Task changePageToFirst(MouseEventArgs mouseEvent)
+    {
+        await this.changePage(0, this.rows);
+    }
+    private async Task changePageToPrev(MouseEventArgs mouseEvent)
+    {
+        await this.changePage(this.first - this.rows, this.rows);
+    }
+    private async Task pageLinkClick(int value)
+    {
+        await this.changePage((value - 1) * this.rows, this.rows);
+    }
+    private async Task changePageToNext(MouseEventArgs mouseEvent)
+    {
+        await this.changePage(this.first + this.rows, this.rows);
+    }
+    private async Task changePageToLast(MouseEventArgs mouseEvent)
+    {
+        await this.changePage((this.pageCount - 1) * this.rows, this.rows);
+    }
+    private async Task rowsChange(int value)
+    {
+        await this.changePage(0, value);
+    }
+}

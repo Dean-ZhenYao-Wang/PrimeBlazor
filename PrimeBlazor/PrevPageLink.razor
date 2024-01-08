@@ -1,0 +1,19 @@
+<Button CssClass="@containerClass" onclick="clickEvent">
+	<span class="p-paginator-icon pi pi-caret-left"></span>
+</Button>
+@code{
+	[Parameter] public bool disabled { get; set; } = false;
+	[Parameter]public EventCallback<MouseEventArgs> onclick{ get; set; }
+	private async Task clickEvent(MouseEventArgs mouseEvent){
+		await onclick.InvokeAsync(mouseEvent);
+	}
+	private string containerClass{
+		get
+		{
+			string str = "p-paginator-prev p-paginator-element p-link";
+			if (this.disabled)
+				str += " p-disabled";
+			return str;
+		}
+	}
+}

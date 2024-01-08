@@ -1,0 +1,17 @@
+<span class="p-paginator-pages">
+    @foreach(var pageLink in value)
+    {
+        int i = value.IndexOf(pageLink);
+        <Button @key="pageLink" CssClass=@("p-paginator-page p-paginator-element p-link"+(pageLink-1==this.page? " p-highlight":""))
+            onclick="(e)=>this.onPageLinkClick(e,pageLink)">@pageLink</Button>
+    }
+</span>
+@code {
+    [Parameter] public List<int> value { get; set; } = new List<int>();
+    [Parameter] public int page { get; set; }
+    [Parameter] public EventCallback<int> onclick { get; set; }
+    private async Task onPageLinkClick(MouseEventArgs mouseEvent, int pageLink)
+    {
+        await onclick.InvokeAsync(pageLink);
+    }
+}

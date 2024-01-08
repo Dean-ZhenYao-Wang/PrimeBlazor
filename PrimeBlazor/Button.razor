@@ -1,6 +1,16 @@
 ﻿<button class="@buttonClass" style="@style" @onclick="onclick" @ref=refButton tabindex="@tabindex">
-    <span v-if="icon" class="@iconClass"></span>
-    <span class="p-button-text p-c"> @(string.IsNullOrWhiteSpace(this.label) ? "p-btn" : this.label)</span>
+    @if (ChildContent == null)
+    {
+        if (!string.IsNullOrWhiteSpace(icon))
+        {
+            <span class="@iconClass"></span>
+        }
+        <span class="p-button-text p-c"> @(string.IsNullOrWhiteSpace(this.label) ? "p-btn" : this.label)</span>
+    }
+    else
+    {
+        @ChildContent
+    }
 </button>
 
 @code {
@@ -8,6 +18,7 @@
     private ElementReference refButton{ get; set; }
     [Parameter] public ElementReference? refElement{ get; set; }
     [Parameter] public string label { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent{ get; set; }
     [Parameter] public string icon { get; set; } = string.Empty;
     [Parameter] public string iconPos { get; set; } = "left";
     [Parameter] public bool disabled { get; set; }
