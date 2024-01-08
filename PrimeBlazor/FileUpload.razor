@@ -6,7 +6,7 @@
     <div class="p-fileupload p-component">
         <div class="p-fileupload-buttonbar">
             <span icon="pi pi-plus" :class="advancedChooseButtonClass">
-                <InputFile ref="fileInput" type="file" OnChange="onFileSelect" @onfocus="onFocus" @onblur="onBlur"
+                <InputFile ref="fileInput" OnChange="onFileSelect" @onfocus="onFocus" @onblur="onBlur"
                            multiple="@multiple" accept="@accept" disabled="@disabled" />
                 <span class="p-button-icon p-button-icon-left p-clickable pi pi-fw pi-plus"></span>
                 <span class="p-button-text p-clickable">@chooseLabel</span>
@@ -17,16 +17,16 @@
         <div ref="content" class="p-fileupload-content" @ondragenter="onDragEnter" @ondragover="onDragOver" @ondragleave="onDragLeave" @ondrop="onDrop">
             @if (hasFiles)
             {
-                <ProgressBar value="progressValue"/>
+                <ProgressBar value="progressValue" />
             }
-            @foreach(var msg in messages)
+            @foreach (var msg in messages)
             {
                 <Message severity="error" @key="msg">@msg</Message>
             }
             @if (hasFiles)
             {
                 <div class="p-fileupload-files">
-                    @foreach(var file in files)
+                    @foreach (var file in files)
                     {
                         int index = files.IndexOf(file);
                         <div class="p-fileupload-row" @key="file.Name + file.Size">
@@ -44,7 +44,17 @@
             }
         </div>
     </div>
-
+}
+else if (isBasic)
+{
+    <span class="@basicChooseButtonClass" @onmouseup="onBasicUploaderClick">
+        <span class="@basicChooseButtonIconClass"></span>
+        <span class="p-button-text p-clickable">@basicChooseButtonLabel</span>
+        @if (!hasFiles)
+        {
+            <InputFile ref="fileInput" accept="@accept" disabled="@disabled" OnChange="onFileSelect" @onfocus="onFocus" @onblur="onBlur"/>
+        }
+    </span>
 }
 @code {
     [Parameter] public string? name { get; set; }
@@ -106,7 +116,10 @@
         {
             this.uploadEvent();
         }
-        this.clearInputElement();
+        if (this.isAdvanced)
+        {
+            this.clearInputElement();
+        }
     }
     private async Task uploadEvent()
     {
@@ -167,7 +180,10 @@
         this.files = new List<IBrowserFile>();
         this.messages = new List<string>();
         await clear.InvokeAsync();
-        this.clearInputElement();
+        if (this.isAdvanced)
+        {
+            this.clearInputElement();
+        }
     }
     private void onFocus()
     {
@@ -215,6 +231,13 @@
     {
 
     }
+    private async Task onBasicUploaderClick(MouseEventArgs eventArgs)
+    {
+        if (this.hasFiles)
+        {
+            await this.uploadEvent();
+        }
+    }
     private void remove(int index)
     {
         this.clearInputElement();
@@ -232,10 +255,6 @@
     private async void clearInputElement()
     {
         await JS.InvokeVoidAsync("DomHandler.clearElementValue", fileInput);
-        if (this.mode.Equals("basic"))
-        {
-            await JS.InvokeVoidAsync("DomHandler.setStyleDisaplay", fileInput, "inline");
-        }
     }
     private string formatSize(double bytes)
     {
@@ -273,6 +292,39 @@
             if (this.focused)
                 str += " p-focus";
             return str;
+        }
+    }
+    private string basicChooseButtonClass
+    {
+        get
+        {
+            string str = "p-button p-fileupload-choose p-component p-button-text-icon-left";
+            if (this.hasFiles)
+                str += " p-fileupload-choose-selected";
+            if (this.disabled)
+                str += " p-disabled";
+            if (this.focused)
+                str += " p-focus";
+            return str;
+        }
+    }
+    private string basicChooseButtonIconClass
+    {
+        get
+        {
+            string str = "p-button-icon-left pi";
+            if (!this.hasFiles || this.auto)
+                str += " pi-plus";
+            if (this.hasFiles && !this.auto)
+                str += " pi-upload";
+            return str;
+        }
+    }
+    private string basicChooseButtonLabel
+    {
+        get
+        {
+            return this.auto ? this.chooseLabel : (this.hasFiles ? this.files[0].Name : this.chooseLabel);
         }
     }
     private bool hasFiles
