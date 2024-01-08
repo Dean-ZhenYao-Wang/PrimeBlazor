@@ -1,7 +1,7 @@
 @typeparam TItem where TItem : Menu
 @implements IAsyncDisposable
 @inject IJSRuntime JS
-<div @ref="container" class="p-splitbutton p-buttonset p-component" id="@Id">
+<div @ref="container" class="p-splitbutton p-buttonset p-component @CssClass" id="@Id">
     <Button icon="icon" label="label" onclick="onClickEvent" disabled="disabled" tabindex="tabindex" />
     <Button CssClass="p-splitbutton-menubutton" icon="pi pi-caret-down" onclick="onDropdownButtonClick" disabled="disabled" />
     <transition name="p-input-overlay" @onmouseenter="onOverlayEnter" @onmouseleave="onOverlayLeave">
@@ -24,6 +24,7 @@
     </transition>
 </div>
 @code {
+    [Parameter] public string? CssClass{ get; set; }
     [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
     [Parameter] public string label { get; set; } = string.Empty;
     [Parameter] public string icon { get; set; } = string.Empty;

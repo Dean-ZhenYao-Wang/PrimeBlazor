@@ -43,19 +43,23 @@
         {
             <div @ref="overlay" class="p-autocomplete-panel" style="max-height:@(this.scrollHeight);">
                 <ul class="p-autocomplete-items p-autocomplete-list p-component">
-               @foreach (var item in suggestions)
+               @foreach (var items in suggestions)
                {
-                   int i = suggestions.IndexOf(item);
-                    <li class="p-autocomplete-list-item" @key="i" @onclick="async()=>await selectItem(item)">
-                            @if(template is not null)
-                            {
-                                @template(item)
-                            }
-                            else
-                            {
-                                @(getItemContent(item))
-                            }
-                    </li>
+                        var itemList = (items as List<object>);
+                        @foreach (var item in itemList)
+                        {
+                            int i = itemList.IndexOf(item);
+                            <li class="p-autocomplete-list-item" @key="i" @onclick="async()=>await selectItem((TItem)item)">
+                                @if (template is not null)
+                                {
+                                    @template((TItem)item)
+                                }
+                                else
+                                {
+                                    @(getItemContent(item))
+                                }
+                            </li>
+                        }
                }
             </ul>
         </div>
@@ -240,7 +244,7 @@
     }
     private async Task onKeyDown(KeyboardEventArgs eventArgs)
     {
-        await module.InvokeVoidAsync("onKeyDown",this.overlayVisible,this.overlay,this.suggestions,this.dotNetHelper,this.multiple,this.model,this.inputRef);
+        await module.InvokeVoidAsync("onKeyDown",this.overlayVisible,this.overlay,this.suggestions[0],this.dotNetHelper,this.multiple,this.model,this.inputRef);
     }
     private object getItemContent(object item) 
     {

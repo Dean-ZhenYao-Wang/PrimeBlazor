@@ -2,7 +2,7 @@
 @inject IJSRuntime JS
 <div class="p-checkbox p-component" @onclick="onClick">
     <div class="p-hidden-accessible">
-        <input @ref="inputElement" id="@inputId" type="checkbox" name="@name" checked="@isChecked" disabled="@disabled" @onfocus="async(e)=>await onFocus(e)" @onblur="async(e)=>await onBlur(e)"
+        <input @ref="inputElement" id="@id" type="checkbox" name="@name" checked="@isChecked" disabled="@disabled" @onfocus="async(e)=>await onFocus(e)" @onblur="async(e)=>await onBlur(e)"
                autocomplete="@autocomplete" autofocus="@autofocus">
     </div>
     <div ref="box" class="p-checkbox-box p-component @(isChecked?"p-highlight":null) @(disabled?"p-disabled":null) @(focused?"p-focus":null)">
@@ -11,11 +11,11 @@
 </div>
 
 @code {
+    [Parameter] public string id { get; set; } = Guid.NewGuid().ToString();
     [Parameter] public TItem value { get; set; }
     [Parameter] public ICollection<TItem> model { get; set; } = new List<TItem>();
     [Parameter] public EventCallback<ICollection<TItem>> modelChanged { get; set; }
     [Parameter] public string name { get; set; } = string.Empty;
-    [Parameter] public string inputId { get; set; } = Guid.NewGuid().ToString();
     [Parameter] public bool autofocus { get; set; }
     [Parameter] public string autocomplete { get; set; } = string.Empty;
     [Parameter] public bool disabled { get; set; }

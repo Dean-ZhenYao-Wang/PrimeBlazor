@@ -2,7 +2,7 @@
 @inject IJSRuntime JS
 <div class="p-editor-container">
     <div @ref="toolbarElement" class="p-editor-toolbar">
-        @if (toolbar == null)
+        @if (ToolbarTemplate == null)
         {
             <span class="ql-formats">
                 <select class="ql-header" defaultValue="0">
@@ -46,7 +46,7 @@
         }
         else
         {
-            @toolbar
+            @ToolbarTemplate
         }
     </div>
     <div @ref="editorElement" class="p-editor-content" style="@editorStyle"></div>
@@ -56,7 +56,7 @@
     private string QuillId = Guid.NewGuid().ToString();
     private ElementReference toolbarElement;
     private ElementReference editorElement;
-    [Parameter] public RenderFragment? toolbar { get; set; }
+    [Parameter] public RenderFragment? ToolbarTemplate { get; set; }
     [Parameter] public string? model { get; set; } = null;
     [Parameter] public EventCallback<string> modelChanged { get; set; }
     [Parameter] public string? placeholder { get; set; }

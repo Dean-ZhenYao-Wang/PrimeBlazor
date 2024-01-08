@@ -22,19 +22,20 @@
                 </div>
             </template>
         </AutoComplete>
-        <span style="marginLeft: .5em">Brand: @(brand==null?"none":brand) </span>
+        <span style="marginLeft: .5em">Brand: @(brand == null ? "none" : brand) </span>
 
-       @*  <h3>Multiple</h3>
+        <h3>Multiple</h3>
         <span class="p-fluid">
-        <AutoComplete multiple="true" @bind-model="selectedCountries" suggestions="filteredCountriesMultiple" complete="async(e)=>await searchCountryMultiple(e)" field="name" />
+            <AutoComplete multiple="true" @bind-model="selectedCountries" TItem="List<Models.Countries>" suggestions="new List<List<Models.Countries>>{ filteredCountriesMultiple}" complete="async(e)=>await searchCountryMultiple(e)" field="name" />
         </span>
         <ul>
-        @foreach(var c in selectedCountries)
-        {
-            int i = selectedCountries.IndexOf(c);
-            <li @key="i">@c</li>
-        }
-        </ul> *@
+            @foreach (var c in selectedCountries)
+            {
+                int i = selectedCountries.IndexOf(c);
+                <li @key="i">@c</li>
+            }
+        </ul>
+        <AutoCompleteDoc />
     </div>
 </div>
 <style lang="scss">
@@ -80,7 +81,7 @@
     }
     private async Task searchCountryMultiple(string query)
     {
-        this.filteredCountriesMultiple =await this.searchCountry(query);
+        this.filteredCountriesMultiple = await this.searchCountry(query);
     }
     private async Task searchBrand(string query)
     {

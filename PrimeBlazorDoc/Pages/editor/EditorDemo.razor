@@ -12,16 +12,17 @@
         <Editor @bind-model="value1" editorStyle="height: 320px" />
         @value1
         <h3>Customized</h3>
-       @*  <Editor @bind-model="value2" editorStyle="height: 320px">
-            <toolbar>
+        <Editor @bind-model="value2" editorStyle="height: 320px">
+            <ToolbarTemplate>
                 <span class="ql-formats">
                     <button class="ql-bold"></button>
                     <button class="ql-italic"></button>
                     <button class="ql-underline"></button>
                 </span>
-            </toolbar>
-        </Editor> *@
+            </ToolbarTemplate>
+        </Editor>
     </div>
+    <EditorDoc />
 </div>
 
 @code {
