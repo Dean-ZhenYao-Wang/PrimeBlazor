@@ -13,7 +13,7 @@
 
         <h3>Advanced with Templating and Filtering</h3>
         <MultiSelect @bind-model="selectedCars2" options="cars" optionLabel="brand" placeholder="Select a Car" filter="true">
-            <valueTemplate Context="value">
+            <ValueTemplate Context="value">
                 @if (value != null)
                 {
                     foreach (var option in value)
@@ -28,13 +28,13 @@
                     }
                 }
                 
-            </valueTemplate>
-            <optionTemplate Context="option">
+            </ValueTemplate>
+            <OptionTemplate Context="option">
                 <div class="p-multiselect-car-option">
                     <img alt="@option.Brand" :src="/demo/images/car/@(option.Brand).png" />
                     <span>@option.Brand</span>
                 </div>
-            </optionTemplate>
+            </OptionTemplate>
         </MultiSelect>
     </div>
 </div>

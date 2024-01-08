@@ -10,9 +10,9 @@
              @onkeydown:stopPropagation="true"
              tabindex="@(isOptionDisabled(option) ? null : 0)" @onfocus="async(e)=>await onFocus(e,i)" @onblur="async(e)=>await onBlur(e)"
              class="p-button p-component p-button-text-only @(isSelected(option)?"p-highlight":null) @(isOptionDisabled(option)?"p-disabled":null) @(i==focusedIndex?"p-focus":null)">
-            @if(template is not null)
+            @if(OptionTemplate is not null)
             {
-                @template(option)
+                @OptionTemplate(option)
             }
             else
             {
@@ -35,7 +35,7 @@
     [Parameter]public string? optionLabel{ get; set; }
     [Parameter]public string? optionValue{ get; set; }
     [Parameter]public string? optionDisabled{ get; set; }
-    [Parameter]public RenderFragment<TItem>? template{ get; set; }
+    [Parameter]public RenderFragment<TItem>? OptionTemplate{ get; set; }
     [Parameter]public EventCallback<FocusEventArgs> focus{ get; set; }
     [Parameter]public EventCallback<FocusEventArgs> blur{ get; set; }
     private int focusedIndex=-1;

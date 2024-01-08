@@ -7,9 +7,9 @@
     </div>
     <div class="p-multiselect-label-container">
         <label class="@labelClass">
-            @if(valueTemplate is not null)
+            @if(ValueTemplate is not null)
             {
-                @valueTemplate(this.model)
+                @ValueTemplate(this.model)
             }
             else
             {
@@ -53,9 +53,9 @@
                                         <span class="p-checkbox-icon p-c @(async()=>await isSelected(option)?"pi pi-check":null)"></span>
                                     </div>
                                 </div>
-                                @if(optionTemplate is not null)
+                                @if(OptionTemplate is not null)
                                 {
-                                    @optionTemplate(option)
+                                    @OptionTemplate(option)
                                 }
                                 else
                                 {
@@ -91,8 +91,8 @@
     [Parameter] public string scrollHeight { get; set; } = "200px";
     [Parameter] public string? filterPlaceholder { get; set; }
     [Parameter] public EventCallback<List<TItem>> change{ get; set; }
-    [Parameter] public RenderFragment<List<TItem>>? valueTemplate{ get; set; }
-    [Parameter] public RenderFragment<TItem>? optionTemplate{ get; set; }
+    [Parameter] public RenderFragment<List<TItem>>? ValueTemplate{ get; set; }
+    [Parameter] public RenderFragment<TItem>? OptionTemplate{ get; set; }
     private bool focused = false;
     private string? filterValue = null;
     public bool overlayVisible = false;

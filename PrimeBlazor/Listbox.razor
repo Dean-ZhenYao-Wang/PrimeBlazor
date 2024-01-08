@@ -21,9 +21,9 @@
                     area-label="@getOptionLabel(option)"
                     @key="@(getOptionLabel(option))" @onclick="async(e)=>await onOptionSelect(e, option)" @ontouchend="onOptionTouchEnd"
                     @onkeydown="@((e)=>onOptionKeyDown(e,option))" @onkeydown:stopPropagation>
-                    @if (template is not null)
+                    @if (OptionTemplate is not null)
                     {
-                        @template(option)                        
+                        @OptionTemplate(option)                        
                     }
                     else
                     {
@@ -51,7 +51,7 @@
     [Parameter] public bool disabled{ get; set; }
     [Parameter] public string listStyle { get; set; } = string.Empty;
     [Parameter] public string style { get; set; } = string.Empty;
-    [Parameter] public RenderFragment<TItem>? template { get; set; }
+    [Parameter] public RenderFragment<TItem>? OptionTemplate { get; set; }
     private string label = string.Empty;
     private bool optionTouched = false;
 

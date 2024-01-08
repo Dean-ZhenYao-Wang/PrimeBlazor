@@ -5,9 +5,9 @@
         {
             int i = model.IndexOf(val);
             <li @key="val" class="p-chips-token p-highlight">
-                @if(template is not null)
+                @if(ChipTemplate is not null)
                 {
-                    @template(val)
+                    @ChipTemplate(val)
                 }
                 else
                 {
@@ -31,7 +31,7 @@
     [Parameter] public EventCallback<FocusEventArgs> blur { get; set; }
     [Parameter] public EventCallback<List<string>> add{ get; set; }
     [Parameter] public EventCallback<List<string>> remove{ get; set; }
-    [Parameter] public RenderFragment<string>? template{ get; set; }
+    [Parameter] public RenderFragment<string>? ChipTemplate{ get; set; }
     private bool focused = false;
     private bool maxedOut
     {

@@ -17,7 +17,7 @@
         <AutoComplete @bind-model="brand" suggestions="filteredBrands" complete="async(e)=>searchBrand(e)" placeholder="Hint: type 'v' or 'f'" dropdown="true">
             <template Context="item">
                 <div class="p-clearfix p-autocomplete-brand-item">
-                    <img alt="item" src="/demo/images/car/@(item).png" />
+                    <img alt="@item" src="/demo/images/car/@(item).png" />
                     <div>@item</div>
                 </div>
             </template>
