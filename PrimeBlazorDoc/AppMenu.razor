@@ -43,6 +43,7 @@
         <div class="@(activeMenuIndex!=1?"submenuhide":"submenushow")">
             <div>
                 <NavLink href="/button">&#9679; Button</NavLink>
+                <NavLink href="/splitbutton">&#9679; SplitButton</NavLink>
             </div>
         </div>
         <a @onclick="((e)=>toogleMenu(e,2))" :class="@(activeMenuIndex==2?"active-menuitem":string.Empty)">

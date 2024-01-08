@@ -41,6 +41,7 @@
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         await this.beforeDestory();
+        await module.DisposeAsync();
         dotNetHelper?.Dispose();
     }
     public async Task toggle(ElementReference? target)
@@ -64,7 +65,7 @@
     }
     private async Task onEnter()
     {
-        await JS.InvokeVoidAsync("OverlayPanel.onEnter", this.Id,this.appendTo, this.container, this.baseZIndex);
+        await JS.InvokeVoidAsync("OverlayPanel.onEnter", this.Id, this.appendTo, this.container, this.baseZIndex);
     }
     private async Task onLeave()
     {

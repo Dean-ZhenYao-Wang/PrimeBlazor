@@ -138,3 +138,9 @@ window.previewImage = (file, imgElem) => {
     imgElem.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
     imgElem.src = url;
 }
+window.setLocationHref = (href) => {
+    window.location.href = href;
+}
+window.setLocationHash = (hash) => {
+    window.location.hash = hash;
+}

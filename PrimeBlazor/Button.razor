@@ -1,9 +1,10 @@
-﻿<button class="@buttonClass" style="@style" @onclick="onclick" @ref=refButton>
+﻿<button class="@buttonClass" style="@style" @onclick="onclick" @ref=refButton tabindex="@tabindex">
     <span v-if="icon" class="@iconClass"></span>
     <span class="p-button-text p-c"> @(string.IsNullOrWhiteSpace(this.label) ? "p-btn" : this.label)</span>
 </button>
 
 @code {
+    [Parameter] public int? tabindex { get; set; } = null;
     private ElementReference refButton{ get; set; }
     [Parameter] public ElementReference? refElement{ get; set; }
     [Parameter] public string label { get; set; } = string.Empty;

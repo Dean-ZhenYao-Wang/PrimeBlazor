@@ -1,7 +1,6 @@
 ﻿export default class OverlayPanel {
     constructor() {
-        outsideClickListener = [];
-        resizeListener = [];
+        this.resizeListener = [];
     }
     static async toggle(target, componmentId) {
         let thisComponent = document.getElementById(componmentId);
@@ -41,6 +40,7 @@
         }
     }
     static async bindOutsideClickListener(componmentId, visible, container, thisComponent) {
+        if (!this.outsideClickListener) this.outsideClickListener=[]
         if (!this.outsideClickListener.some(o => o.id === componmentId)) {
             let outsideClick = async (event) => {
                 if (visible && container && !container.contains(event.target) && !this.isTargetClicked(thisComponent, event)) {
@@ -59,6 +59,7 @@
         }
     }
     static bindResizeListener(componmentId) {
+        if (!this.resizeListener) this.resizeListener = [];
         if (!this.resizeListener.some(o => o.id === componmentId)) {
             let resize = () => {
                 if (this.visible) {
