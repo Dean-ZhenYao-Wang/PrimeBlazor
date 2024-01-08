@@ -11,21 +11,29 @@
         <h3 class="first">Default</h3>
         <Paginator @bind-first="first" @bind-rows="rows" totalRecords="totalRecords" rowsPerPageOptions="new List<int>(){10,20,30}"></Paginator>
 
-        <h3 >Custom Template</h3>
-        <Paginator first="first2" rows="rows2" totalRecords="totalRecords2" pageChange="onPageChangeCustom" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink">
+        <h3>Custom Template</h3>
+        <Paginator @bind-first="first2" rows="1" totalRecords="totalRecords2" pageChange="onPageChangeCustom" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink">
             <LeftTemplate>
-                <Button icon="pi pi-refresh" />
+                <Button icon="pi pi-refresh" onclick="reset" />
             </LeftTemplate>
             <RightTemplate>
                 <Button icon="pi pi-refresh" />
             </RightTemplate>
         </Paginator>
+        <div class="image-gallery">
+            <img src="/demo/images/nature/@(image).jpg" />
+        </div>
     </div>
     <PaginatorDoc />
 </div>
-<style lang="scss">
+<style scoped>
     .p-button.p-button-icon-only {
         border-radius: 0;
+    }
+
+    .image-gallery {
+        text-align: center;
+        padding: 1em;
     }
 </style>
 @code {
@@ -35,9 +43,14 @@
     private int first2 = 0;
     private int rows2 = 1;
     private int totalRecords2 = 12;
+    private string image = "naturel";
     private void onPageChangeCustom(PageState pageState)
     {
-        this.first2 = pageState.first;
-        this.rows2 = pageState.rows;
+        this.image = "nature" + (pageState.page + 1);
+    }
+    private void reset()
+    {
+        this.first2 = 0;
+        this.image = "naturel";
     }
 }
