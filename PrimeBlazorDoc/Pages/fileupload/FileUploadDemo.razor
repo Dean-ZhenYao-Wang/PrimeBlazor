@@ -15,6 +15,6 @@
 @code {
     private void onUpload()
     {
-        ToastEventBus.add(new Message { severity= "info", summary= "Success", detail= "File Uploaded" });
+        ToastEventBus.add(new Message { severity = "info", summary = "Success", detail = "File Uploaded", life = 3000 });
     }
 }
