@@ -22,12 +22,14 @@
                         if (this.group.Equals(obj.group))
                         {
                             this.add(obj);
+                            StateHasChanged();
                         }
                     }
                 }
                 else
                 {
                     this.add(obj);
+                    StateHasChanged();
                 }
             });
             ToastEventBus.on("removeGroup", (group) =>
@@ -35,11 +37,13 @@
                 if (!string.IsNullOrWhiteSpace(this.group) && this.group.Equals(group.ToString()))
                 {
                     this.Messages.Clear();
+                    StateHasChanged();
                 }
             });
             ToastEventBus.on("removeAllGroups", () =>
             {
                 this.Messages.Clear();
+                StateHasChanged();
             });
         }
     }
@@ -59,6 +63,7 @@
             }
         }
         this.Messages.RemoveAt(index);
+        StateHasChanged();
     }
     private string containerClass
     {

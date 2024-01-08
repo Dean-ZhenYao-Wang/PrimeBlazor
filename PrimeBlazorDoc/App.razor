@@ -39,6 +39,7 @@
         if (!currentRoute.Equals(e.Location))
         {
             this.sidebarActive = false;
+            ToastEventBus.removeAllGroups();
         }
         currentRoute = e.Location;
 
