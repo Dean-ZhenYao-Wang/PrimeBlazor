@@ -1,0 +1,290 @@
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime JS
+@inject HttpClient httpClient
+@if (isAdvanced)
+{
+    <div class="p-fileupload p-component">
+        <div class="p-fileupload-buttonbar">
+            <span icon="pi pi-plus" :class="advancedChooseButtonClass">
+                <InputFile ref="fileInput" type="file" OnChange="onFileSelect" @onfocus="onFocus" @onblur="onBlur"
+                           multiple="@multiple" accept="@accept" disabled="@disabled" />
+                <span class="p-button-icon p-button-icon-left p-clickable pi pi-fw pi-plus"></span>
+                <span class="p-button-text p-clickable">@chooseLabel</span>
+            </span>
+            <Button label="uploadLabel" icon="pi pi-upload" onclick="uploadEvent" disabled="disabled || !hasFiles" />
+            <Button label="cancelLabel" icon="pi pi-times" onclick="clear" disabled="disabled || !hasFiles" />
+        </div>
+        <div ref="content" class="p-fileupload-content" @ondragenter="onDragEnter" @ondragover="onDragOver" @ondragleave="onDragLeave" @ondrop="onDrop">
+            @if (hasFiles)
+            {
+                <ProgressBar value="progressValue"/>
+            }
+            @foreach(var msg in messages)
+            {
+                <Message severity="error" @key="msg">@msg</Message>
+            }
+            @if (hasFiles)
+            {
+                <div class="p-fileupload-files">
+                    @foreach(var file in files)
+                    {
+                        int index = files.IndexOf(file);
+                        <div class="p-fileupload-row" @key="file.Name + file.Size">
+                            <div v-if="isImage(file)">
+                                <img @ref="previewImageElem" role="presentation" alt="@file.Name" width="@previewWidth" />
+                            </div>
+                            <div>@file.Name</div>
+                            <div>@formatSize(file.Size)</div>
+                            <div>
+                                <Button icon="pi pi-times" onclick="()=>remove(index)" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+}
+@code {
+    [Parameter] public string? name { get; set; }
+    [Parameter] public string? url { get; set; }
+    [Parameter] public string mode { get; set; } = "advanced";
+    [Parameter] public string? accept { get; set; }
+    [Parameter] public bool disabled { get; set; } = false;
+    [Parameter] public bool auto { get; set; } = false;
+    [Parameter] public double? maxFileSize { get; set; }
+    [Parameter] public bool multiple { get; set; } = false;
+    [Parameter] public string invalidFileSizeMessage { get; set; } = "{0}: Invalid file size, maximum upload size is {1}.";
+    [Parameter] public bool withCredentials { get; set; } = false;
+    [Parameter] public int previewWidth { get; set; } = 50;
+    [Parameter] public string chooseLabel { get; set; } = "选择";
+    [Parameter] public string uploadLabel { get; set; } = "上传";
+    [Parameter] public string canelLabel { get; set; } = "取消";
+    [Parameter] public EventCallback<IReadOnlyList<IBrowserFile>> select { get; set; }
+    // 回调事件 - 文件上传前
+    [Parameter]
+    public EventCallback<IReadOnlyList<IBrowserFile>> beforeUpload { get; set; }
+
+    // 回调事件 - 文件发送给服务器前
+    [Parameter]
+    public EventCallback<IBrowserFile> beforeSend { get; set; }
+
+    // 回调事件 - 文件上传完成
+    [Parameter]
+    public EventCallback<IReadOnlyList<IBrowserFile>> upload { get; set; }
+    // 回调事件 - 文件上传错误
+    [Parameter]
+    public EventCallback<(IBrowserFile file, string statusCode)> OnFileUploadError { get; set; }
+    [Parameter] public EventCallback<double> progress { get; set; }
+    [Parameter]
+    public EventCallback clear { get; set; }
+    private List<IBrowserFile> files = new List<IBrowserFile>();
+    private List<string> messages = new List<string>();
+    private bool focused = false;
+    private double? progressValue = null;
+    private ElementReference previewImageElem;
+    private ElementReference fileInput;
+    private async Task onFileSelect(InputFileChangeEventArgs eventArgs)
+    {
+        this.messages = new List<string>();
+        this.files = this.files.Count > 0 ? this.files : new List<IBrowserFile>();
+        var letFiles = eventArgs.GetMultipleFiles();
+        foreach (var file in letFiles)
+        {
+            if (!this.isFileSelected(file))
+            {
+                if (await this.isImage(file))
+                {
+                    await JS.InvokeVoidAsync("previewImage", file, previewImageElem);
+                }
+                this.files.Add(file);
+            }
+        }
+        if (this.auto)
+        {
+            this.uploadEvent();
+        }
+        await select.InvokeAsync(letFiles);
+        this.clearInputElement();
+        if (this.mode.Equals("basic"))
+        {
+            await JS.InvokeVoidAsync("DomHandler.setStyleDisaplay", fileInput, "none");
+        }
+    }
+    private async Task uploadEvent()
+    {
+        this.messages = new List<string>();
+        await beforeUpload.InvokeAsync(this.files);
+
+        // 处理文件上传逻辑
+
+        // 模拟上传过程中文件的进度更新，实际上传需根据具体实现
+        await this.setProgress(0);
+        IBrowserFile? uploadedFile = null;
+        // 文件上传逻辑
+        try
+        {
+            for (int index = 0; index < this.files.Count; index++)
+            {
+
+                uploadedFile = this.files[index];
+                var buffer = new byte[uploadedFile.Size];
+                await uploadedFile.OpenReadStream().ReadAsync(buffer);
+                var content = new MultipartFormDataContent();
+                content.Add(new ByteArrayContent(buffer), "file", uploadedFile.Name);
+
+                // 发送给服务器前回调
+                await beforeSend.InvokeAsync(uploadedFile);
+
+                // 发送文件数据到服务器
+                var response = await httpClient.PostAsync(this.url, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // 文件上传成功
+                    await this.setProgress((index * 0.1 / this.files.Count) * 100);
+                }
+                else
+                {
+                    // 文件上传失败
+                    await OnFileUploadError.InvokeAsync((uploadedFile, response.StatusCode.ToString()));
+                }
+            }
+            await upload.InvokeAsync(this.files);
+        }
+        catch (Exception ex)
+        {
+            // 文件上传过程中出现异常
+            await OnFileUploadError.InvokeAsync((uploadedFile, ex.Message));
+        }
+
+        await upload.InvokeAsync(this.files);
+
+    }
+    public async Task setProgress(double progress)
+    {
+        this.progressValue = progress;
+        await this.progress.InvokeAsync(progress);
+    }
+    private async Task clearEvent()
+    {
+        this.files = new List<IBrowserFile>();
+        await clear.InvokeAsync();
+        this.clearInputElement();
+    }
+    private void onFocus()
+    {
+        this.focused = true;
+    }
+    private void onBlur()
+    {
+        this.focused = false;
+    }
+    private bool isFileSelected(IBrowserFile file)
+    {
+        if (this.files.Count > 0)
+        {
+            foreach (var sFile in this.files)
+            {
+                if ((sFile.Name + sFile.Size).Equals(file.Name + file.Size))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private bool validate(IBrowserFile file)
+    {
+        if (this.maxFileSize != null && file.Size > this.maxFileSize.Value)
+        {
+            this.messages.Add(this.invalidFileSizeMessage.Replace("{0}", file.Name).Replace("{1}", this.formatSize(this.maxFileSize.Value)));
+            return false;
+        }
+        return true;
+    }
+    private void onDragEnter()
+    {
+
+    }
+    private void onDragLeave()
+    {
+
+    }
+    private void onDragOver()
+    {
+
+    }
+    private void onDrop()
+    {
+
+    }
+    private void remove(int index)
+    {
+        this.clearInputElement();
+        this.files.RemoveAt(index);
+    }
+    private async Task<bool> isImage(IBrowserFile file)
+    {
+        Stream fileStream = file.OpenReadStream();
+        var buffer = new byte[fileStream.Length];
+        await fileStream.ReadAsync(buffer, 0, (int)fileStream.Length);
+        var base64Data = Convert.ToBase64String(buffer);
+        return await JS.InvokeAsync<bool>("isFileTypeImage", base64Data);
+    }
+
+    private async void clearInputElement()
+    {
+        await JS.InvokeVoidAsync("DomHandler.clearElementValue", fileInput);
+        if (this.mode.Equals("basic"))
+        {
+            await JS.InvokeVoidAsync("DomHandler.setStyleDisaplay", fileInput, "inline");
+        }
+    }
+    private string formatSize(double bytes)
+    {
+        if (bytes == 0)
+        {
+            return "0 B";
+        }
+        double k = 1024;
+        int dm = 3;
+        string[] sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+        int i = (int)Math.Floor(Math.Log(bytes) / Math.Log(k));
+        return (bytes / Math.Pow(k, i)).ToString($"F{dm}") + " " + sizes[i];
+    }
+    private bool isAdvanced
+    {
+        get
+        {
+            return this.mode.Equals("advanced");
+        }
+    }
+    private bool isBasic
+    {
+        get
+        {
+            return this.mode.Equals("basic");
+        }
+    }
+    private string advancedChooseButtonClass
+    {
+        get
+        {
+            string str = "p-button p-fileupload-choose p-component p-button-text-icon-left";
+            if (this.disabled)
+                str += " p-disabled";
+            if (this.focused)
+                str += " p-focus";
+            return str;
+        }
+    }
+    private bool hasFiles
+    {
+        get
+        {
+            return this.files.Count > 0;
+        }
+    }
+}

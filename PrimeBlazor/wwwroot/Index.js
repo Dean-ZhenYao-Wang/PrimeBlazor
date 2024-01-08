@@ -127,3 +127,14 @@ window.sliderHelpers = {
 window.assignDotNetHelper = (element, dotNetHelper) => {
     element.dotNetHelper = dotNetHelper;
 }
+window.isFileTypeImage = (base64Data)=> {
+    var img = new Image();
+    img.src = 'data:image;base64,' + base64Data;
+
+    return img.width > 0 && img.height > 0;
+}
+window.previewImage = (file, imgElem) => {
+    const url = URL.createObjectURL(file);
+    imgElem.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+    imgElem.src = url;
+}

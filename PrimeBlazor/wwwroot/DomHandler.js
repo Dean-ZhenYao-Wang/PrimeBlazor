@@ -594,5 +594,8 @@
     static setElementZIndex(element,index) {
         element.style.zIndex=index
     }
+    static setStyleDisaplay(element, disaply) {
+        element.style.disaply = disaply;
+    }
 }
 window.DomHandler = DomHandler;
