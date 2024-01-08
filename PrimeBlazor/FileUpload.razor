@@ -55,7 +55,7 @@
     [Parameter] public bool auto { get; set; } = false;
     [Parameter] public double? maxFileSize { get; set; }
     [Parameter] public bool multiple { get; set; } = false;
-    [Parameter] public string invalidFileSizeMessage { get; set; } = "{0}: Invalid file size, maximum upload size is {1}.";
+    [Parameter] public string invalidFileSizeMessage { get; set; } = "{0}: Invalid file size, file size should be smalier then {1}.";
     [Parameter] public bool withCredentials { get; set; } = false;
     [Parameter] public int previewWidth { get; set; } = 50;
     [Parameter] public string chooseLabel { get; set; } = "选择";
@@ -101,20 +101,15 @@
                 this.files.Add(file);
             }
         }
-        if (this.auto)
+        await select.InvokeAsync(letFiles);
+        if (this.auto && this.hasFiles)
         {
             this.uploadEvent();
         }
-        await select.InvokeAsync(letFiles);
         this.clearInputElement();
-        if (this.mode.Equals("basic"))
-        {
-            await JS.InvokeVoidAsync("DomHandler.setStyleDisaplay", fileInput, "none");
-        }
     }
     private async Task uploadEvent()
     {
-        this.messages = new List<string>();
         await beforeUpload.InvokeAsync(this.files);
 
         // 处理文件上传逻辑
@@ -170,6 +165,7 @@
     private async Task clearEvent()
     {
         this.files = new List<IBrowserFile>();
+        this.messages = new List<string>();
         await clear.InvokeAsync();
         this.clearInputElement();
     }
@@ -199,7 +195,6 @@
     {
         if (this.maxFileSize != null && file.Size > this.maxFileSize.Value)
         {
-            this.messages.Add(this.invalidFileSizeMessage.Replace("{0}", file.Name).Replace("{1}", this.formatSize(this.maxFileSize.Value)));
             return false;
         }
         return true;
