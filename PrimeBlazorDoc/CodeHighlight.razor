@@ -1,0 +1,17 @@
+﻿<pre :class="languageClass" ref="code">
+<code>
+        @ChildContent
+    </code>
+</pre>
+
+@code {
+    [Parameter] public string lang { get; set; } = "markup";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    private string languageClass
+    {
+        get
+        {
+            return "language-" + this.lang;
+        }
+    }
+}

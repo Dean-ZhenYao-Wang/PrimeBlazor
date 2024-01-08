@@ -12,27 +12,27 @@
             {
                 <FirstPageLink @key="i" onclick="changePageToFirst" disabled="isFirstPage" />
             }
-            if (item.Equals("PrevPageLink"))
+            else if (item.Equals("PrevPageLink"))
             {
                 <PrevPageLink @key="i" onclick="changePageToPrev" disabled="isFirstPage" />
             }
-            if (item.Equals("NextPageLink"))
+            else if (item.Equals("NextPageLink"))
             {
                 <NextPageLink @key="i" onclick="changePageToNext" disabled="isLastPage" />
             }
-            if (item.Equals("LastPageLink"))
+            else if (item.Equals("LastPageLink"))
             {
                 <LastPageLink @key="i" onclick="changePageToLast" disabled="isLastPage" />
             }
-            if (item.Equals("PageLinks"))
+            else if (item.Equals("PageLinks"))
             {
                 <PageLinks @key="i" value="updatePageLinks" page="page" onclick="pageLinkClick" />
             }
-            if (item.Equals("CurrentPageReport"))
+            else if (item.Equals("CurrentPageReport"))
             {
                 <CurrentPageReport @key="i" template="currentPageReportTemplate" page="page" pageCount="pageCount" />
             }
-            if (item.Equals("RowsPerPageDropdown"))
+            else if (item.Equals("RowsPerPageDropdown"))
             {
                 <RowsPerPageDropdown @key="i" value="rows" options="rowsPerPageOptions" rowsChange="rowsChange" />
             }

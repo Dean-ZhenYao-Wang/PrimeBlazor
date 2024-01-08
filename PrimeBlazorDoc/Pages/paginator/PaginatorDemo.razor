@@ -9,23 +9,26 @@
 
     <div class="content-section implementation">
         <h3 class="first">Default</h3>
-        <Paginator first="first" rows="rows" totalRecords="120" onchange="onPageChange" rowsPerPageOptions="new List<int>(){10,20,30}"></Paginator>
+        <Paginator first="first" rows="rows" totalRecords="totalRecords" onchange="onPageChange" rowsPerPageOptions="new List<int>(){10,20,30}"></Paginator>
 
-        <h3 class="first">Custom Template</h3>
-        <Paginator first="first2" rows="rows2" totalRecords="120" onchange="onPageChange2" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"></Paginator>
+        <h3 >Custom Template</h3>
+        <Paginator first="first2" rows="rows2" totalRecords="totalRecords2" onchange="onPageChangeCustom" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"></Paginator>
     </div>
+    <PaginatorDoc />
 </div>
 @code {
     private int first = 0;
     private int rows = 10;
+    private int totalRecords = 50;
     private int first2 = 0;
-    private int rows2 = 10;
+    private int rows2 = 1;
+    private int totalRecords2 = 12;
     private void onPageChange(PageState pageState)
     {
         this.first = pageState.first;
         this.rows = pageState.rows;
     }
-    private void onPageChange2(PageState pageState)
+    private void onPageChangeCustom(PageState pageState)
     {
         this.first2 = pageState.first;
         this.rows2 = pageState.rows;
