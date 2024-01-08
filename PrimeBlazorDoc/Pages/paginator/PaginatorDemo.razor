@@ -12,7 +12,7 @@
         <Paginator @bind-first="first" @bind-rows="rows" totalRecords="totalRecords" rowsPerPageOptions="new List<int>(){10,20,30}"></Paginator>
 
         <h3 >Custom Template</h3>
-        <Paginator first="first2" rows="rows2" totalRecords="totalRecords2" onchange="onPageChangeCustom" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink">
+        <Paginator first="first2" rows="rows2" totalRecords="totalRecords2" pageChange="onPageChangeCustom" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink">
             <LeftTemplate>
                 <Button icon="pi pi-refresh" />
             </LeftTemplate>
