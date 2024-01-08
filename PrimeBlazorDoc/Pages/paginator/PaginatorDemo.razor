@@ -12,10 +12,22 @@
         <Paginator first="first" rows="rows" totalRecords="totalRecords" onchange="onPageChange" rowsPerPageOptions="new List<int>(){10,20,30}"></Paginator>
 
         <h3 >Custom Template</h3>
-        <Paginator first="first2" rows="rows2" totalRecords="totalRecords2" onchange="onPageChangeCustom" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"></Paginator>
+        <Paginator first="first2" rows="rows2" totalRecords="totalRecords2" onchange="onPageChangeCustom" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink">
+            <LeftTemplate>
+                <Button icon="pi pi-refresh" />
+            </LeftTemplate>
+            <RightTemplate>
+                <Button icon="pi pi-refresh" />
+            </RightTemplate>
+        </Paginator>
     </div>
     <PaginatorDoc />
 </div>
+<style lang="scss">
+    .p-button.p-button-icon-only {
+        border-radius: 0;
+    }
+</style>
 @code {
     private int first = 0;
     private int rows = 10;

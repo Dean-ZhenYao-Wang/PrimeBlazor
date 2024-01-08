@@ -1,4 +1,10 @@
 <div class="p-paginator p-component p-unselectable-text">
+    @if (LeftTemplate is not null)
+    {
+        <div class="p-paginator-left-content">
+            @LeftTemplate(currentState)
+        </div>
+    }
     @if (ChildContent is not null)
     {
         @ChildContent
@@ -38,8 +44,28 @@
             }
         }
     }
+    @if (RightTemplate is not null)
+    {
+        <div class="p-paginator-right-content">
+            @RightTemplate(currentState)
+        </div>
+    }
 </div>
 @code {
+    private PageState currentState
+    {
+        get
+        {
+            return new PageState()
+                {
+                    page = this.page,
+                    first = this.first,
+                    rows = this.rows
+                };
+        }
+    }
+    [Parameter] public RenderFragment<PageState>? LeftTemplate { get; set; }
+    [Parameter] public RenderFragment<PageState>? RightTemplate { get; set; }
     [Parameter] public int totalRecords { get; set; } = 0;
     [Parameter] public int rows { get; set; } = 0;
     [Parameter] public int first { get; set; } = 0;
