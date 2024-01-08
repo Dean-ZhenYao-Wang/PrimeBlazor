@@ -1,5 +1,5 @@
-﻿<pre :class="languageClass" ref="code">
-<code>
+﻿<pre :class="languageClass" @ref="code">
+    <code>
         @ChildContent
     </code>
 </pre>
@@ -7,6 +7,7 @@
 @code {
     [Parameter] public string lang { get; set; } = "markup";
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    private ElementReference code;
     private string languageClass
     {
         get
