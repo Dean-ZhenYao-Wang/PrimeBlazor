@@ -12,13 +12,35 @@
         </div>
     </div>
 </transition>
-@code{
-    [Parameter] public Message? message{get;set;}
-    [Parameter] public EventCallback<Message> close{ get; set; }
-    private async Task closeEvent(){
+@code {
+    [Parameter] public Message? message { get; set; }
+    [Parameter] public EventCallback<Message> close { get; set; }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (this.message?.life!=0)
+                SetTimer(async () =>
+                {
+                    await this.close.InvokeAsync(this.message);
+                }, this.message.life);
+        }
+    }
+    private Timer? timer = null;
+    private void SetTimer(Action action, int delay)
+    {
+        timer = new Timer(_ =>
+        {
+            action();
+            timer?.Dispose();
+        }, null, delay, Timeout.Infinite);
+    }
+    private async Task closeEvent()
+    {
         await close.InvokeAsync(message);
     }
-    private string containerClass{
+    private string containerClass
+    {
         get
         {
             string str = "p-toast-item-container p-highlight";
@@ -40,7 +62,8 @@
             return str;
         }
     }
-    private string iconClass{
+    private string iconClass
+    {
         get
         {
             string str = "p-toast-image pi";

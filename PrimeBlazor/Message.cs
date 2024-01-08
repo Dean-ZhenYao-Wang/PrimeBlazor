@@ -16,6 +16,8 @@ namespace PrimeBlazor
         public string summary { get; set; }
         [Parameter]
         public string detail { get; set; }
+        [Parameter]
+        public string group { get; set; }
         public override bool Equals(object? obj)
         {
             if (obj == null || GetType() != obj.GetType()) return false;

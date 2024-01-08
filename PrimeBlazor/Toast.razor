@@ -1,17 +1,46 @@
 <div class="@containerClass">
-    @foreach(var msg in Messages)
+    @foreach (var msg in Messages)
     {
         <ToastMessage @key="msg.id" message="msg" close="remove" />
     }
 </div>
 @code {
+    [Parameter] public string? group { get; set; }
     [Parameter] public string position { get; set; } = "topright";
     private List<Message> Messages = new List<Message>();
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            ToastEventBus.on("add", (message) => this.add(message));
+            ToastEventBus.on("add", (message) =>
+            {
+                Message obj = message as Message;
+                if (!string.IsNullOrWhiteSpace(this.group))
+                {
+                    if (!string.IsNullOrWhiteSpace(obj.group))
+                    {
+                        if (this.group.Equals(obj.group))
+                        {
+                            this.add(obj);
+                        }
+                    }
+                }
+                else
+                {
+                    this.add(obj);
+                }
+            });
+            ToastEventBus.on("removeGroup", (group) =>
+            {
+                if (!string.IsNullOrWhiteSpace(this.group) && this.group.Equals(group.ToString()))
+                {
+                    this.Messages.Clear();
+                }
+            });
+            ToastEventBus.on("removeAllGroups", () =>
+            {
+                this.Messages.Clear();
+            });
         }
     }
     private void add(Message message)

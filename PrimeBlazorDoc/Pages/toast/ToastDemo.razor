@@ -23,6 +23,31 @@
                 <Button label="Error" CssClass="p-button-danger" onclick="showError" />
             </div>
         </div>
+        <h3>Positions</h3>
+        <div class="p-grid">
+            <div class="p-col-12 p-md-4">
+                <Button label="Top Left" onclick="showTopLeft" />
+            </div>
+            <div class="p-col-12 p-md-4">
+                <Button label="Bottom Left" CssClass="p-button-warning" @onclick="showBottomLeft" />
+            </div>
+            <div class="p-col-12 p-md-4">
+                <Button label="Bottom Right" CssClass="p-button-success" @onclick="showBottomRight" />
+            </div>
+        </div>
+
+        <h3>Options</h3>
+        <div class="p-grid">
+            <div class="p-col-12 p-md-6">
+                <Button @onclick="showMultiple" label="Multiple" CssClass="p-button-warning" />
+            </div>
+            <div class="p-col-12 p-md-6">
+                <Button @onclick="showSticky" label="Sticky" />
+            </div>
+        </div>
+
+        <h3>Remove All</h3>
+        <Button @onclick="clear" label="Clear" />
     </div>
 </div>
 <style lang="scss">
@@ -53,5 +78,31 @@
     private void showError()
     {
         ToastEventBus.add(new Message() { severity = "error", summary = "Error Message", detail = "Validation failed" });
+    }
+    private void showTopLeft()
+    {
+        ToastEventBus.add(new Message() { severity = "info", summary = "Info ", detail = "You need to close Me", group = "tl", life = 3000 });
+    }
+    private void showBottomLeft()
+    {
+        ToastEventBus.add(new Message() { severity = "warn", summary = "Warn Message", detail = "There are unsaved changes", group = "bl", life = 3000 });
+    }
+    private void showBottomRight()
+    {
+        ToastEventBus.add(new Message() { severity = "success", summary = "Success Message", detail = "Order submitted", group = "br", life = 3000 });
+    }
+    private void showSticky()
+    {
+        ToastEventBus.add(new Message() { severity = "info", summary = "Sticky Message", detail = "You need to close Me" });
+    }
+    private void showMultiple()
+    {
+        ToastEventBus.add(new Message() { severity = "info", summary = "Message 1", detail = "PrimeVue rocks", life = 3000 });
+        ToastEventBus.add(new Message() { severity = "info", summary = "Message 1", detail = "PrimeVue rocks", life = 3000 });
+        ToastEventBus.add(new Message() { severity = "info", summary = "Message 1", detail = "PrimeVue rocks", life = 3000 });
+    }
+    private void clear()
+    {
+        ToastEventBus.removeAllGroups();
     }
 }
