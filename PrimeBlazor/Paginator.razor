@@ -32,6 +32,10 @@
             {
                 <CurrentPageReport @key="i" template="currentPageReportTemplate" page="page" pageCount="pageCount" />
             }
+            if (item.Equals("RowsPerPageDropdown"))
+            {
+                <RowsPerPageDropdown @key="i" value="rows" options="rowsPerPageOptions" rowsChange="rowsChange" />
+            }
         }
     }
 </div>
@@ -40,7 +44,7 @@
     [Parameter] public int rows { get; set; } = 0;
     [Parameter] public int first { get; set; } = 0;
     [Parameter] public int pageLinkSize { get; set; } = 5;
-    [Parameter] public List<object> rowsPerPageOptions { get; set; }
+    [Parameter] public List<int> rowsPerPageOptions { get; set; }
     [Parameter] public string template { get; set; } = "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown";
     [Parameter] public string currentPageReportTemplate { get; set; } = "({currentPage} of {totalPages})";
     [Parameter] public EventCallback<PageState> onchange { get; set; }
