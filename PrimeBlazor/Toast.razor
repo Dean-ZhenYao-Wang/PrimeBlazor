@@ -1,0 +1,41 @@
+<div class="@containerClass">
+    @foreach(var msg in Messages)
+    {
+        <ToastMessage @key="msg.id" message="msg" close="remove" />
+    }
+</div>
+@code {
+    [Parameter] public string position { get; set; } = "topright";
+    private List<Message> Messages = new List<Message>();
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ToastEventBus.on("add", (message) => this.add(message));
+        }
+    }
+    private void add(Message message)
+    {
+        this.Messages.Add(message);
+    }
+    private void remove(Message message)
+    {
+        int index = -1;
+        for (int i = 0; i < this.Messages.Count; i++)
+        {
+            if (this.Messages[i].Equals(message))
+            {
+                index = i;
+                break;
+            }
+        }
+        this.Messages.RemoveAt(index);
+    }
+    private string containerClass
+    {
+        get
+        {
+            return "p-toast p-component p-toast-" + this.position;
+        }
+    }
+}

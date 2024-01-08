@@ -1,0 +1,65 @@
+<transition name="p-toast-message">
+    <div class="@containerClass">
+        <div class="p-toast-item">
+            <button class="p-toast-icon-close p-link" @onclick="closeEvent">
+                <span class="p-toast-icon-close-icon pi pi-times"></span>
+            </button>
+            <span class="@iconClass"></span>
+            <div class="p-toast-message">
+                <span class="p-toast-title">@message?.summary</span>
+                <div class="p-toast-detail">@message?.detail</div>
+            </div>
+        </div>
+    </div>
+</transition>
+@code{
+    [Parameter] public Message? message{get;set;}
+    [Parameter] public EventCallback<Message> close{ get; set; }
+    private async Task closeEvent(){
+        await close.InvokeAsync(message);
+    }
+    private string containerClass{
+        get
+        {
+            string str = "p-toast-item-container p-highlight";
+            switch (this.message?.severity)
+            {
+                case "info":
+                    str += " p-toast-message-info";
+                    break;
+                case "warn":
+                    str += " p-toast-message-warn";
+                    break;
+                case "error":
+                    str += " p-toast-message-error";
+                    break;
+                case "success":
+                    str += " p-toast-message-success";
+                    break;
+            }
+            return str;
+        }
+    }
+    private string iconClass{
+        get
+        {
+            string str = "p-toast-image pi";
+            switch (this.message?.severity)
+            {
+                case "info":
+                    str += " pi-info-circle";
+                    break;
+                case "warn":
+                    str += "pi-exclamation-triangle";
+                    break;
+                case "error":
+                    str += " pi-times";
+                    break;
+                case "success":
+                    str += " pi-check";
+                    break;
+            }
+            return str;
+        }
+    }
+}

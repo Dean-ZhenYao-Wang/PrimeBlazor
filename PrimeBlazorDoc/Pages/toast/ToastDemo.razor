@@ -1,0 +1,57 @@
+﻿@page "/toast"
+<div>
+    <div class="content-section introduction">
+        <div class="feature-intro">
+            <h1>Toast</h1>
+            <p>Toast is used to display messages in an overlay.</p>
+        </div>
+    </div>
+
+    <div class="content-section implementation p-fluid">
+        <h3>Severities</h3>
+        <div class="p-grid">
+            <div class="p-col-12 p-md-3">
+                <Button label="Success" CssClass="p-button-success" onclick="showSuccess" />
+            </div>
+            <div class="p-col-12 p-md-3">
+                <Button label="Info" CssClass="p-button-info" onclick="showInfo" />
+            </div>
+            <div class="p-col-12 p-md-3">
+                <Button label="Warn" CssClass="p-button-warning" onclick="showWarn" />
+            </div>
+            <div class="p-col-12 p-md-3">
+                <Button label="Error" CssClass="p-button-danger" onclick="showError" />
+            </div>
+        </div>
+    </div>
+</div>
+<style lang="scss">
+    button.p-button {
+        margin-right: .5em;
+    }
+
+    .p-toast.p-toast-topright,
+    .p-toast.p-toast-left {
+        top: 100px;
+    }
+</style>
+@code {
+    private List<Message> messages = new List<Message>();
+    private int count = 0;
+    private void showSuccess()
+    {
+        ToastEventBus.add(new Message() { severity = "success", summary = "Success Message", detail = "Order submitted" });
+    }
+    private void showInfo()
+    {
+        ToastEventBus.add(new Message() { severity = "info", summary = "Info Message", detail = "PrimeNG rocks" });
+    }
+    private void showWarn()
+    {
+        ToastEventBus.add(new Message() { severity = "warn", summary = "Warn Message", detail = "There are unsaved changes" });
+    }
+    private void showError()
+    {
+        ToastEventBus.add(new Message() { severity = "error", summary = "Error Message", detail = "Validation failed" });
+    }
+}
