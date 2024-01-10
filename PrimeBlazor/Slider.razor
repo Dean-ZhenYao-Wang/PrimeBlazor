@@ -153,10 +153,8 @@
         {
             if (this.horizontal)
                 return $"left:{this.rangeStartPosition}%;";
-            else if (this.vertical)
-                return $"bottom:{this.rangeStartPosition}%;";
             else
-                return string.Empty;
+                return $"bottom:{this.rangeStartPosition}%;";
         }
     }
     private string rangeEndHandleStyle
@@ -165,10 +163,8 @@
         {
             if (this.horizontal)
                 return $"left:{this.rangeEndPosition}%;";
-            else if (this.vertical)
-                return $"bottom:{this.rangeEndPosition}%;";
             else
-                return string.Empty;
+                return $"bottom:{this.rangeEndPosition}%;";
         }
     }
 
