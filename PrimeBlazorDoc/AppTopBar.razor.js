@@ -48,7 +48,7 @@ export default class AppTopBar {
         }
     }
     static isOutsideOfThemesMenuClicked(event) {
-        return !(window.DomHandler.hasClass(event.target, 'themes-menu-link') || AppTopBar.themesMenuElement.isSameNode(event.target) || AppTopBar.themesMenuElement.contains(event.target));
+        return !(window.DomHandler.hasClass(event.target, 'themes-menu-link') || AppTopBar.themesMenuElement.isSameNode(event.target));
     }
 }
 window.AppTopBar = AppTopBar;
