@@ -1,27 +1,42 @@
-﻿<input type="@type" closable="@closable" class="@css @CssClass" id="@Id" disabled="@disabled" value="@value" @oninput="(async(e)=>await onInputEvent(e))" placeholder="@placeholder" />
+﻿<input type="@type" closable="@closable" class="@css @CssClass" id="@Id"
+       disabled="@disabled" value="@value" @oninput="onInputEvent" placeholder="@placeholder"
+       readonly="@Readonly"
+       @onfocus="onfocusEvent"
+       @onblur="onblurEvent"
+       @onkeydown="onkeydownEvent"
+       @ref="refComponent" />
 @code {
-    [Parameter]
-    public bool closable{ get; set; }
+    [Parameter] public bool Readonly { get; set; }
+    [Parameter] public bool closable { get; set; }
     [Parameter] public string type { get; set; } = "text";
-    [Parameter]
-    public string Id { get; set; } = Guid.NewGuid().ToString();
-    [Parameter]
-    public string CssClass { get; set; } = string.Empty;
-    [Parameter]
-    public string value { get; set; } = string.Empty;
-    [Parameter]
-    public bool disabled { get; set; }
-    [Parameter]
-    public string? model { get; set; } = string.Empty;
-    [Parameter]
-    public EventCallback<string> modelChanged { get; set; }
-    [Parameter]public EventCallback<string>changed{ get; set; }
-    [Parameter]
-    public string placeholder { get; set; } = string.Empty;
+    [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public string CssClass { get; set; } = string.Empty;
+    [Parameter] public string value { get; set; } = string.Empty;
+    [Parameter] public bool disabled { get; set; }
+    [Parameter] public string? model { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> modelChanged { get; set; }
+    [Parameter] public EventCallback<string> oninput { get; set; }
+    [Parameter] public string placeholder { get; set; } = string.Empty;
+    [Parameter] public EventCallback<FocusEventArgs> onfocus { get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> onblur { get; set; }
+    [Parameter] public EventCallback<KeyboardEventArgs> onkeydown { get; set; }
+    public ElementReference refComponent;
+    private async Task onkeydownEvent(KeyboardEventArgs keyboardEvent)
+    {
+        await onkeydown.InvokeAsync(keyboardEvent);
+    }
+    private async Task onblurEvent(FocusEventArgs focusEvent)
+    {
+        await onblur.InvokeAsync(focusEvent);
+    }
+    private async Task onfocusEvent(FocusEventArgs focusEvent)
+    {
+        await onfocus.InvokeAsync(focusEvent);
+    }
     private async Task onInputEvent(ChangeEventArgs eventArgs)
     {
         await modelChanged.InvokeAsync(eventArgs.Value?.ToString());
-        await changed.InvokeAsync(eventArgs.Value?.ToString());
+        await oninput.InvokeAsync(eventArgs.Value?.ToString());
     }
     private string css
     {

@@ -1,0 +1,133 @@
+﻿@page "/calendar"
+<div>
+    <h5>Popup</h5>
+    <div class=" p-fluid grid formgrid">
+        <div class="field col-12 md:col-4">
+            <label for="basic">Basic</label>
+            <Calendar id="basic" @bind-value="date1" />
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="icon">Icon</label>
+            <Calendar id="icon" @bind-value="date3" showIcon="true" />
+        </div>
+       <div class="field col-12 md:col-4">
+            <label for="spanish">Spanish</label>
+            <Calendar id="spanish" @bind-value="date2" locale="es" dateFormat="dd/mm/yy" />
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="minmax">MinMax</label>
+            <Calendar id="minmax" @bind-value="date4" minDate="minDate" maxDate="maxDate" manualInput="false" />
+        </div>
+       <div class="field col-12 md:col-4">
+            <label for="disableddays">Disabled Days</label>
+            <Calendar id="disableddays" @bind-value="date5" disabledDates="invalidDates" disabledDays="[0,6]" manualInput="false" />
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="navigators">Navigators</label>
+            <Calendar id="navigators" @bind-value="date6" monthNavigator="true" yearNavigator="true" yearRange="2000:2030" />
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="multiple">Multiple</label>
+            <Calendar id="multiple" @bind-value="dates1" selectionMode="multiple" manualInput="false" />
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="range">Range</label>
+            <Calendar id="range" @bind-value="dates2" selectionMode="range" manualInput="false" />
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="buttonbar">Button Bar</label>
+            <Calendar id="buttonbar" @bind-value="date7" showButtonBar="true" />
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="time24">Time / 24h</label>
+            <Calendar id="time24" @bind-value="date8" showTime="true" showSeconds="true" />
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="time12">Time / 12h</label>
+            <Calendar id="time12" @bind-value="date9" timeOnly="true" hourFormat="12" />
+        </div>
+       <div class="field col-12 md:col-4">
+            <label for="monthpicker">Month Picker</label>
+            <Calendar id="monthpicker" @bind-value="date10" view="month" dateFormat="mm/yy" yearNavigator="true" yearRange="2000:2030" />
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="multiplemonths">Multiple Months</label>
+            <Calendar id="multiplemonths" @bind-value="date11" numberOfMonths="3" />
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="datetemplate">Date Template</label>
+            <Calendar id="datetemplate" @bind-value="date12">
+                <dateTemplate Context="date">
+                    @if (date.day > 10 && date.day < 15)
+                    {
+                        <strong class="special-day">@date.day</strong>
+                    }
+                    else
+                    {
+                        @date.day
+                    }
+                </dateTemplate>
+            </Calendar>
+        </div>
+        <div class="field col-12 md:col-4">
+            <label for="touchUI">TouchUI</label>
+            <Calendar id="touchUI" @bind-value="date13" touchUI="true" />
+        </div>
+        <h5>Inline</h5>
+        <Calendar @bind-value="date14" inline="true" showWeek="true" />
+    </div>
+
+
+    <CalendarDoc />
+</div>
+
+@code {
+    private DateTime? date1 = null;
+    private DateTime? date2 = null;
+    private DateTime? date3 = null;
+    private DateTime? date4 = null;
+    private DateTime? date5 = null;
+    private DateTime? date6 = null;
+    private DateTime? date7 = null;
+    private DateTime? date8 = null;
+    private DateTime? date9 = null;
+    private DateTime? date10 = null;
+    private DateTime? date11 = null;
+    private DateTime? date12 = null;
+    private DateTime? date13 = null;
+    private DateTime? date14 = null;
+    private List<DateTime>? dates1 = null;
+    private List<DateTime?>? dates2 = null;
+    private PrimeBlazor.DateLocale es = new DateLocale
+        {
+            firstDayOfWeek = 1,
+            dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+            dayNamesShort = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+            dayNamesMin = ["D", "L", "M", "X", "J", "V", "S"],
+            monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+            monthNamesShort = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+            today = "Hoy",
+            clear = "Borrar",
+            weekHeader = "Sm"
+        };
+    private DateTime? minDate = null;
+    private DateTime? maxDate = null;
+    private List<DateTime>? invalidDates = null;
+    protected override void OnInitialized()
+    {
+        DateTime today = DateTime.Now;
+        int month = today.Month;
+        int year = today.Year;
+        int prevMonth = (month == 1) ? 12 : month - 1;
+        int prevYear = (prevMonth == 12) ? year - 1 : year;
+        int nextMonth = (month == 12) ? 1 : month + 1;
+        int nextYear = (nextMonth == 1) ? year + 1 : year;
+        this.minDate = new DateTime(prevYear, prevMonth,1);
+        this.maxDate = new DateTime(nextYear, nextMonth,1);
+
+        DateTime invalidDate = today;
+        invalidDate.AddDays(-1);
+        this.invalidDates = [today, invalidDate];
+    }
+
+}

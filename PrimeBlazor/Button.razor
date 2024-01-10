@@ -1,4 +1,4 @@
-﻿<button class="@buttonClass" style="@style" @onclick="onclick" @ref=refButton tabindex="@tabindex">
+﻿<button class="@buttonClass" style="@style" @onclick="onclick" @onclick:preventDefault="onclick_preventDefault" @ref=refButton tabindex="@tabindex">
     @if (ChildContent == null)
     {
         if (!string.IsNullOrWhiteSpace(icon))
@@ -15,16 +15,17 @@
 
 @code {
     [Parameter] public int? tabindex { get; set; } = null;
-    private ElementReference refButton{ get; set; }
-    [Parameter] public ElementReference? refElement{ get; set; }
+    private ElementReference refButton { get; set; }
+    [Parameter] public ElementReference? refElement { get; set; }
     [Parameter] public string label { get; set; } = string.Empty;
-    [Parameter] public RenderFragment? ChildContent{ get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string icon { get; set; } = string.Empty;
     [Parameter] public string iconPos { get; set; } = "left";
     [Parameter] public bool disabled { get; set; }
     [Parameter] public string CssClass { get; set; } = string.Empty;
-    [Parameter] public string? style{ get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> onclick{ get; set; }
+    [Parameter] public string? style { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> onclick { get; set; }
+    [Parameter] public bool onclick_preventDefault { get; set; } = false;
     private string buttonClass
     {
         get
@@ -76,7 +77,7 @@
     }
     protected override void OnAfterRender(bool firstRender)
     {
-        if(refElement is not null)
+        if (refElement is not null)
             refElement = this.refButton;
     }
 }

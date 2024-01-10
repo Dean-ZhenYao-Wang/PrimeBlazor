@@ -1,0 +1,1989 @@
+﻿@typeparam TItem
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+<span class="@containerClass" id="@id" @ref="el">
+    @if (!this.inline)
+    {
+        <Inputtext @ref="input" value="@inputFieldValue" Readonly="!manualInput" oninput="inputEvent" onfocus="focusEvent" onblur="blurEvent" onkeydown="keydownEvent" />
+    }
+    @if (showIcon)
+    {
+        <Button icon="@icon" tabindex="-1" CssClass="p-datepicker-trigger p-calendar-button" disabled="@disabled" onclick="onButtonClick" />
+    }
+    <transition name="p-input-overlay" @onmouseenter="onOverlayEnter" @onmouseleave="onOverlayLeave">
+        @if (this.inline ? true : this.overlayVisible)
+        {
+            <div @ref="overlay" class="@panelStyleClass">
+                @if (!timeOnly)
+                {
+                    foreach (ClendarMonth month in months)
+                    {
+                        int i = months.IndexOf(month);
+                        <div class="p-datepicker-group" @key="@($"{month.month}+{month.year}")">
+                            <div class="p-datepicker-header">
+                                @headerTemplate
+                                @if (i == 0)
+                                {
+                                    <button class="p-datepicker-prev p-link" @onclick="navBackward" @onclick:preventDefault="true">
+                                        <span class="p-datepicker-prev-icon pi pi-chevron-left"></span>
+                                    </button>
+                                }
+                                @if (numberOfMonths == 1 ? true : (i == numberOfMonths - 1))
+                                {
+                                    <button class="p-datepicker-next p-link" @onclick="navForward" @onclick:preventDefault="true">
+                                        <span class="p-datepicker-next-icon pi pi-chevron-right"></span>
+                                    </button>
+                                }
+                                <div class="p-datepicker-title">
+                                    @if (!monthNavigator && !view.Equals("month"))
+                                    {
+                                        <span class="p-datepicker-month">@locale.monthNames[month.month]</span>
+                                    }
+                                    @if (monthNavigator && !view.Equals("month") && numberOfMonths == 1)
+                                    {
+                                        <select class="p-datepicker-month" @onchange="async(e)=>await onMonthDropdownChange(e)">
+                                            @foreach (string monthName in locale.monthNames)
+                                            {
+                                                int index = locale.monthNames.IndexOf(monthName);
+
+                                                <option value="@index" @key="monthName" selected="@(index == month.month)">
+                                                    @monthName
+                                                </option>
+                                            }
+                                        </select>
+                                    }
+                                    @if (!yearNavigator)
+                                    {
+                                        <span class="p-datepicker-year">@(view.Equals("month") ? currentYear : month.year)</span>
+                                    }
+                                    @if (yearNavigator && numberOfMonths == 1)
+                                    {
+                                        <select class="p-datepicker-year" @onchange="async(e)=>await onYearDropdownChange(e)">
+                                            @foreach (int year in yearOptions)
+                                            {
+                                                <option value="@year" @key="year" selected="@(year == currentYear)">@year</option>
+                                            }
+                                        </select>
+                                    }
+                                </div>
+                            </div>
+                            @if (view.Equals("date"))
+                            {
+                                <div class="p-datepicker-calendar-container">
+                                    <table class="p-datepicker-calendar">
+                                        <thead>
+                                            <tr>
+                                                @if (showWeek)
+                                                {
+                                                    <th scope="col" class="p-datepicker-weekheader p-disabled">
+                                                        <span>@locale.weekHeader</span>
+                                                    </th>
+                                                }
+                                                @foreach (string weekDay in weekDays)
+                                                {
+                                                    <th scope="col" @key="weekDay">
+                                                        <span>@weekDay</span>
+                                                    </th>
+                                                }
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (List<DateMeata> week in month.dates)
+                                            {
+                                                int index = month.dates.IndexOf(week);
+                                                <tr @key="@($"{week[0].day} {week[0].month}")">
+                                                    @if (showWeek)
+                                                    {
+                                                        <td class="p-datepicker-weeknumber">
+                                                            <span class="p-disabled">
+                                                                @month.weekNumbers[index]
+                                                            </span>
+                                                        </td>
+                                                    }
+                                                    @foreach (var date in week)
+                                                    {
+                                                        <td @key="@($"{date.day} {date.month}")" class="@(date.otherMonth?"p-datepicker-other-month":null) @(date.today?"p-datepicker-today":null)">
+                                                            <span class="@(this.isSelected(date)?"p-highlight":null) @(!date.selectable?"p-disabled":null)" @onclick="async()=>await onDateSelect(date)" draggable="false">
+                                                                @if (dateTemplate is not null)
+                                                                {
+                                                                    @dateTemplate(date)
+                                                                }
+                                                                else
+                                                                {
+                                                                    @date.day
+                                                                }
+                                                            </span>
+                                                        </td>
+                                                    }
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                    }
+                    @if (view.Equals("month"))
+                    {
+                        <div class="p-monthpicker">
+                            @foreach (string m in monthPickerValues)
+                            {
+                                int mindex = monthPickerValues.IndexOf(m);
+                                <span @key="m" class="p-monthpicker-month @(isMonthSelected(mindex)?"p-highlight":null)">
+                                    @m
+                                </span>
+                            }
+                        </div>
+                    }
+                }
+                @if (showTime || timeOnly)
+                {
+                    <div class="p-timepicker">
+                        <div class="p-hour-picker">
+                            <button class="p-link" @onmousedown="(e)=>onTimePickerElementMouseDown(e, 0, 1)" @onmousedown:preventDefault="true" @onmouseup="(e)=>onTimePickerElementMouseUp(e)" @onmouseup:preventDefault="true">
+                                <span class="pi pi-chevron-up"></span>
+                            </button>
+                            <span style="display:@(currentHour < 10 ? "inline": "none")">0</span><span>@currentHour</span>
+                            <button class="p-link" @onmousedown="(e)=>onTimePickerElementMouseDown(e, 0, -1)" @onmousedown:preventDefault="true" @onmouseup="(e)=>onTimePickerElementMouseUp(e)" @onmouseup:preventDefault="true">
+                                <span class="pi pi-chevron-down"></span>
+                            </button>
+                        </div>
+                        <div class="p-separator">
+                            <span class="p-separator-spacer">
+                                <span class="pi pi-chevron-up"></span>
+                            </span>
+                            <span>@timeSeparator</span>
+                            <span class="p-separator-spacer">
+                                <span class="pi pi-chevron-up"></span>
+                            </span>
+                        </div>
+                        <div class="p-minute-picker">
+                            <button class="p-link" @onmousedown="(e)=>onTimePickerElementMouseDown(e, 1, 1)" @onmousedown:preventDefault="true" @onmouseup="(e)=>onTimePickerElementMouseUp(e)" @onmouseup:preventDefault="true">
+                                <span class="pi pi-chevron-up"></span>
+                            </button>
+                            <span :style="display:@(currentMinute < 10 ? "inline":"none")">0</span><span>@currentMinute</span>
+                            <button class="p-link" @onmousedown="(e)=>onTimePickerElementMouseDown(e, 1, -1)" @onmousedown:preventDefault="true" @onmouseup="(e)=>onTimePickerElementMouseUp(e)" @onmouseup:preventDefault="true">
+                                <span class="pi pi-chevron-down"></span>
+                            </button>
+                        </div>
+                        @if (showSeconds)
+                        {
+                            <div class="p-separator">
+                                <span class="p-separator-spacer">
+                                    <span class="pi pi-chevron-up"></span>
+                                </span>
+                                <span>@timeSeparator</span>
+                                <span class="p-separator-spacer">
+                                    <span class="pi pi-chevron-up"></span>
+                                </span>
+                            </div>
+                            <div class="p-second-picker">
+                                <button class="p-link" @onmousedown="(e)=>onTimePickerElementMouseDown(e, 2, 1)" @onmousedown:preventDefault="true" @onmouseup="(e)=>onTimePickerElementMouseUp(e)" @onmouseup:preventDefault="true">
+                                    <span class="pi pi-chevron-up"></span>
+                                </button>
+                                <span :style="display:@(currentSecond < 10 ? "inline": "none")">0</span><span>@currentSecond</span>
+                                <button class="p-link" @onmousedown="(e)=>onTimePickerElementMouseDown(e, 2, -1)" @onmousedown:preventDefault="true" @onmouseup="(e)=>onTimePickerElementMouseUp(e)" @onmouseup:preventDefault="true">
+                                    <span class="pi pi-chevron-down"></span>
+                                </button>
+                            </div>
+                        }
+                        @if (hourFormat.Equals("12"))
+                        {
+                            <div class="p-separator">
+                                <span class="p-separator-spacer">
+                                    <span class="pi pi-chevron-up"></span>
+                                </span>
+                                <span>@timeSeparator</span>
+                                <span class="p-separator-spacer">
+                                    <span class="pi pi-chevron-up"></span>
+                                </span>
+                            </div>
+                            <div class="p-ampm-picker">
+                                <button class="p-link" @onclick="toggleAMPM" @onclick:preventDefault="true">
+                                    <span class="pi pi-chevron-up"></span>
+                                </button>
+                                <span>@(pm ? "PM" : "AM")</span>
+                                <button class="p-link" @onclick="toggleAMPM" @onclick:preventDefault="true">
+                                    <span class="pi pi-chevron-down"></span>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                @if (showButtonBar)
+                {
+                    <div class="p-datepicker-buttonbar">
+                        <Button label="@locale.today" onclick="onTodayButtonClick" onclick_preventDefault="true" CssClass="p-button-secondary" />
+                        <Button label="@locale.clear" onclick="onClearButtonClick" onclick_preventDefault="true" CssClass="p-button-secondary" />
+                    </div>
+                }
+                @footerTemplate
+            </div>
+        }
+    </transition>
+</span>
+@code {
+    private ElementReference? overlay;
+    /// <summary>
+    /// 要显示的月数
+    /// </summary>
+    [Parameter] public int numberOfMonths { get; set; } = 1;
+    [Parameter] public TItem? value { get; set; } = default(TItem);
+    [Parameter] public EventCallback<TItem?> valueChanged { get; set; }
+    [Parameter] public DateLocale locale { get; set; } = new DateLocale();
+    [Parameter] public bool selectOtherMonths { get; set; } = false;
+    [Parameter] public DateTime? minDate { get; set; } = null;
+    [Parameter] public DateTime? maxDate { get; set; } = null;
+    [Parameter] public List<DateTime>? disabledDates { get; set; } = null;
+    [Parameter] public List<int>? disabledDays { get; set; } = null;
+    [Parameter] public bool showWeek { get; set; } = false;
+    [Parameter] public bool timeOnly { get; set; } = false;
+    [Parameter] public bool monthNavigator { get; set; } = false;
+    [Parameter] public string view { get; set; } = "date";
+    [Parameter] public bool yearNavigator { get; set; } = false;
+    [Parameter] public string? yearRange { get; set; } = $"{DateTime.Now.Year / 10 * 10}:{(DateTime.Now.Year / 10 * 10) + 9}";
+    [Parameter] public RenderFragment? headerTemplate { get; set; }
+    [Parameter] public string selectionMode { get; set; } = "single";
+    [Parameter] public RenderFragment<DateMeata>? dateTemplate { get; set; }
+    [Parameter] public bool showTime { get; set; } = false;
+    [Parameter] public string timeSeparator { get; set; } = ":";
+    [Parameter] public bool showButtonBar { get; set; } = false;
+    [Parameter] public bool showSeconds { get; set; } = false;
+    [Parameter] public string hourFormat { get; set; } = "24";
+    [Parameter] public bool showIcon { get; set; } = false;
+    [Parameter] public bool inline { get; set; } = false;
+    [Parameter] public bool disabled { get; set; } = false;
+    [Parameter] public bool touchUI { get; set; } = false;
+    [Parameter] public string id { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public bool manualInput { get; set; } = true;
+    [Parameter] public string dateFormat { get; set; } = "mm/dd/yy";
+    [Parameter] public EventCallback<FocusEventArgs> onfocus { get; set; }
+    [Parameter] public bool showOnFocus { get; set; } = true;
+    [Parameter] public bool Readonly { get; set; } = false;
+    [Parameter] public string shortYearCutoff { get; set; } = "+10";
+    [Parameter] public EventCallback<FocusEventArgs> onblur { get; set; }
+    [Parameter] public EventCallback<KeyboardEventArgs> onkeydown { get; set; }
+    [Parameter] public string? icon { get; set; } = null;
+    [Parameter] public bool autoZIndex { get; set; } = true;
+    [Parameter] public EventCallback show { get; set; }
+    [Parameter] public int baseZIndex { get; set; } = 0;
+    [Parameter] public EventCallback hide { get; set; }
+    [Parameter] public EventCallback<DateMeata> monthChange { get; set; }
+    [Parameter] public EventCallback<DateMeata> yearChange { get; set; }
+    [Parameter] public int? maxDateCount { get; set; } = null;
+    [Parameter] public EventCallback<TItem> select { get; set; }
+    [Parameter] public bool hideOnDateTimeSelect { get; set; } = false;
+    [Parameter] public int stepHour { get; set; } = 1;
+    [Parameter] public int stepMinute { get; set; } = 1;
+    [Parameter] public int stepSecond { get; set; } = 1;
+    [Parameter] public EventCallback<DateTime> todayClick { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> clearClick { get; set; }
+    [Parameter]public RenderFragment? footerTemplate{ get; set; }
+    private int currentMonth;
+    private int currentYear;
+    private int currentHour;
+    private int currentMinute;
+    private int currentSecond;
+    private bool pm;
+    private bool focused = false;
+    private bool overlayVisible = false;
+    private bool isKeyDown = false;
+    private Inputtext input;
+    private string? maskId = null;
+    private ElementReference el;
+    private Timer? timer = null;
+    private Timer? pickerTimer = null;
+    protected override void OnInitialized()
+    {
+        this.currentMonth = viewDate.Month;
+        this.currentYear = viewDate.Year;
+    }
+    private IJSObjectReference module;
+    private DotNetObjectReference<Calendar<TItem>> dotNetHelper;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/Calendar.razor.js");
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+            await module.DisposeAsync();
+        dotNetHelper?.Dispose();
+        timer?.Dispose();
+        pickerTimer?.Dispose();
+    }
+    private async Task onClearButtonClick(MouseEventArgs mouseEvent)
+    {
+        await this.updateModel(default(TItem));
+        this.overlayVisible = false;
+        await clearClick.InvokeAsync(mouseEvent);
+    }
+    private async Task onTodayButtonClick(MouseEventArgs mouseEvent)
+    {
+        DateTime date = DateTime.Now;
+        DateMeata dateMeta = new DateMeata()
+            {
+                day = date.Day,
+                month = date.Month,
+                year = date.Year,
+                otherMonth = date.Month != this.currentMonth || date.Year != this.currentYear,
+                today = true,
+                selectable = true
+            };
+
+        await this.onDateSelect(dateMeta);
+        await todayClick.InvokeAsync(date);
+    }
+    private async Task toggleAMPM(MouseEventArgs mouseEvent)
+    {
+        this.pm = !this.pm;
+        await this.updateModelTime();
+    }
+    private async Task onTimePickerElementMouseUp(MouseEventArgs mouseEvent)
+    {
+        if (this.isEnabled)
+        {
+            this.clearTimePickerTimer();
+            await this.updateModelTime();
+        }
+    }
+    private async Task updateModelTime()
+    {
+        DateTime? value = null;
+        if (this.isRangeSelection())
+        {
+            List<DateTime?> thisValue = this.value as List<DateTime?>;
+            value = thisValue[1] ?? thisValue[0];
+        }
+        if (this.isMultipleSelection())
+        {
+            List<DateTime?> thisValue = this.value as List<DateTime?>;
+            value = thisValue[thisValue.Count - 1];
+        }
+        value = value ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day); ;
+
+        if (this.hourFormat.Equals("12"))
+        {
+            if (this.currentHour == 12)
+                value.Value.AddHours(this.pm ? 12 : 0);
+            else
+                value.Value.AddHours(this.pm ? this.currentHour + 12 : this.currentHour);
+        }
+        else
+        {
+            value.Value.AddHours(this.currentHour);
+        }
+
+        value.Value.AddMinutes(this.currentMinute);
+        value.Value.AddSeconds(this.currentSecond);
+        TItem? selectValue = default(TItem);
+        if (this.isRangeSelection())
+        {
+            List<DateTime?> thisValue = this.value as List<DateTime?>;
+            List<DateTime?> updaetValue = new List<DateTime?>();
+            if (thisValue[1] != null)
+            {
+                updaetValue.Add(thisValue[0]);
+                updaetValue.Add(value);
+            }
+            else
+            {
+                updaetValue.Add(value);
+                updaetValue.Add(null);
+            }
+            selectValue = (TItem)(object)updaetValue;
+        }
+
+        if (this.isMultipleSelection())
+        {
+            List<DateTime?> thisValue = this.value as List<DateTime?>;
+            List<DateTime?> updaetValue = new List<DateTime?>();
+            thisValue.RemoveAt(thisValue.Count - 1);
+            updaetValue.AddRange(thisValue);
+            updaetValue.Add(value);
+            selectValue = (TItem)(object)updaetValue;
+        }
+        if (selectValue == null)
+        {
+            await this.updateModel((TItem)(object)value);
+            await select.InvokeAsync((TItem)(object)value);
+        }
+        else
+        {
+            await this.updateModel(selectValue);
+            await select.InvokeAsync(selectValue);
+        }
+    }
+    private void onTimePickerElementMouseDown(MouseEventArgs mouseEvent, int type, int direction)
+    {
+        if (this.isEnabled)
+        {
+            this.repeat(mouseEvent, null, type, direction);
+        }
+    }
+    private void repeat(MouseEventArgs mouseEvent, int? interval, int type, int direction)
+    {
+        int i = interval ?? 500;
+
+        this.clearTimePickerTimer();
+        SetPickerTimer(() =>
+        {
+            this.repeat(mouseEvent, 100, type, direction);
+        }, i);
+
+        switch (type)
+        {
+            case 0:
+                if (direction == 1)
+                    this.incrementHour(mouseEvent);
+                else
+                    this.decrementHour(mouseEvent);
+                break;
+
+            case 1:
+                if (direction == 1)
+                    this.incrementMinute(mouseEvent);
+                else
+                    this.decrementMinute(mouseEvent);
+                break;
+
+            case 2:
+                if (direction == 1)
+                    this.incrementSecond(mouseEvent);
+                else
+                    this.decrementSecond(mouseEvent);
+                break;
+        }
+    }
+    private void decrementSecond(MouseEventArgs mouseEvent)
+    {
+        int newSecond = this.currentSecond - this.stepSecond;
+        newSecond = (newSecond < 0) ? 60 + newSecond : newSecond;
+        if (this.validateSecond(newSecond))
+        {
+            this.currentSecond = newSecond;
+        }
+    }
+    private void incrementSecond(MouseEventArgs mouseEvent)
+    {
+        int newSecond = this.currentSecond + this.stepSecond;
+        if (this.validateSecond(newSecond))
+        {
+            this.currentSecond = (newSecond > 59) ? newSecond - 60 : newSecond;
+        }
+    }
+    private bool validateSecond(int second)
+    {
+        bool valid = true;
+        DateTime? value = null;
+        if (this.isRangeSelection())
+        {
+            List<DateTime?> thisValue = this.value as List<DateTime?>;
+            value = thisValue[1] ?? thisValue[0];
+        }
+        if (this.isMultipleSelection())
+        {
+            List<DateTime?> thisValue = this.value as List<DateTime?>;
+            value = thisValue[thisValue.Count - 1];
+        }
+        string? valueDateString = value != null ? value.ToString() : null;
+
+        if (this.minDate != null && valueDateString != null && this.minDate.Value.ToString().Equals(valueDateString))
+        {
+            if (this.minDate.Value.Second > second)
+            {
+                valid = false;
+            }
+        }
+
+        if (this.maxDate != null && valueDateString != null && this.maxDate.Value.ToString().Equals(valueDateString))
+        {
+            if (this.maxDate.Value.Second < second)
+            {
+                valid = false;
+            }
+        }
+
+        return valid;
+    }
+    private void decrementMinute(MouseEventArgs mouseEvent)
+    {
+        int newMinute = this.currentMinute - this.stepMinute;
+        newMinute = (newMinute < 0) ? 60 + newMinute : newMinute;
+        if (this.validateMinute(newMinute))
+        {
+            this.currentMinute = newMinute;
+        }
+    }
+    private void incrementMinute(MouseEventArgs mouseEvent)
+    {
+        int newMinute = this.currentMinute + this.stepMinute;
+        if (this.validateMinute(newMinute))
+        {
+            this.currentMinute = (newMinute > 59) ? newMinute - 60 : newMinute;
+        }
+    }
+    private bool validateMinute(int minute)
+    {
+        bool valid = true;
+        DateTime? value = null;
+        if (this.isRangeSelection())
+        {
+            List<DateTime?> thisValue = this.value as List<DateTime?>;
+            value = thisValue[1] ?? thisValue[0];
+        }
+        if (this.isMultipleSelection())
+        {
+            List<DateTime?> thisValue = this.value as List<DateTime?>;
+            value = thisValue[thisValue.Count - 1];
+        }
+        string? valueDateString = value != null ? value.ToString() : null;
+        if (this.minDate != null && valueDateString != null && this.minDate.Value.ToString().Equals(valueDateString))
+        {
+            if (value.Value.Hour == this.minDate.Value.Hour)
+            {
+                if (this.minDate.Value.Minute > minute)
+                {
+                    valid = false;
+                }
+            }
+        }
+
+        if (this.maxDate != null && valueDateString != null && this.maxDate.Value.ToString().Equals(valueDateString))
+        {
+            if (value.Value.Hour == this.maxDate.Value.Hour)
+            {
+                if (this.maxDate.Value.Minute < minute)
+                {
+                    valid = false;
+                }
+            }
+        }
+
+        return valid;
+    }
+    private void decrementHour(MouseEventArgs mouseEvent)
+    {
+        int newHour = this.currentHour - this.stepHour;
+
+        if (this.validateHour(newHour))
+        {
+            if (this.hourFormat.Equals("24"))
+                this.currentHour = (newHour < 0) ? (24 + newHour) : newHour;
+            else if (this.hourFormat.Equals("12"))
+            {
+                // If we were at noon/midnight, then switch
+                if (this.currentHour == 12)
+                {
+                    this.pm = !this.pm;
+                }
+                this.currentHour = (newHour <= 0) ? (12 + newHour) : newHour;
+            }
+        }
+    }
+    private void incrementHour(MouseEventArgs mouseEvent)
+    {
+        int prevHour = this.currentHour;
+        int newHour = this.currentHour + this.stepHour;
+
+        if (this.validateHour(newHour))
+        {
+            if (this.hourFormat.Equals("24"))
+                this.currentHour = (newHour >= 24) ? (newHour - 24) : newHour;
+            else if (this.hourFormat.Equals("12"))
+            {
+                // Before the AM/PM break, now after
+                if (prevHour < 12 && newHour > 11)
+                {
+                    this.pm = !this.pm;
+                }
+
+                this.currentHour = (newHour >= 13) ? (newHour - 12) : newHour;
+            }
+        }
+    }
+    private bool validateHour(int hour)
+    {
+        bool valid = true;
+        DateTime? value = null;
+        if (this.isRangeSelection())
+        {
+            List<DateTime?> thisValue = this.value as List<DateTime?>;
+            value = thisValue[1] ?? thisValue[0];
+        }
+        if (this.isMultipleSelection())
+        {
+            List<DateTime?> thisValue = this.value as List<DateTime?>;
+            value = thisValue[thisValue.Count - 1];
+        }
+        string? valueDateString = value != null ? value.ToString() : null;
+
+        if (this.minDate != null && valueDateString != null && this.minDate.Value.ToString().Equals(valueDateString))
+        {
+            if (this.minDate.Value.Hour > hour)
+            {
+                valid = false;
+            }
+        }
+
+        if (this.maxDate != null && valueDateString != null && this.maxDate.Value.ToString().Equals(valueDateString))
+        {
+            if (this.maxDate.Value.Hour < hour)
+            {
+                valid = false;
+            }
+        }
+
+        return valid;
+    }
+    private void clearTimePickerTimer()
+    {
+        pickerTimer?.Dispose();
+    }
+    private void SetPickerTimer(Action action, int delay)
+    {
+        pickerTimer = new Timer(_ =>
+        {
+            action();
+            pickerTimer?.Dispose();
+        }, null, delay, Timeout.Infinite);
+    }
+    private async Task onDateSelect(DateMeata dateMeta)
+    {
+        if (this.disabled || !dateMeta.selectable)
+        {
+            return;
+        }
+
+        if (this.isMultipleSelection() && this.isSelected(dateMeta))
+        {
+            List<DateTime?> value_datetime = this.value as List<DateTime?>;
+            TItem newValue = (TItem)(object)value_datetime.Where(date => !this.isDateEquals(date, dateMeta)).ToList();
+
+            await this.updateModel(newValue);
+        }
+        else
+        {
+            if (this.shouldSelectDate(dateMeta))
+            {
+                if (dateMeta.otherMonth)
+                {
+                    this.currentMonth = dateMeta.month;
+                    this.currentYear = dateMeta.year;
+                    await this.selectDate(dateMeta);
+                }
+                else
+                {
+                    await this.selectDate(dateMeta);
+                }
+            }
+        }
+
+        if (this.isSingleSelection() && (!this.showTime || this.hideOnDateTimeSelect))
+        {
+            SetTimer(async () =>
+            {
+                this.overlayVisible = false;
+
+                if (!string.IsNullOrWhiteSpace(this.maskId))
+                {
+                    await this.disableModality();
+                }
+            }, 150);
+        }
+    }
+    private void SetTimer(Action action, int delay)
+    {
+        timer = new Timer(_ =>
+        {
+            action();
+            timer?.Dispose();
+        }, null, delay, Timeout.Infinite);
+    }
+    private async Task selectDate(DateMeata dateMeta)
+    {
+        DateTime date = new DateTime(dateMeta.year, dateMeta.month, dateMeta.day);
+
+        if (this.showTime)
+        {
+            if (this.hourFormat.Equals("12") && this.pm && this.currentHour != 12)
+                date.AddHours(this.currentHour + 12);
+            else
+                date.AddHours(this.currentHour);
+
+            date.AddMinutes(this.currentMinute);
+            date.AddSeconds(this.currentSecond);
+        }
+
+        if (this.minDate != null && this.minDate > date)
+        {
+            date = this.minDate.Value;
+            this.currentHour = date.Hour;
+            this.currentMinute = date.Minute;
+            this.currentSecond = date.Second;
+        }
+
+        if (this.maxDate != null && this.maxDate < date)
+        {
+            date = this.maxDate.Value;
+            this.currentHour = date.Hour;
+            this.currentMinute = date.Minute;
+            this.currentSecond = date.Second;
+        }
+
+        if (this.isSingleSelection())
+        {
+            await this.updateModel((TItem)(object)date);
+            return;
+        }
+        else if (this.isMultipleSelection())
+        {
+            List<DateTime> value_datetimes = new List<DateTime>();
+            if (this.value != null)
+            {
+                value_datetimes.AddRange(this.value as List<DateTime>);
+            }
+            value_datetimes.Add(date);
+
+            await this.updateModel((TItem)(object)value_datetimes);
+            return;
+        }
+        else if (this.isRangeSelection())
+        {
+            List<DateTime?> value_datetimes = new List<DateTime?>();
+            if (this.value != null)
+            {
+                List<DateTime?> value_datetime = this.value as List<DateTime?>;
+                if (value_datetime.Count > 0)
+                {
+                    DateTime? startDate = value_datetime[0];
+                    DateTime? endDate = value_datetime[1];
+
+                    if (endDate == null && date.Ticks >= startDate.Value.Ticks)
+                    {
+                        endDate = date;
+                    }
+                    else
+                    {
+                        startDate = date;
+                        endDate = null;
+                    }
+
+                    await this.updateModel((TItem)(object)new List<DateTime?>() { startDate, endDate });
+                    return;
+                }
+            }
+            else
+            {
+                await this.updateModel((TItem)(object)new List<DateTime?>() { date, null });
+                return;
+            }
+        }
+    }
+    private bool shouldSelectDate(DateMeata dateMeata)
+    {
+        if (this.isMultipleSelection())
+        {
+            if (this.maxDateCount != null)
+            {
+                if (this.value == null)
+                {
+                    return this.maxDateCount > 0;
+                }
+                else
+                {
+
+                    List<DateTime?> valueDatetime = this.value as List<DateTime?>;
+                    return this.maxDateCount > valueDatetime.Count;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+        else
+            return true;
+    }
+    private async Task onYearDropdownChange(ChangeEventArgs changeEvent)
+    {
+        this.currentYear = Convert.ToInt32(changeEvent.Value);
+        await yearChange.InvokeAsync(new DateMeata() { month = this.currentMonth + 1, year = this.currentYear });
+    }
+    private async Task onMonthDropdownChange(ChangeEventArgs changeEvent)
+    {
+        this.currentMonth =  Convert.ToInt32(changeEvent.Value);
+        await monthChange.InvokeAsync(new DateMeata() { month = this.currentMonth + 1, year = this.currentYear });
+    }
+    private async Task navForward(MouseEventArgs mouseEvent)
+    {
+        if (!this.isEnabled)
+        {
+            return;
+        }
+
+        if (this.view.Equals("month"))
+        {
+            this.incrementYear();
+        }
+        else
+        {
+            if (this.currentMonth == 12)
+            {
+                this.currentMonth = 1;
+                this.incrementYear();
+            }
+            else
+            {
+                this.currentMonth++;
+            }
+            await this.monthChange.InvokeAsync(new DateMeata() { month = this.currentMonth, year = this.currentYear });
+        }
+    }
+    private void incrementYear()
+    {
+        this.currentYear++;
+    }
+    private async Task navBackward(MouseEventArgs mouseEvent)
+    {
+        if (!this.isEnabled)
+        {
+            return;
+        }
+        if (this.view.Equals("month"))
+        {
+            this.decrementYear();
+        }
+        else
+        {
+            if (this.currentMonth == 1)
+            {
+                this.currentMonth = 12;
+                this.decrementYear();
+            }
+            else
+            {
+                this.currentMonth--;
+            }
+            await this.monthChange.InvokeAsync(new DateMeata() { month = this.currentMonth, year = this.currentYear });
+        }
+    }
+    private void decrementYear()
+    {
+        this.currentYear--;
+    }
+    private async Task onOverlayLeave(MouseEventArgs mouseEvent)
+    {
+        await this.unbindOutsideClickListener();
+        await hide.InvokeAsync();
+    }
+    private async Task unbindOutsideClickListener()
+    {
+        await JS.InvokeVoidAsync("Calendar.unbindOutsideClickListener");
+    }
+    private async Task onOverlayEnter(MouseEventArgs mouseEvent)
+    {
+        await this.onOverlayEnterComplete();
+        if (this.autoZIndex)
+        {
+            int generateZIndex = await JS.InvokeAsync<int>("DomHandler.generateZIndex");
+            await JS.InvokeVoidAsync("DomHandler.setElementZIndex", this.overlay, this.baseZIndex + generateZIndex);
+        }
+        await this.alignOverlay();
+        await show.InvokeAsync();
+    }
+    private async Task onOverlayEnterComplete()
+    {
+        await this.bindOutsideClickListener();
+    }
+    private async Task bindOutsideClickListener()
+    {
+        await JS.InvokeVoidAsync("Calendar.bindOutsideClickListener", this.dotNetHelper, this.id, this.overlay);
+    }
+    [JSInvokable]
+    public bool getOverlayVisible()
+    {
+        return this.overlayVisible;
+    }
+    [JSInvokable]
+    public void setOverlayVisible(bool value)
+    {
+        this.overlayVisible = value;
+        StateHasChanged();
+    }
+    private async Task alignOverlay()
+    {
+        if (this.touchUI)
+        {
+            await this.enableModality();
+        }
+        else if (this.overlay != null)
+        {
+            await JS.InvokeVoidAsync("DomHandler.relativePosition", this.overlay, this.el);
+        }
+    }
+    private async Task enableModality()
+    {
+        if (this.maskId == null)
+        {
+            string mask_id = await JS.InvokeAsync<string>("Calendar.enableModality", this.dotNetHelper, this.id, this.overlay);
+            if (!string.IsNullOrWhiteSpace(mask_id))
+            {
+                this.maskId = mask_id;
+            }
+        }
+    }
+    private async Task onButtonClick(MouseEventArgs mouseEvent)
+    {
+        if (this.isEnabled)
+        {
+            if (!this.overlayVisible)
+            {
+                await this.input.refComponent.FocusAsync();
+                this.overlayVisible = true;
+            }
+            else
+            {
+                this.overlayVisible = false;
+            }
+        }
+    }
+    private async Task keydownEvent(KeyboardEventArgs keyboardEvent)
+    {
+        this.isKeyDown = true;
+        if (keyboardEvent.Key.Equals("Tab"))
+        {
+            if (this.touchUI)
+                await this.disableModality();
+            else
+                this.overlayVisible = false;
+        }
+        await onkeydown.InvokeAsync(keyboardEvent);
+    }
+    private async Task disableModality()
+    {
+        if (this.maskId != null)
+        {
+            await JS.InvokeVoidAsync("Calendar.disableModality", this.dotNetHelper, this.id, this.maskId);
+            this.maskId = null;
+            this.overlayVisible = false;
+        }
+    }
+    [JSInvokable]
+    public void setMaskIdNull()
+    {
+        this.maskId = null;
+    }
+    private async Task blurEvent(FocusEventArgs focusEvent)
+    {
+        this.focused = false;
+        await onblur.InvokeAsync(focusEvent);
+    }
+    private bool isEnabled
+    {
+        get
+        {
+            return !this.disabled && !this.Readonly;
+        }
+    }
+    private async Task inputEvent(string cahngeValue)
+    {
+        try
+        {
+            TItem? value = this.parseValueFromString(cahngeValue);
+            if (this.isValidSelection(value))
+            {
+                this.updateModel(value);
+            }
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+    private async Task updateModel(TItem? value)
+    {
+        await valueChanged.InvokeAsync(value);
+    }
+    private bool isValidSelection(TItem value)
+    {
+        bool isValid = true;
+        if (this.isSingleSelection())
+        {
+            DateTime value_datetime = (DateTime)(object)value;
+            if (!this.isSelectable(value_datetime.Day, value_datetime.Month, value_datetime.Year, false))
+            {
+                isValid = false;
+            }
+        }
+        else
+        {
+            List<DateTime?> value_dateTimes = value as List<DateTime?>;
+            if (value_dateTimes.All(v => v != null && this.isSelectable(v.Value.Day, v.Value.Month, v.Value.Year, false)))
+            {
+                if (this.isRangeSelection())
+                {
+                    isValid = value_dateTimes.Count > 1 && value_dateTimes[1] > value_dateTimes[0] ? true : false;
+                }
+            }
+        }
+        return isValid;
+    }
+    private TItem? parseValueFromString(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return default(TItem);
+        }
+
+
+        if (this.isSingleSelection())
+        {
+            return (TItem)(object)this.parseDateTime(text);
+        }
+        else if (this.isMultipleSelection())
+        {
+            string[] tokens = text.Split(',');
+            List<DateTime?> value = new List<DateTime?>();
+            foreach (string token in tokens)
+            {
+                value.Add(this.parseDateTime(token.Trim()));
+            }
+            return (TItem)(object)value;
+        }
+        else if (this.isRangeSelection())
+        {
+            string[] tokens = text.Split('-');
+            List<DateTime?> value = new List<DateTime?>();
+            foreach (string token in tokens)
+            {
+                value.Add(this.parseDateTime(token.Trim()));
+            }
+            return (TItem)(object)value;
+        }
+        return default(TItem);
+    }
+    private DateTime? parseDateTime(string text)
+    {
+        DateTime? date = null;
+        string[] parts = text.Split(' ');
+
+        if (this.timeOnly)
+        {
+            this.populateTime(date, parts[0], parts[1]);
+        }
+        else
+        {
+            string dateFormat = this.datePattern;
+            if (this.showTime)
+            {
+                date = this.parseDate(parts[0], dateFormat);
+                this.populateTime(date, parts[1], parts[2]);
+            }
+            else
+            {
+                date = this.parseDate(text, dateFormat);
+            }
+        }
+
+        return date;
+    }
+    private DateTime? parseDate(object? valueObject, string? format)
+    {
+        if (format == null || valueObject == null)
+        {
+            throw new Exception("Invalid arguments");
+        }
+
+        string value = valueObject.ToString();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        int iFormat;
+        int dim;
+        string extra;
+        int iValue = 0;
+        int shortYearCutoff = DateTime.Now.Year % 100 + int.Parse(this.shortYearCutoff);
+        int year = -1;
+        int month = -1;
+        int day = -1;
+        int doy = -1;
+        bool literal = false;
+        DateTime? date = null;
+        bool lookAhead(char match)
+        {
+            bool matches = (iFormat + 1 < format.Length && format.ElementAt(iFormat + 1).Equals(match));
+            if (matches)
+            {
+                iFormat++;
+            }
+            return matches;
+        }
+        int getNumber(char match)
+        {
+            bool isDoubled = lookAhead(match);
+            int size = (match.Equals('@') ? 14 : (match.Equals('!') ? 20 :
+            (match.Equals('y') && isDoubled ? 4 : (match.Equals('o') ? 3 : 2))));
+            int minSize = (match.Equals('y') ? size : 1);
+            string digits = "^\\d{" + minSize + "," + size + "}";
+            bool numIsMatch = Regex.IsMatch(value.Substring(iValue), digits);
+            Match num = Regex.Match(value.Substring(iValue), digits);
+            if (!numIsMatch)
+            {
+                throw new Exception("Missing number at position " + iValue);
+            }
+            iValue += num.Value.Length;
+            return int.Parse(num.Value);
+        }
+        int getName(char match, List<string> shortNames, List<string> longNames)
+        {
+            int index = -1;
+            List<string> arr = lookAhead(match) ? longNames : shortNames;
+            List<string[]> names = new List<string[]>();
+
+            for (int i = 0; i < arr.Count; i++)
+            {
+                names.Add(new string[] { i.ToString(), arr[i] });
+            }
+            names.Sort((a, b) =>
+            {
+                return -(a[1].Length - b[1].Length);
+            });
+
+            for (int i = 0; i < names.Count; i++)
+            {
+                string name = names[i][1];
+                if (value.Substring(iValue, name.Length).ToLower().Equals(name.ToLower()))
+                {
+                    index = int.Parse(names[i][0]);
+                    iValue += name.Length;
+                    break;
+                }
+            }
+
+            if (index != -1)
+            {
+                return index + 1;
+            }
+            else
+            {
+                throw new Exception("Unknown name at position " + iValue);
+            }
+        }
+        void checkLiteral()
+        {
+            if (!value.ElementAt(iValue).Equals(format.ElementAt(iFormat)))
+            {
+                throw new Exception("Unexpected literal at position " + iValue);
+            }
+            iValue++;
+        };
+
+        if (this.view.Equals("month"))
+        {
+            day = 1;
+        }
+
+        for (iFormat = 0; iFormat < format.Length; iFormat++)
+        {
+            if (literal)
+            {
+                if (format.ElementAt(iFormat).Equals('\'') && !lookAhead('\''))
+                {
+                    literal = false;
+                }
+                else
+                {
+                    checkLiteral();
+                }
+            }
+            else
+            {
+                switch (format.ElementAt(iFormat))
+                {
+                    case 'd':
+                        day = getNumber('d');
+                        break;
+                    case 'D':
+                        getName('D', this.locale.dayNamesShort, this.locale.dayNames);
+                        break;
+                    case 'o':
+                        doy = getNumber('o');
+                        break;
+                    case 'm':
+                        month = getNumber('m');
+                        break;
+                    case 'M':
+                        month = getName('M', this.locale.monthNamesShort, this.locale.monthNames);
+                        break;
+                    case 'y':
+                        year = getNumber('y');
+                        break;
+                    case '@':
+                        DateTime date1 = new DateTime(getNumber('@'));
+                        year = date1.Year;
+                        month = date1.Month + 1;
+                        day = date1.Day;
+                        break;
+                    case '!':
+                        DateTime date2 = new DateTime((long)(getNumber('!') - this.ticksTo1970) / 10000);
+                        year = date2.Year;
+                        month = date2.Month + 1;
+                        day = date2.Day;
+                        break;
+                    case '\'':
+                        if (lookAhead('\''))
+                        {
+                            checkLiteral();
+                        }
+                        else
+                        {
+                            literal = true;
+                        }
+                        break;
+                    default:
+                        checkLiteral();
+                        break;
+                }
+            }
+        }
+
+        if (iValue < value.Length)
+        {
+            extra = value.Substring(iValue);
+            string test = "!/ ^\\s +/";
+            if (Regex.IsMatch(extra, test))
+            {
+                throw new Exception("Extra/unparsed characters found in date: " + extra);
+            }
+        }
+
+        if (year == -1)
+        {
+            year = DateTime.Now.Year;
+        }
+        else if (year < 100)
+        {
+            year += DateTime.Now.Year - DateTime.Now.Year % 100 +
+                (year <= shortYearCutoff ? 0 : -100);
+        }
+
+        if (doy > -1)
+        {
+            month = 1;
+            day = doy;
+            do
+            {
+                dim = this.getDaysCountInMonth(year, month - 1);
+                if (day <= dim)
+                {
+                    break;
+                }
+                month++;
+                day -= dim;
+                // eslint-disable-next-line
+            } while (true);
+        }
+
+        date = this.daylightSavingAdjust(new DateTime(year, month - 1, day));
+        if (date.Value.Year != year || date.Value.Month + 1 != month || date.Value.Day != day)
+        {
+            throw new Exception("Invalid date"); // E.g. 31/02/00
+        }
+
+        return date;
+    }
+    private int getDaysCountInMonth(int year, int month)
+    {
+        return 32 - this.daylightSavingAdjust(new DateTime(year, month, 32)).Value.Day;
+    }
+    private DateTime? daylightSavingAdjust(DateTime? date)
+    {
+        if (date == null)
+        {
+            return null;
+        }
+
+        return new DateTime(date.Value.Year, date.Value.Month, date.Value.Day, date.Value.Hour > 12 ? date.Value.Hour + 2 : 0, 0, 0);
+    }
+    private void populateTime(DateTime? value, string timeString, string? ampm)
+    {
+        if (this.hourFormat.Equals("12") && string.IsNullOrWhiteSpace(ampm))
+        {
+            throw new Exception("Invalid Time");
+        }
+
+        this.pm = (ampm.Equals("PM") || ampm.Equals("pm"));
+        DateTime time = DateTime.Parse(timeString);
+        value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, time.Hour, time.Minute, time.Second);
+    }
+    private async Task focusEvent(FocusEventArgs focusEvent)
+    {
+        if (this.showOnFocus && this.isEnabled)
+        {
+            this.overlayVisible = true;
+        }
+        this.focused = true;
+        await onfocus.InvokeAsync(focusEvent);
+    }
+    private string inputFieldValue
+    {
+        get
+        {
+            string formattedValue = "";
+            if (this.value != null)
+            {
+                try
+                {
+                    if (this.isSingleSelection())
+                    {
+                        formattedValue = this.formatDateTime(this.value);
+                    }
+                    else if (this.isMultipleSelection())
+                    {
+                        List<DateTime> dateTimes = this.value as  List<DateTime>;
+                        for (int i = 0; i < dateTimes.Count; i++)
+                        {
+                            string dateAsString = this.formatDateTime(dateTimes[i]);
+                            formattedValue += dateAsString;
+                            if (i != (dateTimes.Count - 1))
+                            {
+                                formattedValue += ", ";
+                            }
+                        }
+                    }
+                    else if (this.isRangeSelection())
+                    {
+                        if (this.value != null)
+                        {
+                            List<DateTime?> dateTimes = this.value as List<DateTime?>;
+                            if (dateTimes.Count > 0)
+                            {
+                                DateTime? startDate = dateTimes[0];
+                                DateTime? endDate = dateTimes[1];
+
+                                formattedValue = this.formatDateTime(startDate);
+                                if (endDate != null)
+                                {
+                                    formattedValue += " - " + this.formatDateTime(endDate);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    formattedValue = this.value.ToString();
+                }
+            }
+            return formattedValue;
+        }
+    }
+    private string? formatDateTime(object? date)
+    {
+        string? formattedValue = null;
+        if (date != null)
+        {
+            if (this.timeOnly)
+            {
+                formattedValue = this.formatTime(date);
+            }
+            else
+            {
+                formattedValue = this.formatDate(date, this.datePattern);
+                if (this.showTime)
+                {
+                    formattedValue += ' ' + this.formatTime(date);
+                }
+            }
+        }
+
+        return formattedValue;
+    }
+    private string datePattern
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(this.dateFormat))
+                return this.dateFormat;
+            else if (!string.IsNullOrWhiteSpace(this.locale.dateFormat))
+            {
+                return this.locale.dateFormat;
+            }
+            return "yyyy-MM-dd";
+        }
+    }
+    private string formatDate(object? date, string format)
+    {
+        if (date == null)
+        {
+            return "";
+        }
+
+        int iFormat;
+        bool lookAhead(char match)
+        {
+            bool matches = (iFormat + 1 < format.Length && format.ElementAt(iFormat + 1).Equals(match));
+            if (matches)
+            {
+                iFormat++;
+            }
+            return matches;
+        }
+        string formatNumber(char match, double value, int len)
+        {
+            string num = "" + value;
+            if (lookAhead(match))
+            {
+                while (num.Length < len)
+                {
+                    num = "0" + num;
+                }
+            }
+            return num;
+        }
+        string formatName(char match, int value, List<string> shortNames, List<string> longNames)
+        {
+            return (lookAhead(match) ? longNames[value] : shortNames[value]);
+        }
+        string output = "";
+        bool literal = false;
+
+        if (date != null)
+        {
+            for (iFormat = 0; iFormat < format.Length; iFormat++)
+            {
+                if (literal)
+                {
+                    if (format.ElementAt(iFormat).Equals('\'') && !lookAhead('\''))
+                    {
+                        literal = false;
+                    }
+                    else
+                    {
+                        output += format.ElementAt(iFormat);
+                    }
+                }
+                else
+                {
+                    DateTime date_Time = (DateTime)date;
+                    switch (format.ElementAt(iFormat))
+                    {
+                        case 'd':
+                            output += formatNumber('d', date_Time.Day, 2);
+                            break;
+                        case 'D':
+                            output += formatName('D', date_Time.Day, this.locale.dayNamesShort, this.locale.dayNames);
+                            break;
+                        case 'o':
+                            output += formatNumber('o',
+                            Math.Round((
+                               new DateTime(date_Time.Year, date_Time.Month, date_Time.Day).Ticks -
+                                new DateTime(date_Time.Year, 0, 0).Ticks) / (double)86400000), 3);
+                            break;
+                        case 'm':
+                            output += formatNumber('m', date_Time.Month + 1, 2);
+                            break;
+                        case 'M':
+                            output += formatName('M', date_Time.Month, this.locale.monthNamesShort, this.locale.monthNames);
+                            break;
+                        case 'y':
+                            output += lookAhead('y') ? date_Time.Year : (date_Time.Year % 100 < 10 ? "0" : "") + (date_Time.Year % 100);
+                            break;
+                        case '@':
+                            output += date_Time.Ticks;
+                            break;
+                        case '!':
+                            output += (double)(date_Time.Ticks) * 10000 + this.ticksTo1970;
+                            break;
+                        case '\'':
+                            if (lookAhead('\''))
+                            {
+                                output += '\'';
+                            }
+                            else
+                            {
+                                literal = true;
+                            }
+                            break;
+                        default:
+                            output += format.ElementAt(iFormat);
+                            break;
+                    }
+                }
+            }
+        }
+        return output;
+    }
+    private double ticksTo1970
+    {
+        get
+        {
+            return (((1970 - 1) * 365 + Math.Floor((double)1970 / 4) - Math.Floor((double)1970 / 100) + Math.Floor((double)1970 / 400)) * 24 * 60 * 60 * 10000000);
+        }
+    }
+    private string formatTime(object? datetime)
+    {
+        if (datetime == null)
+        {
+            return "";
+        }
+
+        string output = "";
+        DateTime date = (DateTime)datetime;
+        int hours = date.Hour;
+        int minutes = date.Minute;
+        int seconds = date.Second;
+
+        if (this.hourFormat.Equals("12") && hours > 11 && hours != 12)
+        {
+            hours -= 12;
+        }
+
+        if (this.hourFormat.Equals("12"))
+        {
+            output += hours == 0 ? 12 : (hours < 10) ? "0" + hours : hours;
+        }
+        else
+        {
+            output += (hours < 10) ? "0" + hours : hours;
+        }
+        output += ':';
+        output += (minutes < 10) ? "0" + minutes : minutes;
+
+        if (this.showSeconds)
+        {
+            output += ':';
+            output += (seconds < 10) ? "0" + seconds : seconds;
+        }
+
+        if (this.hourFormat.Equals("12"))
+        {
+            output += date.Hour > 11 ? " PM" : " AM";
+        }
+
+        return output;
+    }
+    private string panelStyleClass
+    {
+        get
+        {
+            string str = "p-datepicker p-component";
+            if (this.inline)
+                str += " p-datepicker-inline";
+            else
+                str += " p-shadow";
+            if (this.disabled)
+                str += " p-disabled";
+            if (this.timeOnly)
+                str += " p-datepicker-timeonly";
+            if (this.numberOfMonths > 1)
+                str += " p-datepicker-multiple-month";
+            if (this.view.Equals("month"))
+                str += " p-datepicker-monthpicker";
+            if (this.touchUI)
+                str += " p-datepicker-touch-ui";
+
+            return str;
+        }
+    }
+    private string containerClass
+    {
+        get
+        {
+            string str = "p-calendar";
+            if (this.showIcon)
+                str += " p-calendar-w-btn";
+            if (this.timeOnly)
+                str += " p-calendar-timeonly";
+            if (this.value != null)
+                str += " p-inputwrapper-filled";
+            if (this.focused)
+                str += " p-inputwrapper-focus";
+            return str;
+        }
+    }
+    private bool isMonthSelected(int month)
+    {
+        if (this.value != null)
+        {
+            DateTime valueOnly = (DateTime)(object)this.value;
+            return valueOnly.Month == month && valueOnly.Year == this.currentYear;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    private List<string> monthPickerValues
+    {
+        get
+        {
+            List<string> monthpickerVlaues = new List<string>();
+            for (int i = 0; i < 11; i++)
+            {
+                monthpickerVlaues.Add(this.locale.monthNamesShort[i]);
+            }
+            return monthpickerVlaues;
+        }
+    }
+    private bool isSelected(DateMeata dateMeta)
+    {
+        if (this.value != null)
+        {
+            if (this.isSingleSelection())
+            {
+                return this.isDateEquals(this.value, dateMeta);
+            }
+            else if (this.isMultipleSelection())
+            {
+                bool selected = false;
+                foreach (DateTime date in (this.value as List<DateTime>))
+                {
+                    selected = this.isDateEquals(date, dateMeta);
+                    if (selected)
+                    {
+                        break;
+                    }
+                }
+                return selected;
+            }
+            else if (this.isRangeSelection())
+            {
+                List<DateTime?> valueRange = this.value as List<DateTime?>;
+                if (valueRange[1] != null)
+                {
+                    return this.isDateEquals(valueRange[0], dateMeta) || this.isDateEquals(valueRange[1], dateMeta) || this.isDateBetween(valueRange[0], valueRange[1], dateMeta);
+                }
+                else
+                {
+                    return this.isDateEquals(valueRange[0], dateMeta);
+                }
+            }
+        }
+        return false;
+    }
+    private bool isDateBetween(DateTime? start, DateTime? end, DateMeata dateMeta)
+    {
+        bool between = false;
+        if (start != null && end != null)
+        {
+            DateTime date = new DateTime(dateMeta.year, dateMeta.month, dateMeta.day);
+            return start <= date && end >= date;
+        }
+
+        return between;
+    }
+    private bool isDateEquals(object? value, DateMeata dateMeta)
+    {
+        if (value != null)
+        {
+            DateTime dateTime = (DateTime)value;
+            return dateTime.Day == dateMeta.day && dateTime.Month == dateMeta.month && dateTime.Year == dateMeta.year;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    private bool isSingleSelection()
+    {
+        return this.selectionMode.Equals("single");
+    }
+    private bool isRangeSelection()
+    {
+        return this.selectionMode.Equals("range");
+    }
+    private bool isMultipleSelection()
+    {
+        return this.selectionMode.Equals("multiple");
+    }
+    private List<string> weekDays
+    {
+        get
+        {
+            List<string> week_days = new List<string>();
+            int dayIndex = this.locale.firstDayOfWeek;
+            for (int i = 0; i < 7; i++)
+            {
+                week_days.Add(this.locale.dayNamesMin[dayIndex]);
+                dayIndex = (dayIndex == 6) ? 0 : ++dayIndex;
+            }
+            return week_days;
+        }
+    }
+    private List<int> yearOptions
+    {
+        get
+        {
+            string[] years = this.yearRange?.Split(":");
+            int yearStart = int.Parse(years[0]);
+            int yearEnd = int.Parse(years[1]);
+            List<int> year_options = new List<int>();
+            if (this.currentYear < yearStart)
+            {
+                this.currentYear = yearEnd;
+            }
+            else if (this.currentYear > yearEnd)
+            {
+                this.currentYear = yearStart;
+            }
+            for (int i = yearStart; i < yearEnd; i++)
+            {
+                year_options.Add(i);
+            }
+            return year_options;
+        }
+    }
+    private DateTime viewDate
+    {
+        get
+        {
+            TItem? propVlaue = this.value;
+            if (propVlaue != null && propVlaue is List<DateTime>)
+            {
+                return (propVlaue as List<DateTime>)[0];
+            }
+            else
+            {
+                return DateTime.Now;
+            }
+        }
+    }
+    private List<ClendarMonth> months
+    {
+        get
+        {
+            List<ClendarMonth> monthList = new List<ClendarMonth>();
+            for (int i = 0; i < this.numberOfMonths; i++)
+            {
+                int month = this.currentMonth + i;
+                int year = this.currentYear;
+                if (month > 12)
+                {
+                    month = month % 12 + 1;
+                    year = year + 1;
+                }
+                List<List<DateMeata>> dates = new List<List<DateMeata>>();
+                int firstDay = (int)(new DateTime(year, month, 1)).DayOfWeek;
+                int daysLength = DateTime.DaysInMonth(year, month);
+                int prevMonthDaysLength = this.getDaysCountInPrevMonth(year, month);
+                int dayNo = 1;
+                DateTime today = DateTime.Now;
+                List<int> weekNumbers = new List<int>();
+                int monthRows = (int)Math.Ceiling((double)(daysLength + firstDay) / 7);
+                for (int index = 0; index < monthRows; index++)
+                {
+                    List<DateMeata> week = new List<DateMeata>();
+                    if (index == 0)
+                    {
+                        for (int j = (prevMonthDaysLength - firstDay + 1); j <= prevMonthDaysLength; j++)
+                        {
+                            DateMeata prev = this.getPreviousMonthAndYear(year, month);
+                            week.Add(new DateMeata()
+                                {
+                                    day = j,
+                                    month = prev.month,
+                                    year = prev.year,
+                                    otherMonth = true,
+                                    today = this.isToday(today, j, prev.month, prev.year),
+                                    selectable = this.isSelectable(j, prev.month, prev.year, true)
+                                });
+                        }
+                        int remainingDaysLength = 7 - week.Count;
+                        for (int j = 0; j < remainingDaysLength; j++)
+                        {
+                            week.Add(new DateMeata()
+                                {
+                                    day = dayNo,
+                                    month = month,
+                                    year = year,
+                                    today = this.isToday(today, dayNo, month, year),
+                                    selectable = this.isSelectable(dayNo, month, year, false)
+                                });
+                            dayNo++;
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < 7; j++)
+                        {
+                            if (dayNo > daysLength)
+                            {
+                                DateMeata next = this.getNextMonthAndYear(month, year);
+                                week.Add(new DateMeata()
+                                    {
+                                        day = dayNo - daysLength,
+                                        month = next.month,
+                                        year = next.year,
+                                        otherMonth = true,
+                                        today = this.isToday(today, dayNo - daysLength, next.month, next.year),
+                                        selectable = this.isSelectable((dayNo - daysLength), next.month, next.year, true)
+                                    });
+                            }
+                            else
+                            {
+                                week.Add(new DateMeata()
+                                    {
+                                        day = dayNo,
+                                        month = month,
+                                        year = year,
+                                        today = this.isToday(today, dayNo, month, year),
+                                        selectable = this.isSelectable(dayNo, month, year, false)
+                                    });
+                            }
+                            dayNo++;
+                        }
+                    }
+                    if (this.showWeek)
+                    {
+                        weekNumbers.Add(this.getWeekNumber(new DateTime(week[0].year, week[0].month, week[0].day)));
+                    }
+                    dates.Add(week);
+                }
+                monthList.Add(new ClendarMonth() { month = month, year = year, dates = dates, weekNumbers = weekNumbers });
+            }
+            return monthList;
+        }
+    }
+    private int getWeekNumber(DateTime date)
+    {
+        return (int)date.DayOfWeek;
+    }
+    private DateMeata getNextMonthAndYear(int month, int year)
+    {
+        int m = 1;
+        int y = 1;
+        if (month == 12)
+        {
+            m = 1;
+            year = year + 1;
+        }
+        else
+        {
+            m = month + 1;
+            y = year;
+        }
+        return new DateMeata() { month = m, year = y };
+    }
+    private bool isSelectable(int day, int month, int year, bool otherMonth)
+    {
+        bool validMin = true;
+        bool validMax = true;
+        bool validDate = true;
+        bool validDay = true;
+        if (otherMonth && !this.selectOtherMonths)
+        {
+            return false;
+        }
+        if (this.minDate != null)
+        {
+            if (this.minDate.Value.Year > year)
+            {
+                validMin = false;
+            }
+            else if (this.minDate.Value.Year == year)
+            {
+                if (this.minDate.Value.Month > month)
+                {
+                    validMin = false;
+                }
+                else if (this.minDate.Value.Month == month)
+                {
+                    if (this.minDate.Value.Day > day)
+                    {
+                        validMin = false;
+                    }
+                }
+            }
+        }
+        if (this.maxDate != null)
+        {
+            if (this.maxDate.Value.Year < year)
+            {
+                validMax = false;
+            }
+            else if (this.maxDate.Value.Year == year)
+            {
+                if (this.maxDate.Value.Month < month)
+                {
+                    validMax = false;
+                }
+                else if (this.maxDate.Value.Month == month)
+                {
+                    if (this.maxDate.Value.Day < day)
+                    {
+                        validMax = false;
+                    }
+                }
+            }
+        }
+        if (this.disabledDates != null)
+        {
+            validDate = !this.isDateDisabled(day, month, year);
+        }
+        if (this.disabledDays != null)
+        {
+            validDay = !this.isDayDisabled(day, month, year);
+        }
+
+        return validMin && validMax && validDate && validDay;
+    }
+    private bool isDayDisabled(int day, int month, int year)
+    {
+        if (this.disabledDays != null)
+        {
+            DateTime weekday = new DateTime(year, month, day);
+            int weekdayNumber = weekday.Day;
+            return this.disabledDays.IndexOf(weekdayNumber) != -1;
+        }
+        return false;
+    }
+    private bool isDateDisabled(int day, int month, int year)
+    {
+        if (this.disabledDates != null)
+        {
+            foreach (DateTime disabledDate in this.disabledDates)
+            {
+                if (disabledDate.Year == year && disabledDate.Month == month && disabledDate.Day == day)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private bool isToday(DateTime today, int day, int month, int year)
+    {
+        return today.Day == day && today.Month == month && today.Year == year;
+    }
+    private DateMeata getPreviousMonthAndYear(int year, int month)
+    {
+        DateTime date = new DateTime(year, month, 1);
+        DateTime previousMonthDate = date.AddMonths(-1);
+
+        return new DateMeata()
+            {
+                month = previousMonthDate.Month,
+                year = previousMonthDate.Year
+            };
+    }
+    private int getDaysCountInPrevMonth(int year, int month)
+    {
+        DateTime date = new DateTime(year, month, 1);
+        DateTime previousMonthDate = date.AddMonths(-1);
+        return DateTime.DaysInMonth(previousMonthDate.Year, previousMonthDate.Month);
+    }
+    private int sundayIndex
+    {
+        get
+        {
+            return this.locale.firstDayOfWeek > 0 ? 7 - this.locale.firstDayOfWeek : 0;
+        }
+    }
+}
