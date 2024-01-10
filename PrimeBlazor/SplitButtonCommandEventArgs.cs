@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PrimeBlazor
 {
-    public class SplitButtonCommandEventArgs
+    public class CommandEventArgs
     {
         public MouseEventArgs EventArgs { get; set; }
         public Menu Menu { get; set; }

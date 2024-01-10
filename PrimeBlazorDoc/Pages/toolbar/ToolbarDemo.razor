@@ -1,4 +1,6 @@
 ﻿@page "/toolbar"
+@inject IJSRuntime js
+@inject NavigationManager NavigationManager
 <div>
     <div class="content-section introduction">
         <div class="feature-intro">
@@ -13,7 +15,7 @@
                 <Button label="New" icon="pi pi-plus" style="margin-right: .25em" />
                 <Button label="Upload" icon="pi pi-upload" CssClass="p-button-success" />
                 <i class="pi pi-bars p-toolbar-separator" style="margin-right: .25em" />
-                <Button label="Save" icon="pi pi-check" CssClass="p-button-warning" />
+                <SplitButton label="Save" icon="pi pi-check" model="items" CssClass="p-button-warning" />
             </Lefttemplate>
             <Righttemplate>
                 <Button icon="pi pi-search" style="margin-right: .25em" />
@@ -22,9 +24,41 @@
             </Righttemplate>
         </Toolbar>
     </div>
-    <ToolbarDoc/>
+    <ToolbarDoc />
 </div>
 
 @code {
-
+    private static IJSRuntime JS;
+    private static NavigationManager Navigation;
+    protected override void OnInitialized()
+    {
+        JS = js;
+        Navigation = NavigationManager;
+    }
+    List<Menu> items = new List<Menu>()
+    {
+        new Menu() {
+                    label= "Update",
+                    icon= "pi pi-refresh"
+                },
+            new Menu()    {
+                    label= "Delete",
+                    icon= "pi pi-times"
+                },
+            new Menu()    {
+                    label= "Vue Website",
+                    icon= "pi pi-external-link",
+                    command= async(CommandEventArgs eventArgs) => {
+                        await JS.InvokeVoidAsync("setLocationHref","https://vuejs.org/");
+                    }
+                },
+             new Menu()   {   label= "Upload",
+                    icon= "pi pi-upload",
+                    command= (CommandEventArgs eventArgs) => {
+                          var uri = Navigation.BaseUri;
+                          var newUri = $"{uri}fileupload";
+                          Navigation.NavigateTo(newUri, forceLoad: true);
+                    }
+                }
+    };
 }

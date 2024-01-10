@@ -12,6 +12,6 @@ namespace PrimeBlazor
         public string? url { get; set; }
         public string label { get; set; } = string.Empty;
         public string? icon { get; set; }
-        public Action<SplitButtonCommandEventArgs>? command { get; set; }
+        public Action<CommandEventArgs>? command { get; set; }
     }
 }

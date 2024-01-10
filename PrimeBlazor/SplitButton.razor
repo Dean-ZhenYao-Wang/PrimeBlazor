@@ -54,7 +54,7 @@
     {
         if (item.command != null)
         {
-            item.command.Invoke(new SplitButtonCommandEventArgs() { EventArgs = eventArgs, Menu = item });
+            item.command.Invoke(new CommandEventArgs() { EventArgs = eventArgs, Menu = item });
         }
         this.overlayVisible = false;
     }

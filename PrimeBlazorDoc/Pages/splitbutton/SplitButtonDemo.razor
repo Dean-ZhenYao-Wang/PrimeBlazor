@@ -41,21 +41,21 @@
        new Menu(){
                     label= "Update",
                     icon= "pi pi-refresh",
-                    command= (PrimeBlazor.SplitButtonCommandEventArgs eventArgs) => {
+                    command= (CommandEventArgs eventArgs) => {
                         ToastEventBus.add(new Message(){severity="success", summary="Updated", detail="Data Updated", life= 3000});
                     }
                 },
                new Menu() {
                     label= "Delete",
                     icon= "pi pi-times",
-                    command= (PrimeBlazor.SplitButtonCommandEventArgs eventArgs) => {
+                    command= (CommandEventArgs eventArgs) => {
                         ToastEventBus.add(new Message(){ severity= "warn", summary= "Delete", detail= "Data Deleted", life= 3000});
                     }
                 },
              new Menu()   {
                     label= "Vue Website",
                     icon= "pi pi-external-link",
-                    command= async (PrimeBlazor.SplitButtonCommandEventArgs eventArgs) => {
+                    command= async (CommandEventArgs eventArgs) => {
                         // window.location.href = "https=//vuejs.org/";
                        await JS.InvokeVoidAsync("setLocationHref","https://vuejs.org/");
                     }
@@ -63,7 +63,7 @@
             new Menu()    {
                 label= "Upload",
                     icon= "pi pi-upload",
-                    command= (PrimeBlazor.SplitButtonCommandEventArgs eventArgs) => {
+                    command= (CommandEventArgs eventArgs) => {
                           var uri = Navigation.BaseUri;
                           var newUri = $"{uri}fileupload";
                           Navigation.NavigateTo(newUri, forceLoad: true);

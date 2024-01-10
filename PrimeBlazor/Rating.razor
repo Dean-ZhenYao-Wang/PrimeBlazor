@@ -7,8 +7,8 @@
     {
         int index = i;
         <span @key="index" @onclick="async(e)=>await onStarClick(e,index)" tabindex="@focusIndex"
-           @onkeydown="async(e)=>await keyDown(e,i)"
-           @onkeydown:preventDefault="true">
+              @onkeydown="async(e)=>await keyDown(e,i)"
+              @onkeydown:preventDefault="true">
             <span class="p-rating-icon @(i>value||i>model?"pi pi-star-o":"pi pi-star")"></span>
         </span>
     }
@@ -48,11 +48,13 @@
     }
     private async Task onStarClick(MouseEventArgs eventArgs, int value)
     {
-        await this.updateModel(eventArgs, value);
+        if (!this.isReadonly && !this.disabled)
+            await this.updateModel(eventArgs, value);
     }
     private async Task onCancelClick(MouseEventArgs eventArgs)
     {
-        await this.updateModel(eventArgs, null);
+        if (!this.isReadonly && !this.disabled)
+            await this.updateModel(eventArgs, null);
     }
     private async Task updateModel(MouseEventArgs eventArgs, int? value)
     {
