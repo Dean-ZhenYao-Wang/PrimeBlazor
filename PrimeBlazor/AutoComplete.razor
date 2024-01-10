@@ -165,7 +165,7 @@
     {
         await module.InvokeVoidAsync("unbindOutsideClickListener", this.Id);
     }
-    [Parameter]public EventCallback<string> clickDropdown{ get; set; }
+    [Parameter]public EventCallback<string> dropdownClick{ get; set; }
     private async Task onDropdownClick(MouseEventArgs eventArgs)
     {
         await this.focusevent();
@@ -178,7 +178,7 @@
         {
             await this.search(query, "dropdown");
         }
-        await clickDropdown.InvokeAsync(query);
+        await dropdownClick.InvokeAsync(query);
     }
     [Parameter] public EventCallback<object> select{ get; set; }
     [JSInvokable]
