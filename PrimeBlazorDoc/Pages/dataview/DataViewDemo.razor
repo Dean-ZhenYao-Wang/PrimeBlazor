@@ -10,10 +10,12 @@
 
     <div class="content-section implementation">
         <h3 class="first">Default</h3>
-        <DataView value="cars" layout="@(layout)" paginatorPosition='both' paginator="true" rows="20">
+        <DataView value="cars" layout="@(layout)" paginatorPosition='both' paginator="true" rows="20" sortOrder="sortOrder" sortField="@sortField">
             <headerTemplate>
                 <div class="p-grid">
-                    <div class="p-col-6" style="text-align: right"></div>
+                    <div class="p-col-6" style="text-align: left">
+                        <Dropdown @bind-value="sortKey" options="sortOptions" optionLabel="label" placeholder="Sort By" TItem="sort_Options" change="onSortChange" />
+                    </div>
                     <div class="p-col-6" style="text-align: right">
                         <DataViewLayoutOptions layout="layout" change="changeMode"></DataViewLayoutOptions>
                     </div>
@@ -26,10 +28,10 @@
                             <img src="/demo/images/car/@(data.Brand).png'" alt="@data.Brand" />
                         </div>
                         <div class="p-col-12 p-md-8 car-data">
-                            <div>Vin: <b>@data.Vin}}</b></div>
-                            <div>Year: <b>@data.Year}}</b></div>
-                            <div>Brand: <b>@data.Brand}}</b></div>
-                            <div>Color: <b>@data.Color}}</b></div>
+                            <div>Vin: <b>@data.Vin</b></div>
+                            <div>Year: <b>@data.Year</b></div>
+                            <div>Brand: <b>@data.Brand</b></div>
+                            <div>Color: <b>@data.Color</b></div>
                         </div>
 
                         <div class="p-col-12 p-md-1 search-icon" style="margin-top: 40px">
@@ -39,22 +41,42 @@
                 </div>
             </listItemTemplate>
             <gridItemTemplate Context="data">
-                <div style="padding: .5em" class="p-col-12 p-md-3">
-                    <img src="/demo/images/car/@(data.Brand).png" alt="@data.Brand" />
-                    <div class="car-detail">@data.Year}} - @data.Color</div>
-                    <hr class="ui-widget-content" style="border-top: 0" />
-                    <Button icon="pi pi-search"></Button>
-                </div>
+                <Panel header="@data.Vin" style="text-align: center">
+                    <div style="padding: .5em" class="p-col-12 p-md-3">
+                        <img src="/demo/images/car/@(data.Brand).png" alt="@data.Brand" />
+                        <div class="car-detail">@data.Year}} - @data.Color</div>
+                        <hr class="ui-widget-content" style="border-top: 0" />
+                        <Button icon="pi pi-search"></Button>
+                    </div>
+                </Panel>
             </gridItemTemplate>
         </DataView>
     </div>
 
     <DataViewDoc />
 </div>
-
+<style lang="scss">
+    .p-dropdown {
+        width: 12em;
+    }
+</style>
 @code {
     List<Models.Car>? cars = null;
     string layout = "list";
+    sort_Options? sortKey = null;
+    int? sortOrder = null;
+    string? sortField = null;
+    List<sort_Options> sortOptions = new List<sort_Options>()
+    {
+        new sort_Options(){label="Newest First",value="!Year"},
+        new sort_Options(){label="Oldest FFirst",value="Year"},
+        new sort_Options(){label="Brand",value="Brand"}
+    };
+    public class sort_Options
+    {
+        public string label { get; set; }
+        public string value { get; set; }
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -66,5 +88,21 @@
     private void changeMode((MouseEventArgs, string) args)
     {
         this.layout = args.Item2;
+    }
+    private void onSortChange(sort_Options sortValue)
+    {
+        string value = sortValue.value;
+        if (value.IndexOf('!') == 0)
+        {
+            this.sortOrder = -1;
+            this.sortField = value.Substring(1, value.Length);
+            this.sortKey = sortValue;
+        }
+        else
+        {
+            this.sortOrder = 1;
+            this.sortField = value;
+            this.sortKey = sortValue;
+        }
     }
 }
