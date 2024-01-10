@@ -12,6 +12,7 @@
             <transition name="p-input-overlay" onenter="AppTopBar.onThemesMenuEnter" onleave="AppTopBar.onThemesMenuLeave">
                 <ul v-if="themesMenuVisible">
                     <li class="topbar-submenu-header">THEMING</li>
+                    <li><NavLink href="/icons" @onclick="hideThemesMenu"><i className="pi pi-fw pi-search" /><span>Icons</span></NavLink></li>
                     <li class="topbar-submenu-header">FREE THEMES</li>
                     <li><a href="#" onclick="AppTopBar.changeTheme(event, 'lara-light-blue', false)"><img src="./assets/images/layouts/themeswitcher-nova-light.png" alt="Nova Light" /><span>Nova Light</span></a></li>
                     <li><a onclick="AppTopBar.changeTheme(event, 'nova-dark', false)"><img src="./assets/images/layouts/themeswitcher-nova-dark.png" alt="Nova Dark" /><span>Nova Dark</span></a></li>
@@ -32,10 +33,6 @@
 
     private string theme = "lara-light-blue";
     private bool themesMenuVisible = false;
-    private void toggleThemesMenu(MouseEventArgs mouseEvent)
-    {
-        this.themesMenuVisible = !this.themesMenuVisible;
-    }
     private IJSObjectReference module;
     private DotNetObjectReference<AppTopBar> dotNetHelper;
     protected override async Task OnInitializedAsync()
@@ -49,6 +46,11 @@
         if (module is not null)
             await module.DisposeAsync();
         dotNetHelper?.Dispose();
+    }
+    private void toggleThemesMenu(MouseEventArgs mouseEvent)
+    {
+        this.themesMenuVisible = !this.themesMenuVisible;
+        this.hideThemesMenu();
     }
     [JSInvokable]
     public string getTheme()
@@ -69,5 +71,10 @@
     public void setThemesMenuVisible(bool value)
     {
         this.themesMenuVisible = value;
+    }
+    [JSInvokable]
+    private void hideThemesMenu()
+    {
+        this.themesMenuVisible = false;
     }
 }

@@ -4,7 +4,7 @@
 <span class="@containerClass" id="@id" @ref="el">
     @if (!this.inline)
     {
-        <Inputtext @ref="input" value="@inputFieldValue" Readonly="!manualInput" oninput="inputEvent" onfocus="focusEvent" onblur="blurEvent" onkeydown="keydownEvent" />
+        <Inputtext @ref="input" model="@inputFieldValue" Readonly="!manualInput" oninput="inputEvent" onfocus="focusEvent" onblur="blurEvent" onkeydown="keydownEvent" />
     }
     @if (showIcon)
     {

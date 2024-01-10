@@ -25,7 +25,7 @@ export default class AppTopBar {
             AppTopBar.darkDemoStyle = null;
         }
 
-        await AppTopBar.dotNetHelper.invokeMethodAsync('setThemesMenuVisible', false)
+        await AppTopBar.dotNetHelper.invokeMethodAsync('hideThemesMenu')
         event.preventDefault();
     }
     static onThemesMenuEnter(el) {
@@ -41,7 +41,7 @@ export default class AppTopBar {
             AppTopBar.themesMenuOutsideClickListener = async (event) => {
                 let themesMenuVisible = await AppTopBar.dotNetHelper.invokeMethodAsync('getThemesMenuVisible');
                 if (themesMenuVisible && AppTopBar.isOutsideOfThemesMenuClicked(event)) {
-                    await AppTopBar.dotNetHelper.invokeMethodAsync('setThemesMenuVisible', false)
+                    await AppTopBar.dotNetHelper.invokeMethodAsync('hideThemesMenu')
                 }
             };
             document.addEventListener('click', AppTopBar.themesMenuOutsideClickListener);

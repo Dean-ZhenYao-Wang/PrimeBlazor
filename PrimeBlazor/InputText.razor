@@ -1,5 +1,5 @@
 ﻿<input type="@type" closable="@closable" class="@css @CssClass" id="@Id"
-       disabled="@disabled" value="@value" @oninput="onInputEvent" placeholder="@placeholder"
+       disabled="@disabled" value="@model" @oninput="onInputEvent" placeholder="@placeholder"
        readonly="@Readonly"
        @onfocus="onfocusEvent"
        @onblur="onblurEvent"
@@ -11,7 +11,6 @@
     [Parameter] public string type { get; set; } = "text";
     [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
     [Parameter] public string CssClass { get; set; } = string.Empty;
-    [Parameter] public string value { get; set; } = string.Empty;
     [Parameter] public bool disabled { get; set; }
     [Parameter] public string? model { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> modelChanged { get; set; }
@@ -52,6 +51,6 @@
     }
     private bool filled()
     {
-        return !string.IsNullOrWhiteSpace(this.value);
+        return !string.IsNullOrWhiteSpace(this.model);
     }
 }

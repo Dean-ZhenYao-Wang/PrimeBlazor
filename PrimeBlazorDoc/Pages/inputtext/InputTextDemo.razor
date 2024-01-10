@@ -14,7 +14,7 @@
 
         <h3>Floating Label</h3>
         <span class="p-float-label">
-            <Inputtext value="value2" />
+            <Inputtext model="@value2" />
             <label htmlFor="float-input">Username</label>
         </span>
 
@@ -26,5 +26,6 @@
 
 @code {
     private string value1 = string.Empty;
+    private string value2 = "123333";
     private string value3 = "PrimeVue";
 }
