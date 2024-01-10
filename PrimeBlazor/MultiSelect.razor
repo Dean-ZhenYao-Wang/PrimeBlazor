@@ -1,13 +1,13 @@
 ﻿@typeparam TItem
 @implements IAsyncDisposable
 @inject IJSRuntime JS
-<div class="@containerClass" @onclick="onClick">
+<div @ref="container" class="@containerClass" @onclick="onClick">
     <div class="p-hidden-accessible">
         <input @ref="focusInput" type="text" role="listbox" readonly disabled="@disabled" @onfocus="onFocus" @onblur="onBlur" @onkeydown="async(e)=>await onKeyDown(e)" tabindex="@tabindex" />
     </div>
     <div class="p-multiselect-label-container">
         <label class="@labelClass">
-            @if(ValueTemplate is not null)
+            @if (ValueTemplate is not null)
             {
                 @ValueTemplate(this.model)
             }
@@ -43,7 +43,7 @@
                 </div>
                 <div @ref="itemsWrapper" class="p-multiselect-items-wrapper" style="@(string.IsNullOrWhiteSpace(scrollHeight)?"max-height":null)">
                     <ul class="p-multiselect-items p-multiselect-list p-component">
-                        @foreach(var option in visibleOptions)
+                        @foreach (var option in visibleOptions)
                         {
                             int i = visibleOptions.IndexOf(option);
                             <li class="p-multiselect-item @(async()=>await isSelected(option)?"p-highlight":null) @(isOptionDisabled(option)?"p-disabled":null)"
@@ -53,29 +53,29 @@
                                         <span class="p-checkbox-icon p-c @(async()=>await isSelected(option)?"pi pi-check":null)"></span>
                                     </div>
                                 </div>
-                                @if(OptionTemplate is not null)
+                                @if (OptionTemplate is not null)
                                 {
                                     @OptionTemplate(option)
                                 }
                                 else
                                 {
                                     <div name="option" index="@i">
-                                       <span>@getOptionLabel(option)</span>
+                                        <span>@getOptionLabel(option)</span>
                                     </div>
                                 }
                             </li>
                         }
                     </ul>
                 </div>
-            </div>            
+            </div>
         }
-     </transition>
+    </transition>
 </div>
 
 @code {
     private ElementReference itemsWrapper;
     private ElementReference focusInput;
-    private bool headerCheckboxFocused= false;
+    private bool headerCheckboxFocused = false;
     [Parameter] public List<TItem> model { get; set; } = new List<TItem>();
     [Parameter] public EventCallback<List<TItem>> modelChanged { get; set; }
     [Parameter] public List<TItem> options { get; set; } = new List<TItem>();
@@ -90,9 +90,9 @@
     [Parameter] public string? placeholder { get; set; }
     [Parameter] public string scrollHeight { get; set; } = "200px";
     [Parameter] public string? filterPlaceholder { get; set; }
-    [Parameter] public EventCallback<List<TItem>> change{ get; set; }
-    [Parameter] public RenderFragment<List<TItem>>? ValueTemplate{ get; set; }
-    [Parameter] public RenderFragment<TItem>? OptionTemplate{ get; set; }
+    [Parameter] public EventCallback<List<TItem>> change { get; set; }
+    [Parameter] public RenderFragment<List<TItem>>? ValueTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? OptionTemplate { get; set; }
     private bool focused = false;
     private string? filterValue = null;
     public bool overlayVisible = false;
@@ -126,12 +126,13 @@
     }
     private object getOptionValue(TItem option)
     {
-        if( !string.IsNullOrWhiteSpace(this.optionValue)){
+        if (!string.IsNullOrWhiteSpace(this.optionValue))
+        {
             return ObjectUtils.ResolveFieldData(option, this.optionValue);
         }
         else
         {
-            return option;            
+            return option;
         }
     }
     private ElementReference container;
@@ -142,13 +143,13 @@
     private async Task<bool> isSelected(TItem option)
     {
         bool selected = false;
-        TItem optionValue =(TItem)this.getOptionValue(option);
+        TItem optionValue = (TItem)this.getOptionValue(option);
 
-        if (this.model!=null&&this.model.Count > 0)
+        if (this.model != null && this.model.Count > 0)
         {
-            foreach(var val in this.model)
+            foreach (var val in this.model)
             {
-                if(await JS.InvokeAsync<bool>("", val, optionValue, this.dataKey))
+                if (await JS.InvokeAsync<bool>("", val, optionValue, this.dataKey))
                 {
                     selected = true;
                     break;
@@ -165,22 +166,23 @@
     {
         this.focused = false;
     }
-    private void onHeaderCheckboxFocus() 
+    private void onHeaderCheckboxFocus()
     {
         this.headerCheckboxFocused = true;
     }
-    private void   onHeaderCheckboxBlur() {
+    private void onHeaderCheckboxBlur()
+    {
         this.headerCheckboxFocused = false;
     }
     private async Task onClick(EventArgs eventArgs)
     {
-        if(await JS.InvokeAsync<bool>("DomHandler.elementContainsTargetElement", overlay, eventArgs))
+        if (await JS.InvokeAsync<bool>("DomHandler.elementContainsTargetElement", overlay, eventArgs))
         {
             this.overlayVisible = !this.overlayVisible;
             await focusInput.FocusAsync();
         }
     }
-    private void onCloseClick() 
+    private void onCloseClick()
     {
         this.overlayVisible = false;
     }
@@ -214,7 +216,7 @@
     }
     private async Task onToggleAll(MouseEventArgs eventArgs)
     {
-        List<TItem> value =await this.allSelected() ? new List<TItem>() : this.visibleOptions;
+        List<TItem> value = await this.allSelected() ? new List<TItem>() : this.visibleOptions;
         await modelChanged.InvokeAsync(value);
         await change.InvokeAsync(value);
     }
@@ -222,8 +224,8 @@
     {
         IJSObjectReference? nextItem = await JS.InvokeAsync<IJSObjectReference>("nextElementSibling", item);
 
-        if (nextItem!=null)
-            return await JS.InvokeAsync<bool>("DomHandler.hasClass",nextItem, "p-disabled") ?await this.findNextItem(nextItem) : nextItem;
+        if (nextItem != null)
+            return await JS.InvokeAsync<bool>("DomHandler.hasClass", nextItem, "p-disabled") ? await this.findNextItem(nextItem) : nextItem;
         else
             return null;
     }
@@ -231,40 +233,43 @@
     {
         IJSObjectReference? prevItem = await JS.InvokeAsync<IJSObjectReference>("nextElementSibling", item);
 
-        if (prevItem!=null)
-            return await JS.InvokeAsync<bool>("DomHandler.hasClass",prevItem, "p-disabled") ?await this.findPrevItem(prevItem) : prevItem;
+        if (prevItem != null)
+            return await JS.InvokeAsync<bool>("DomHandler.hasClass", prevItem, "p-disabled") ? await this.findPrevItem(prevItem) : prevItem;
         else
             return null;
     }
-    private async Task onOverlayEnter() {
+    private async Task onOverlayEnter()
+    {
         await this.alignOverlay();
         await this.bindOutsideClickListener();
     }
-    private async Task onOverlayLeave() {
+    private async Task onOverlayLeave()
+    {
         await this.unbindOutsideClickListener();
     }
-    private async Task alignOverlay() {
-        await JS.InvokeVoidAsync("DomHandler.relativePosition",overlay,container);
+    private async Task alignOverlay()
+    {
+        await JS.InvokeVoidAsync("DomHandler.relativePosition", overlay, container);
     }
-    private async Task onOptionSelect(EventArgs eventArgs,TItem option)
+    private async Task onOptionSelect(EventArgs eventArgs, TItem option)
     {
         if (this.disabled || this.isOptionDisabled(option))
         {
             return;
         }
-        bool selected =await this.isSelected(option);
+        bool selected = await this.isSelected(option);
         List<TItem> value = new List<TItem>();
-        if(selected)
+        if (selected)
         {
-            foreach(var val in this.model)
+            foreach (var val in this.model)
             {
-                if(!await JS.InvokeAsync<bool>("ObjectUtils.equals", val, this.getOptionValue(option), this.dataKey))
+                if (!await JS.InvokeAsync<bool>("ObjectUtils.equals", val, this.getOptionValue(option), this.dataKey))
                 {
                     value.Add(val);
                 }
                 else
                 {
-                    if (this.model!=null&&this.model.Count > 0)
+                    if (this.model != null && this.model.Count > 0)
                     {
                         value.AddRange(this.model);
                     }
@@ -275,21 +280,21 @@
             }
         }
     }
-    private async Task onOptionKeyDown(KeyboardEventArgs eventArgs,TItem option) 
+    private async Task onOptionKeyDown(KeyboardEventArgs eventArgs, TItem option)
     {
 
-        IJSObjectReference listItem = await JS.InvokeAsync<IJSObjectReference>("DomHandler",eventArgs);
+        IJSObjectReference listItem = await JS.InvokeAsync<IJSObjectReference>("DomHandler", eventArgs);
         switch (eventArgs.Key)
         {
             case "ArrowDw":
-                IJSObjectReference? nextItem =await this.findNextItem(listItem);
+                IJSObjectReference? nextItem = await this.findNextItem(listItem);
                 if (nextItem != null)
                 {
                     await nextItem.InvokeVoidAsync("focus");
                 }
                 break;
             case "ArrowUp":
-                IJSObjectReference? prevItem =await this.findPrevItem(listItem);
+                IJSObjectReference? prevItem = await this.findPrevItem(listItem);
                 if (prevItem != null)
                 {
                     await prevItem.InvokeVoidAsync("focus");
@@ -301,10 +306,10 @@
         }
     }
     private string Id = Guid.NewGuid().ToString();
-    private ElementReference overlay;
+    private ElementReference? overlay;
     private async Task bindOutsideClickListener()
     {
-        await module.InvokeVoidAsync("bindOutsideClickListener", Id, overlay, dotNetHelper);
+        await module.InvokeVoidAsync("bindOutsideClickListener", Id, container, overlay, dotNetHelper);
     }
     private async Task unbindOutsideClickListener()
     {
@@ -320,7 +325,7 @@
         string? label = null;
         if (this.options.Count > 0)
         {
-            foreach(var option in this.options)
+            foreach (var option in this.options)
             {
                 TItem optionValue = (TItem)this.getOptionValue(option);
                 if (ObjectUtils.Equals(optionValue, val, this.dataKey))
@@ -336,7 +341,7 @@
     {
         get
         {
-            if (!string.IsNullOrWhiteSpace(this.filterValue)&&this.filterValue.Trim().Length>0)
+            if (!string.IsNullOrWhiteSpace(this.filterValue) && this.filterValue.Trim().Length > 0)
                 return this.options.Where(m => this.getOptionLabel(m).ToLower().IndexOf(this.filterValue.ToLower()) > -1).ToList();
             else
                 return this.options;
@@ -345,20 +350,20 @@
     private async Task<bool> allSelected()
     {
         if (!string.IsNullOrWhiteSpace(this.filterValue) && this.filterValue.Trim().Length > 0)
+        {
+            bool allSelected = true;
+            foreach (var option in this.visibleOptions)
             {
-                bool allSelected = true;
-                foreach(var option in this.visibleOptions)
+                if (!await this.isSelected(option))
                 {
-                    if (!await this.isSelected(option))
-                    {
-                        allSelected = false;
-                        break;
-                    }
+                    allSelected = false;
+                    break;
                 }
-                return allSelected;
             }
-            else
-                return this.model != null && this.options != null && this.model.Count > 0 && this.model.Count == this.options.Count;
+            return allSelected;
+        }
+        else
+            return this.model != null && this.options != null && this.model.Count > 0 && this.model.Count == this.options.Count;
     }
     private string containerClass
     {
@@ -377,10 +382,10 @@
         get
         {
             string label = string.Empty;
-            if (this.model!=null&&this.model.Count > 0)
+            if (this.model != null && this.model.Count > 0)
             {
                 label = "";
-                for(int i = 0; i < this.model.Count; i++)
+                for (int i = 0; i < this.model.Count; i++)
                 {
                     if (i != 0)
                     {
@@ -399,26 +404,31 @@
             return label;
         }
     }
-    private string label 
+    private string label
     {
-        get { 
-            string label_str="";
+        get
+        {
+            string label_str = "";
 
-            if (this.model!=null&&this.model.Count>0) {
-                for (int i = 0; i < this.model.Count; i++) {
-                    if (i != 0) {
+            if (this.model != null && this.model.Count > 0)
+            {
+                for (int i = 0; i < this.model.Count; i++)
+                {
+                    if (i != 0)
+                    {
                         label_str += ",";
                     }
                     label_str += this.getLabelByValue(this.model[i]);
                 }
             }
-            else {
+            else
+            {
                 if (!string.IsNullOrWhiteSpace(this.placeholder))
                     label_str = this.placeholder;
                 else
                     label_str = "p-multiselect";
             }
             return label_str;
-        } 
+        }
     }
 }
