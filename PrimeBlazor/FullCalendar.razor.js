@@ -4,16 +4,24 @@ export function events(id,newValue) {
     calendar.removeAllEventSources();
     calendar.addEventSource(newValue);
 }
-export function mounted(id, container,options,events) {
-    if (container.offsetParent) {
-        initialize(id, container, options,events);
+export function options(id, newValue) {
+    let { calendar } = fullCalendar.find(c => c.id == id);
+    if (newValue && calendar) {
+        for (let prop in newValue) {
+            calendar.setOption(prop, newValue[prop]);
+        }
     }
 }
-export function initialize(id,container,options,events) {
-    let defaultConfig = { theme: true, plugins: [window.dayGridPlugin, window.timeGridPlugin, window.listPlugin] };
+export function mounted(id, el,options,events) {
+    if (el.offsetParent) {
+        initialize(id, el, options,events);
+    }
+}
+export function initialize(id,el,options,events) {
+    let defaultConfig = { theme: false, plugins: [window.dayGridPlugin, window.timeGridPlugin, window.interactionPlugin] };
     let config = options ? { ...options, ...defaultConfig } : defaultConfig;
 
-    let calendar = new window.Calendar(container, config);
+    let calendar = new window.Calendar(el, config);
     calendar.render();
 
     if (events) {
@@ -22,10 +30,10 @@ export function initialize(id,container,options,events) {
     }
     fullCalendar.push({ id: id, calendar: calendar })
 }
-export function updated(id, container, options, events) {
+export function updated(id, el, options, events) {
     let { calendar } = fullCalendar.find(c => c.id === id);
-    if (!calendar && container.offsetParent) {
-        initialize(id, container, options, events);
+    if (!calendar && el.offsetParent) {
+        initialize(id, el, options, events);
     }
 }
 export function beforeDestroy(id) {
