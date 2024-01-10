@@ -3,14 +3,6 @@
 @inject IJSRuntime JS
 <div @ref="container" class="@containerClass" @onclick="onClick">
     <div class="p-hidden-accessible">
-        <select aria-hidden="true" tabindex="-1">
-            @foreach(TItem option in visibleOptions)
-            {
-                <option @key="getOptionLabel(option)" value="@getOptionValue(option)">@getOptionLabel(option)</option>
-            }
-        </select>
-    </div>
-    <div class="p-hidden-accessible">
         <input @ref="focusInput" type="text" role="listbox" readonly disabled="@disabled" @onfocus="onFocus" @onblur="onBlur" @onkeydown="async(e)=>await onKeyDown(e)" tabindex="@tabindex" />
     </div>
     @if (editable)
