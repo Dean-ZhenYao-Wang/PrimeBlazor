@@ -12,7 +12,7 @@ namespace PrimeBlazor
 {
     public static class ObjectUtils
     {
-        public static object ResolveFieldData(object? data, string? field)
+        public static object? ResolveFieldData(object? data, string? field)
         {
             if (data != null && !string.IsNullOrEmpty(field))
             {

@@ -1,4 +1,4 @@
-<div class="p-paginator p-component p-unselectable-text">
+<div class="p-paginator p-component p-unselectable-text @CssClass">
     @if (LeftTemplate is not null)
     {
         <div class="p-paginator-left-content">
@@ -64,13 +64,14 @@
                 };
         }
     }
+    [Parameter] public string? CssClass { get; set; } = null;
     [Parameter] public RenderFragment<PageState>? LeftTemplate { get; set; }
     [Parameter] public RenderFragment<PageState>? RightTemplate { get; set; }
     [Parameter] public int totalRecords { get; set; } = 0;
     [Parameter] public int rows { get; set; } = 0;
-    [Parameter] public EventCallback<int> rowsChanged{ get; set; }
+    [Parameter] public EventCallback<int> rowsChanged { get; set; }
     [Parameter] public int first { get; set; } = 0;
-    [Parameter] public EventCallback<int> firstChanged{ get; set; }
+    [Parameter] public EventCallback<int> firstChanged { get; set; }
     [Parameter] public int pageLinkSize { get; set; } = 5;
     [Parameter] public List<int> rowsPerPageOptions { get; set; } = new List<int>();
     [Parameter] public string template { get; set; } = "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown";

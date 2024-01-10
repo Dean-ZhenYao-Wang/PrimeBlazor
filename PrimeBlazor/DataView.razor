@@ -1,0 +1,173 @@
+@typeparam TItem
+@inject IJSRuntime JS
+<div :class="containerClass">
+    @if (headerTemplate is not null)
+    {
+        <div class="p-dataview-header">
+            @headerTemplate
+        </div>
+    }
+    @if (paginatorTop)
+    {
+        <Paginator rows="rows" first="first" totalRecords="getTotalRecords" pageLinkSize="pageLinkSize" template="paginatorTemplate" rowsPerPageOptions="rowsPerPageOptions"
+                   currentPageReportTemplate="currentPageReportTemplate" CssClass="@(paginatorTop?"p-paginator-top":null)"></Paginator>
+    }
+    <div class="p-dataview-content">
+        <div class="p-grid">
+            @if (value is not null)
+            {
+                foreach (TItem data in value)
+                {
+                    if (listItemTemplate is not null && layout.Equals("list"))
+                    {
+                        @listItemTemplate(data)
+                        ;
+                    }
+                    if (gridItemTemplate is not null && layout.Equals("grid"))
+                    {
+                        @gridItemTemplate(data)
+                    }
+                }
+            }
+            @if (isEmpty)
+            {
+                <div class="p-col-12">@emptyMessage</div>
+            }
+        </div>
+    </div>
+    @if (paginatorBottom)
+    {
+        <Paginator rows="rows" first="first" totalRecords="getTotalRecords" pageLinkSize="pageLinkSize" template="@paginatorTemplate" rowsPerPageOptions="rowsPerPageOptions"
+                   currentPageReportTemplate="currentPageReportTemplate" CssClass="@(paginatorBottom?"p-paginator-bottom":null)"></Paginator>
+    }
+    @if (footerTemplate is not null)
+    {
+        <div class="p-dataview-footer">
+            @footerTemplate
+        </div>
+    }
+</div>
+@code {
+    [Parameter] public List<TItem>? value { get; set; } = null;
+    [Parameter] public string layout { get; set; } = "list";
+    [Parameter] public int rows { get; set; } = 0;
+    [Parameter] public int first { get; set; } = 0;
+    [Parameter] public int? totalRecords { get; set; } = null;
+    [Parameter] public bool paginator { get; set; } = false;
+    [Parameter] public string paginatorPosition { get; set; } = "bottom";
+    [Parameter] public bool alwaysShowPaginator { get; set; } = true;
+    [Parameter] public string paginatorTemplate { get; set; } = "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLinks";
+    [Parameter] public int pageLinkSize { get; set; } = 5;
+    [Parameter] public List<int> rowsPerPageOptions { get; set; } = new List<int>();
+    [Parameter] public string currentPageReportTemplate { get; set; } = "({currentPage} of {totalPages})";
+    [Parameter] public string emptyMessage { get; set; } = "No records found";
+    [Parameter] public string? sortField { get; set; } = null;
+    [Parameter] public int? sortOrder { get; set; } = null;
+    [Parameter] public bool lazy { get; set; } = false;
+    [Parameter] public RenderFragment? headerTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? listItemTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? gridItemTemplate { get; set; }
+    [Parameter] public RenderFragment? footerTemplate { get; set; }
+    private List<TItem>? sort()
+    {
+        if (this.value != null)
+        {
+            List<TItem> thisValue = new List<TItem>();
+            thisValue.AddRange(this.value);
+            thisValue.Sort((data1, data2) =>
+            {
+                object? value1 = ObjectUtils.ResolveFieldData(data1, this.sortField);
+                object? value2 = ObjectUtils.ResolveFieldData(data2, this.sortField);
+                int? result = null;
+                if (value1 == null && value2 != null)
+                    result = -1;
+                else if (value != null && value2 == null)
+                    result = 1;
+                else if (value1 == null && value2 == null)
+                    result = 0;
+                else if (value1 is string && value2 is string)
+                    result = string.Compare(value1 as string, value2 as string, StringComparison.Ordinal);
+                else
+                {
+                    int value1Int = (int)value1;
+                    int value2Int = (int)value2;
+                    result = (value1Int < value2Int) ? -1 : (value1Int > value2Int) ? 1 : 0;
+                }
+                return (this.sortOrder.Value * result.Value);
+            });
+            return thisValue;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    private List<TItem>? processData()
+    {
+        List<TItem>? data = this.value;
+
+        if (data != null && data.Count > 0)
+        {
+            if (!string.IsNullOrWhiteSpace(this.sortField))
+            {
+                data = this.sort();
+            }
+        }
+
+        return data;
+    }
+    private string containerClass
+    {
+        get
+        {
+            string str = "p-dataview p-component";
+            switch (this.layout)
+            {
+                case "list":
+                    str += " p-dataview-list";
+                    break;
+                case "grid":
+                    str += " p-dataview-grid";
+                    break;
+            }
+            return str;
+        }
+    }
+    private int getTotalRecords
+    {
+        get
+        {
+            if (this.totalRecords != null)
+                return this.totalRecords.Value;
+            else
+                return this.value != null ? this.value.Count : 0;
+        }
+    }
+    private bool isEmpty
+    {
+        get
+        {
+            return this.value == null || this.value.Count == 0;
+        }
+    }
+    private bool paginatorTop
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(this.paginatorPosition) && (!this.paginatorPosition.Equals("bottom") || this.paginatorPosition.Equals("both")))
+                return true;
+            else
+                return false;
+        }
+    }
+    private bool paginatorBottom
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(this.paginatorPosition) && (!this.paginatorPosition.Equals("top") || this.paginatorPosition.Equals("both")))
+                return true;
+            else
+                return false;
+        }
+    }
+}

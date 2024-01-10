@@ -1,0 +1,38 @@
+<div class="p-dataview-layout-options p-selectbutton p-buttonset">
+    <Button CssClass="@buttonListClass" onclick='(e)=>changeLayout(e,"list")'>
+        <i class="pi pi-bars p-button-icon-left"></i>
+        <span class="p-button-text p-clickable">p-btn</span>
+    </Button>
+    <Button CssClass="@buttonGridClass" @onclick='(e)=>changeLayout(e,"grid")'>
+        <i class="pi pi-th-large p-button-icon-left"></i>
+        <span class="p-button-text p-clickable">p-btn</span>
+    </Button>
+</div>
+@code {
+    [Parameter] public string? layout { get; set; } = null;
+    [Parameter] public EventCallback<(MouseEventArgs mouseEvent,string layoutMode)> change{ get; set; }
+    private string buttonListClass
+    {
+        get
+        {
+            string str = "p-button p-button-icon-only";
+            if (this.layout != null && this.layout.Equals("list"))
+                str += " p-highlight";
+            return str;
+        }
+    }
+    private string buttonGridClass
+    {
+        get
+        {
+            string str = "p-button p-button-icon-only";
+            if (this.layout != null && this.layout.Equals("grid"))
+                str += " p-highlight";
+            return str;
+        }
+    }
+    private async Task changeLayout(MouseEventArgs mouseEvent, string layoutMode)
+    {
+        await change.InvokeAsync((mouseEvent, layoutMode));
+    }
+}

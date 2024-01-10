@@ -1,0 +1,70 @@
+﻿@page "/dataview"
+@inject Service.CarService carService
+<div>
+    <div class="content-section introduction">
+        <div class="feature-intro">
+            <h1>DataView</h1>
+            <p>DataView displays data in grid or list layout with pagination and sorting features.</p>
+        </div>
+    </div>
+
+    <div class="content-section implementation">
+        <h3 class="first">Default</h3>
+        <DataView value="cars" layout="@(layout)" paginatorPosition='both' paginator="true" rows="20">
+            <headerTemplate>
+                <div class="p-grid">
+                    <div class="p-col-6" style="text-align: right"></div>
+                    <div class="p-col-6" style="text-align: right">
+                        <DataViewLayoutOptions layout="layout" change="changeMode"></DataViewLayoutOptions>
+                    </div>
+                </div>
+            </headerTemplate>
+            <listItemTemplate Context="data">
+                <div class="p-col-12 car-details" style="padding: 2em; border-bottom: 1px solid #d9d9d9">
+                    <div class="p-grid">
+                        <div class="p-col-12 p-md-3">
+                            <img src="/demo/images/car/@(data.Brand).png'" alt="@data.Brand" />
+                        </div>
+                        <div class="p-col-12 p-md-8 car-data">
+                            <div>Vin: <b>@data.Vin}}</b></div>
+                            <div>Year: <b>@data.Year}}</b></div>
+                            <div>Brand: <b>@data.Brand}}</b></div>
+                            <div>Color: <b>@data.Color}}</b></div>
+                        </div>
+
+                        <div class="p-col-12 p-md-1 search-icon" style="margin-top: 40px">
+                            <Button icon="pi pi-search"></Button>
+                        </div>
+                    </div>
+                </div>
+            </listItemTemplate>
+            <gridItemTemplate Context="data">
+                <div style="padding: .5em" class="p-col-12 p-md-3">
+                    <img src="/demo/images/car/@(data.Brand).png" alt="@data.Brand" />
+                    <div class="car-detail">@data.Year}} - @data.Color</div>
+                    <hr class="ui-widget-content" style="border-top: 0" />
+                    <Button icon="pi pi-search"></Button>
+                </div>
+            </gridItemTemplate>
+        </DataView>
+    </div>
+
+    <DataViewDoc />
+</div>
+
+@code {
+    List<Models.Car>? cars = null;
+    string layout = "list";
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            this.cars = await carService.getCarsLarge();
+            StateHasChanged();
+        }
+    }
+    private void changeMode((MouseEventArgs, string) args)
+    {
+        this.layout = args.Item2;
+    }
+}
