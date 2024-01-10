@@ -24,12 +24,14 @@
     </transition>
 </div>
 @code {
-    [Parameter] public string? CssClass{ get; set; }
+    [Parameter] public string? CssClass { get; set; }
     [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
-    [Parameter] public string label { get; set; } = string.Empty;
-    [Parameter] public string icon { get; set; } = string.Empty;
-    [Parameter] public bool disabled { get; set; }
+    [Parameter] public string? label { get; set; } = null;
+    [Parameter] public string? icon { get; set; } = null;
+    [Parameter] public bool disabled { get; set; } = false;
     [Parameter] public int? tabindex { get; set; } = null;
+    [Parameter] public bool autoZIndex { get; set; } = true;
+    [Parameter] public int baseZIndex { get; set; } = 0;
     [Parameter] public List<TItem> model { get; set; } = new List<TItem>();
     private bool overlayVisible = false;
     async ValueTask IAsyncDisposable.DisposeAsync()
@@ -58,6 +60,10 @@
     }
     private async Task onOverlayEnter()
     {
+        if (this.autoZIndex)
+        {
+            await JS.InvokeVoidAsync("DomHandler.setElementZIndex", this.overlay, (this.baseZIndex + await JS.InvokeAsync<int>("DomHandler.generateZIndex")));
+        }
         this.alignOverlay();
         await this.bindOutsideClickListener();
     }

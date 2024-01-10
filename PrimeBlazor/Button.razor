@@ -17,9 +17,9 @@
     [Parameter] public int? tabindex { get; set; } = null;
     private ElementReference refButton { get; set; }
     [Parameter] public ElementReference? refElement { get; set; }
-    [Parameter] public string label { get; set; } = string.Empty;
+    [Parameter] public string? label { get; set; }=null;
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public string icon { get; set; } = string.Empty;
+    [Parameter] public string? icon { get; set; } = null;
     [Parameter] public string iconPos { get; set; } = "left";
     [Parameter] public bool disabled { get; set; }
     [Parameter] public string CssClass { get; set; } = string.Empty;
