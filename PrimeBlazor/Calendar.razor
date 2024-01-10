@@ -16,7 +16,7 @@
             <div @ref="overlay" class="@panelStyleClass">
                 @if (!timeOnly)
                 {
-                    foreach (ClendarMonth month in months)
+                    foreach (CalendarMonth month in months)
                     {
                         int i = months.IndexOf(month);
                         <div class="p-datepicker-group" @key="@($"{month.month}+{month.year}")">
@@ -1755,11 +1755,11 @@
             }
         }
     }
-    private List<ClendarMonth> months
+    private List<CalendarMonth> months
     {
         get
         {
-            List<ClendarMonth> monthList = new List<ClendarMonth>();
+            List<CalendarMonth> monthList = new List<CalendarMonth>();
             for (int i = 0; i < this.numberOfMonths; i++)
             {
                 int month = this.currentMonth + i;
@@ -1846,7 +1846,7 @@
                     }
                     dates.Add(week);
                 }
-                monthList.Add(new ClendarMonth() { month = month, year = year, dates = dates, weekNumbers = weekNumbers });
+                monthList.Add(new CalendarMonth() { month = month, year = year, dates = dates, weekNumbers = weekNumbers });
             }
             return monthList;
         }

@@ -1,6 +1,6 @@
 ﻿namespace PrimeBlazor
 {
-    public class ClendarMonth
+    public class CalendarMonth
     {
         public int month { get; set; }
         public int year { get; set; }
