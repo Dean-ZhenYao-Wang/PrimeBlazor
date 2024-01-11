@@ -11,7 +11,7 @@
                 <ul class="p-menu-list p-reset">
                     @foreach (TItem item in model)
                     {
-                        <li class="p-menuitem" role="menuitem" @key="item.label">
+                        <li class="p-menuitem @(item.CssClass)" role="menuitem" @key="item.label" target="@item.target" style="@item.style">
                             <a href="@(item.url??"#")" class="p-menuitem-link" @onclick="(e)=>itemClick(e, item)" @onclick:preventDefault="true">
                                 <span class="@(item.icon)"></span>
                                 <span class="p-menuitem-text">@item.label</span>

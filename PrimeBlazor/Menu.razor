@@ -1,0 +1,106 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+<transition name="p-input-overlay" @enter="onEnter" @leave="onLeave">
+    <div ref="container" :class="containerClass" v-if="popup ? visible : true">
+        <ul class="p-menu-list p-reset">
+            <template v-for="item of model">
+                <template v-if="item.items">
+                    <li class="p-submenu-header " :key="item.label" v-if="item.items">{{item.label}}</li>
+                    <Menuitem v-for="child of item.items" :key="child.label" :item="child" @click="itemClick" />
+                </template>
+                <template v-else>
+                    <Menuitem :key="item.label" :item="item" @click="itemClick" />
+                </template>
+            </template>
+        </ul>
+    </div>
+</transition>
+@code {
+    [Parameter] public bool popup { get; set; } = false;
+    [Parameter] public List<Menu> model { get; set; } = new List<Menu>();
+    [Parameter] public string? appendTo { get; set; } = null;
+    [Parameter] public bool autoZIndex { get; set; }
+    [Parameter] public int baseZIndex { get; set; }
+    [Parameter] public string id { get; set; } = Guid.NewGuid().ToString();
+    private bool visible { get; set; } = false;
+    private bool overlayVisible = false;
+    private ElementReference? container;
+
+    private IJSObjectReference module;
+    private DotNetObjectReference<Menu> dotNetHelper;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/Menu.razor.js");
+           await JS.InvokeVoidAsync("Menu.OnAfterRenderAsync", dotNetHelper, id);
+        }
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+            await module.DisposeAsync();
+        dotNetHelper?.Dispose();
+    }
+    private void itemClick(CommandEventArgs commandEvent)
+    {
+        var item = commandEvent.Menu;
+        if (item.command != null)
+        {
+            item.command.Invoke(commandEvent);
+        }
+        this.overlayVisible = false;
+    }
+    [JSInvokable]
+    public void hide()
+    {
+        this.visible = false;
+    }
+    [JSInvokable]
+    public void show()
+    {
+        this.visible = true;
+
+    }
+    [JSInvokable]
+    public bool getVisible()
+    {
+        return visible;
+    }
+    [JSInvokable]
+    public void setVisible(bool value)
+    {
+        this.visible = value;
+    }
+    [JSInvokable]
+    public bool getAutoZIndex()
+    {
+        return this.autoZIndex;
+    }
+    [JSInvokable]
+    public ElementReference? getContainer()
+    {
+        return this.container;
+    }
+    [JSInvokable]
+    public int getBaseZIndex()
+    {
+        return this.baseZIndex;
+    }
+    [JSInvokable]
+    public string? getAppendTo()
+    {
+        return this.appendTo;
+    }
+    private string containerClass
+    {
+        get
+        {
+            string str = "p-menu p-component";
+            if (this.popup)
+                str += " p-menu-dynamic p-menu-overlay";
+            return str;
+        }
+    }
+}

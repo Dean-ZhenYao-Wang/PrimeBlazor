@@ -14,7 +14,7 @@
         @if (toggleable)
         {
             <a tabindex="0" @onclick="toggleEvent" @onkeydown="toggleKeyDown">
-                <span class="p-fieldset-toggler pi pi-minus"></span>
+                <span class="@iconClass"></span>
                 @if (Legendtemplate is not null)
                 {
                     @Legendtemplate
@@ -60,6 +60,18 @@
         if (eventArgs.Key.Equals("Enter"))
         {
             this.toggleEvent();
+        }
+    }
+    private string iconClass
+    {
+        get
+        {
+            string str = "p-fieldset-toggler  pi";
+            if (this.d_collapsed)
+                str += " pi-plus";
+            else
+                str += " pi-minus";
+            return str;
         }
     }
 }

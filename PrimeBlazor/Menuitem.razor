@@ -1,0 +1,19 @@
+<li class="@containerClass" role="menuitem" style="@item?.style">
+    <a href="@(item?.url??"#")" class="p-menuitem-link" @onclick="onClick" target="@item?.target">
+        <span class="p-menuitem-icon @item?.icon"></span>
+        <span class="p-menuitem-text">@item?.label</span>
+    </a>
+</li>
+@code {
+    [Parameter] public Menu? item { get; set; } = null;
+    [Parameter] public EventCallback<CommandEventArgs> click { get; set; }
+    private async Task onClick(MouseEventArgs mouseEvent)
+    {
+        await click.InvokeAsync(new CommandEventArgs() { EventArgs = mouseEvent, Menu = this.item });
+    }
+    private string containerClass{
+        get{
+            return $"p-menitem {this.item?.CssClass}";
+        }
+    }
+}
