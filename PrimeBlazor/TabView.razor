@@ -56,7 +56,9 @@
     {
         for (int i = 0; i < this.tabs.Count; i++)
         {
-            this.tabs[i].active = this.tabs[i] == tab;
+            bool active = this.tabs[i] == tab;
+            this.tabs[i].active = active;
+            this.tabs[i].activeChanged.InvokeAsync(active);
         }
     }
     private TabPanel? findActiveTab()

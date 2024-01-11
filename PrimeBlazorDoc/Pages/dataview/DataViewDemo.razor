@@ -12,16 +12,16 @@
         <h3 class="first">Default</h3>
         <DataView value="cars" layout="@(layout)" paginatorPosition='both' paginator="true" rows="20" sortOrder="sortOrder" sortField="@sortField">
             <headerTemplate>
-                <div class="p-grid">
+                <div class="p-grid p-nogutter">
                     <div class="p-col-6" style="text-align: left">
                         <Dropdown @bind-value="sortKey" options="sortOptions" optionLabel="label" placeholder="Sort By" TItem="sort_Options" change="onSortChange" />
                     </div>
                     <div class="p-col-6" style="text-align: right">
-                        <DataViewLayoutOptions layout="layout" change="changeMode"></DataViewLayoutOptions>
+                        <DataViewLayoutOptions @bind-value=layout></DataViewLayoutOptions>
                     </div>
                 </div>
             </headerTemplate>
-            <listItemTemplate Context="data">
+            <listTemplate Context="data">
                 <div class="p-col-12 car-details" style="padding: 2em; border-bottom: 1px solid #d9d9d9">
                     <div class="p-grid">
                         <div class="p-col-12 p-md-3">
@@ -41,8 +41,8 @@
                         </div>
                     </div>
                 </div>
-            </listItemTemplate>
-            <gridItemTemplate Context="data">
+            </listTemplate>
+            <gridTemplate Context="data">
                 <Panel header="@data.Vin" style="text-align: center">
                     <div style="padding: .5em" class="p-col-12 p-md-3">
                         <img src="/demo/images/car/@(data.Brand).png" alt="@data.Brand" />
@@ -51,7 +51,7 @@
                         <Button icon="pi pi-search"></Button>
                     </div>
                 </Panel>
-            </gridItemTemplate>
+            </gridTemplate>
         </DataView>
     </div>
 
@@ -70,6 +70,9 @@
         .car-data > div {
             padding: .429em;
         }
+        .p-dropdown {
+            width: 12em;
+        }
     }
     @@media (max-width: 767px) {
         .dataview-demo {
@@ -82,9 +85,6 @@
                 text-align: left;
             }
         }
-    }
-    .p-dropdown {
-        width: 12em;
     }
 </style>
 @code {
@@ -111,10 +111,6 @@
             this.cars = await carService.getCarsLarge();
             StateHasChanged();
         }
-    }
-    private void changeMode((MouseEventArgs, string) args)
-    {
-        this.layout = args.Item2;
     }
     private void onSortChange(sort_Options sortValue)
     {

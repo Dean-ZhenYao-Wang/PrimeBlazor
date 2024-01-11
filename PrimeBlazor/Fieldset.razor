@@ -39,6 +39,7 @@
     [Parameter] public string legend { get; set; } = string.Empty;
     [Parameter] public bool toggleable { get; set; }
     [Parameter] public bool collapsed { get; set; }
+    [Parameter] public EventCallback<bool> collapsedChanged { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Legendtemplate { get; set; }
     [Parameter] public EventCallback<bool> toggle { get; set; }
@@ -51,6 +52,7 @@
     private async void toggleEvent()
     {
         this.d_collapsed = !this.d_collapsed;
+        await collapsedChanged.InvokeAsync(this.d_collapsed);
         await toggle.InvokeAsync(this.d_collapsed);
     }
     private void toggleKeyDown(KeyboardEventArgs eventArgs)

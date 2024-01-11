@@ -12,7 +12,7 @@
             <transition name="p-input-overlay" onenter="AppTopBar.onThemesMenuEnter" onleave="AppTopBar.onThemesMenuLeave">
                 <ul v-if="themesMenuVisible">
                     <li class="topbar-submenu-header">THEMING</li>
-                    <li><NavLink href="/icons" @onclick="hideThemesMenu"><i className="pi pi-fw pi-search" /><span>Icons</span></NavLink></li>
+                    <li><NavLink href="/icons" @onclick="hideThemesMenu"><i class="pi pi-fw pi-search" /><span>Icons</span></NavLink></li>
                     <li class="topbar-submenu-header">FREE THEMES</li>
                     <li><a href="#" onclick="AppTopBar.changeTheme(event, 'lara-light-blue', false)"><img src="./assets/images/layouts/themeswitcher-nova-light.png" alt="Nova Light" /><span>Nova Light</span></a></li>
                     <li><a onclick="AppTopBar.changeTheme(event, 'nova-dark', false)"><img src="./assets/images/layouts/themeswitcher-nova-dark.png" alt="Nova Dark" /><span>Nova Dark</span></a></li>

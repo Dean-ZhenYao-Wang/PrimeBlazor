@@ -3,7 +3,7 @@
 @inject IJSRuntime JS
 <div @ref="container" class="@containerClass" @onclick="onClick">
     <div class="p-hidden-accessible">
-        <input @ref="focusInput" type="text" role="listbox" readonly disabled="@disabled" @onfocus="onFocus" @onblur="onBlur" @onkeydown="async(e)=>await onKeyDown(e)" tabindex="@tabindex" />
+        <input @ref="focusInput" @oninput="input" type="text" role="listbox" readonly disabled="@disabled" @onfocus="onFocus" @onblur="onBlur" @onkeydown="async(e)=>await onKeyDown(e)" tabindex="@tabindex" />
     </div>
     @if (editable)
     {        
@@ -27,7 +27,7 @@
                 @if (filter)
                 {
                     <div class="p-dropdown-filter-container">
-                        <input type="text" @bind="filterValue" autoComplete="off" class="p-dropdown-filter p-inputtext p-component" placeholder="@filterPlaceholder" @onkeydown="async(e)=>await onFilterKeyDown(e)" />
+                        <input type="text" @bind="filterValue" @oninput="input" autoComplete="off" class="p-dropdown-filter p-inputtext p-component" placeholder="@filterPlaceholder" @onkeydown="async(e)=>await onFilterKeyDown(e)" />
                         <span class="p-dropdown-filter-icon pi pi-search"></span>
                     </div>
                 }
@@ -75,6 +75,7 @@
     [Parameter] public string scrollHeight { get; set; } = "200px";
     [Parameter] public string? filterPlaceholder{ get; set; }
     [Parameter] public EventCallback<TItem> change{ get; set; }
+    [Parameter]public EventCallback<ChangeEventArgs> input{ get; set; }
     private string Id = Guid.NewGuid().ToString();
     private bool focused = false;
     private string? filterValue = null;
@@ -121,7 +122,7 @@
             string label_class = "p-dropdown-label p-inputtext";
             if (string.IsNullOrWhiteSpace(this.label) && !string.IsNullOrWhiteSpace(this.placeholder))
                 label_class = " p-placeholder";
-            if (string.IsNullOrWhiteSpace(this.placeholder))
+            if (string.IsNullOrWhiteSpace(this.label))
                 label_class = " p-dropdown-label-empty";
             return label_class;
         }
@@ -382,6 +383,7 @@
     }
     private async Task onEditableInput(ChangeEventArgs eventArgs)
     {
+        await input.InvokeAsync(eventArgs);
         await valueChanged.InvokeAsync((TItem)(object)this.editableInputValue);
     }
     private async Task onOverlayLeave()

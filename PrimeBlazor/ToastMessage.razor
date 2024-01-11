@@ -1,17 +1,18 @@
-<transition name="p-toast-message">
-    <div class="@containerClass">
-        <div class="p-toast-item">
+<div class="@containerClass">
+    <div class="p-toast-item">
+        @if (message.closable != false)
+        {
             <button class="p-toast-icon-close p-link" @onclick="closeEvent">
                 <span class="p-toast-icon-close-icon pi pi-times"></span>
             </button>
-            <span class="@iconClass"></span>
-            <div class="p-toast-message">
-                <span class="p-toast-title">@message?.summary</span>
-                <div class="p-toast-detail">@message?.detail</div>
-            </div>
+        }
+        <span class="@iconClass"></span>
+        <div class="p-toast-message">
+            <span class="p-toast-title">@message?.summary</span>
+            <div class="p-toast-detail">@message?.detail</div>
         </div>
     </div>
-</transition>
+</div>
 @code {
     [Parameter] public Message? message { get; set; }
     [Parameter] public EventCallback<Message> close { get; set; }
@@ -19,7 +20,7 @@
     {
         if (firstRender)
         {
-            if (this.message?.life!=0)
+            if (this.message?.life != 0)
                 SetTimer(async () =>
                 {
                     await this.close.InvokeAsync(this.message);
@@ -37,6 +38,10 @@
     }
     private async Task closeEvent()
     {
+        if (timer != null)
+        {
+            await timer.DisposeAsync();
+        }
         await close.InvokeAsync(message);
     }
     private string containerClass

@@ -2,49 +2,49 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 <span class="@containerClass">
-    <input @ref="inputRef" 
-        @oninput="async(e)=>await onInput(e)" 
-        @onfocus="async(e)=>await onFocus(e)"
-        @onblur="async(e)=>await onBlur(e)"
-        @onkeydown="async(e)=>await onKeyDown(e)"
-        class="@inputClass" value="@inputValue" placeholder="@placeholder" type="text" autoComplete="off">
-@if (multiple)
-{
+    <input @ref="inputRef"
+           @oninput="async(e)=>await onInput(e)"
+           @onfocus="async(e)=>await onFocus(e)"
+           @onblur="async(e)=>await onBlur(e)"
+           @onkeydown="async(e)=>await onKeyDown(e)"
+           class="@inputClass" value="@inputValue" placeholder="@placeholder" type="text" autoComplete="off">
+    @if (multiple)
+    {
         <ul @ref="multiContainer" class="@multiContainerClass" @onclick="async(e)=>await onMultiContainerClick(e)">
             @{
                 List<object> values = this.model as List<object>;
-                foreach(object item in values)
+                foreach (object item in values)
                 {
                     int i = values.IndexOf(item);
 
-        <li @key="i" class="p-autocomplete-token p-highlight">
-            <span class="p-autocomplete-token-icon pi pi-fw pi-times" @onclick="async(e)=>await removeItem(e, i)"></span>
-            <span class="p-autocomplete-token-label">@getItemContent(item)</span>
-        </li>
+                    <li @key="i" class="p-autocomplete-token p-highlight">
+                        <span class="p-autocomplete-token-icon pi pi-fw pi-times" @onclick="async(e)=>await removeItem(e, i)"></span>
+                        <span class="p-autocomplete-token-label">@getItemContent(item)</span>
+                    </li>
                 }
 
-        }
-        <li class="p-autocomplete-input-token">
-            <input @ref="inputRef" type="text" autoComplete="off" disabled="@disabled" 
-                @oninput="async(e)=>await onInput(e)" 
-                @onfocus="async(e)=>await onFocus(e)"
-                @onblur="async(e)=>await onBlur(e)"
-                @onkeydown="async(e)=>await onKeyDown(e)">
-        </li>
-    </ul>        
-}
+            }
+            <li class="p-autocomplete-input-token">
+                <input @ref="inputRef" type="text" autoComplete="off" disabled="@disabled"
+                       @oninput="async(e)=>await onInput(e)"
+                       @onfocus="async(e)=>await onFocus(e)"
+                       @onblur="async(e)=>await onBlur(e)"
+                       @onkeydown="async(e)=>await onKeyDown(e)">
+            </li>
+        </ul>
+    }
     <i class="p-autocomplete-loader pi pi-spinner pi-spin" style="display:@(this.searching?"none":"block");"></i>
     @if (dropdown)
     {
-        <Button refElement="dropdownButton" icon="pi pi-fw pi-chevron-down" CssClass="p-autocomplete-dropdown" disabled="disabled" onclick="async(e)=>await onDropdownClick(e)"/>
+        <Button refElement="dropdownButton" icon="pi pi-fw pi-chevron-down" CssClass="p-autocomplete-dropdown" disabled="disabled" onclick="async(e)=>await onDropdownClick(e)" />
     }
     <transition name="p-input-overlay" @onmouseenter="async()=>await onOverlayEnter()" @onmouseleave="async()=>await onOverlayLeave()">
-    @if(this.overlayVisible)
+        @if (this.overlayVisible)
         {
             <div @ref="overlay" class="p-autocomplete-panel" style="max-height:@(this.scrollHeight);">
                 <ul class="p-autocomplete-items p-autocomplete-list p-component">
-               @foreach (var items in suggestions)
-               {
+                    @foreach (var items in suggestions)
+                    {
                         var itemList = (items as List<object>);
                         @foreach (var item in itemList)
                         {
@@ -60,12 +60,13 @@
                                 }
                             </li>
                         }
-               }
-            </ul>
-        </div>
-    }
+                    }
+                </ul>
+            </div>
+        }
     </transition>
 </span>
+
 @code {
     [JSInvokable]
     public async Task onKeyDownInputEmit(object item)
@@ -81,18 +82,18 @@
     [Parameter] public string dropdownMode { get; set; } = "blank";
     private ElementReference? dropdownButton;
     private ElementReference inputMultiple;
-    [Parameter] public RenderFragment<TItem>? template{ get; set; }
+    [Parameter] public RenderFragment<TItem>? template { get; set; }
     [Parameter] public TItem? model { get; set; }
-    [Parameter] public EventCallback<TItem?> modelChanged{ get; set; }
+    [Parameter] public EventCallback<TItem?> modelChanged { get; set; }
     [Parameter] public List<TItem>? suggestions { get; set; } = new List<TItem>();
     [Parameter]
-    public bool dropdown{ get; set; }
+    public bool dropdown { get; set; }
     [Parameter]
-    public bool multiple{ get; set; }
+    public bool multiple { get; set; }
     [Parameter]
-    public bool disabled{ get; set; }
+    public bool disabled { get; set; }
     [Parameter]
-    public string? field{ get; set; }
+    public string? field { get; set; }
     [Parameter]
     public string scrollHeight { get; set; } = "200px";
     [Parameter]
@@ -150,39 +151,40 @@
     private ElementReference multiContainer;
     private async void alignOverlay()
     {
-        if(this.multiple)
+        if (this.multiple)
             await JS.InvokeVoidAsync("DomHandler.relativePosition", this.overlay, this.multiContainer);
         else
             await JS.InvokeVoidAsync("DomHandler.relativePosition", this.overlay, this.inputRef);
     }
     [Parameter]
-    public string Id{ get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; set; } = Guid.NewGuid().ToString();
     private async Task bindOutsideClickListener()
     {
-        await module.InvokeVoidAsync("bindOutsideClickListener", this.Id, this.overlayVisible, this.overlay, this.multiple,this.inputRef,this.dropdownButton,this.inputMultiple,this.multiContainer);
+        await module.InvokeVoidAsync("bindOutsideClickListener", this.Id, this.overlayVisible, this.overlay, this.multiple, this.inputRef, this.dropdownButton, this.inputMultiple, this.multiContainer);
     }
     private async Task unbindOutsideClickListener()
     {
         await module.InvokeVoidAsync("unbindOutsideClickListener", this.Id);
     }
-    [Parameter]public EventCallback<string> dropdownClick{ get; set; }
+    [Parameter] public EventCallback<string> dropdownClick { get; set; }
     private async Task onDropdownClick(MouseEventArgs eventArgs)
     {
         await this.focusevent();
 
-        string query = await JS.InvokeAsync<string>("DomHandler.getElementValue",this.inputRef);
+        string query = await JS.InvokeAsync<string>("DomHandler.getElementValue", this.inputRef);
         if (this.dropdownMode.Equals("blank"))
         {
             await this.search("", "dropdown");
-        }else if (this.dropdownMode.Equals("current"))
+        }
+        else if (this.dropdownMode.Equals("current"))
         {
             await this.search(query, "dropdown");
         }
         await dropdownClick.InvokeAsync(query);
     }
-    [Parameter] public EventCallback<object> select{ get; set; }
+    [Parameter] public EventCallback<object> select { get; set; }
     [JSInvokable]
-    public async Task selectItem(TItem item) 
+    public async Task selectItem(TItem item)
     {
         if (this.multiple)
         {
@@ -218,8 +220,8 @@
     {
         await this.focusevent();
     }
-    [Parameter]public EventCallback<object> unselect{ get; set; }
-    private async Task removeItem(MouseEventArgs eventArgs,int index)
+    [Parameter] public EventCallback<object> unselect { get; set; }
+    private async Task removeItem(MouseEventArgs eventArgs, int index)
     {
         var removedValue = (this.model as List<object>)[index];
         var newValue = (this.model as List<object>).Where((m, i) => index != i).ToList();
@@ -232,7 +234,7 @@
         List<object> value = this.model as List<object>;
         if (this.model != null && value.Count > 0)
         {
-            for(int i = 0; i < value.Count; i++)
+            for (int i = 0; i < value.Count; i++)
             {
                 if (ObjectUtils.Equals(value[i], item))
                 {
@@ -244,9 +246,9 @@
     }
     private async Task onKeyDown(KeyboardEventArgs eventArgs)
     {
-        await module.InvokeVoidAsync("onKeyDown",this.overlayVisible,this.overlay,this.suggestions[0],this.dotNetHelper,this.multiple,this.model,this.inputRef);
+        await module.InvokeVoidAsync("onKeyDown", this.overlayVisible, this.overlay, this.suggestions[0], this.dotNetHelper, this.multiple, this.model, this.inputRef);
     }
-    private object getItemContent(object item) 
+    private object getItemContent(object item)
     {
         return !string.IsNullOrWhiteSpace(this.field) ? ObjectUtils.ResolveFieldData(item, this.field) : item;
     }
@@ -255,17 +257,17 @@
         this.overlayVisible = true;
     }
     [JSInvokable]
-    public void hideOverlay() 
+    public void hideOverlay()
     {
         this.overlayVisible = false;
     }
     private ElementReference multiInput;
-    private async Task focusevent() 
+    private async Task focusevent()
     {
         await this.inputRef.FocusAsync();
     }
-    [Parameter]public EventCallback<string> complete{ get; set; }
-    private async Task search(string query,string source)
+    [Parameter] public EventCallback<string> complete { get; set; }
+    private async Task search(string query, string source)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
@@ -278,9 +280,9 @@
         this.searching = true;
         await complete.InvokeAsync(query);
     }
-    [Parameter] public EventCallback clear{ get; set; }
-    private Timer? timer=null;
-    private void SetTimer(Action action,int delay)
+    [Parameter] public EventCallback clear { get; set; }
+    private Timer? timer = null;
+    private void SetTimer(Action action, int delay)
     {
         timer = new Timer(_ =>
         {
@@ -308,8 +310,8 @@
             {
                 SetTimer(async () =>
                 {
-                    await this.search( query, "input");
-                },this.delay);
+                    await this.search(query, "input");
+                }, this.delay);
             }
             else
             {
@@ -317,13 +319,13 @@
             }
         }
     }
-    [Parameter]public EventCallback<FocusEventArgs> focus{ get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> focus { get; set; }
     private async Task onFocus(FocusEventArgs eventArgs)
     {
         this.focused = true;
         await this.focus.InvokeAsync(eventArgs);
     }
-    [Parameter]public EventCallback<FocusEventArgs> blur{ get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> blur { get; set; }
     private async Task onBlur(FocusEventArgs eventArgs)
     {
         this.focused = false;
@@ -342,7 +344,7 @@
             {
                 str += " p-autocomplete-multiple";
             }
-            if (this.filled)
+            if (this.model != null)
             {
                 str += " p-inputwrapper-filled";
             }

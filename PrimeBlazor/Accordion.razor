@@ -54,7 +54,9 @@
             {
                 this.tabs.ForEach(t => t.active = false);
             }
-            tab.active = !tab.active;
+            bool newActiveState = !tab.active;
+            tab.active = newActiveState;
+            await tab.activeChanged.InvokeAsync(newActiveState);
             if (!tab.active)
             {
                 if (tabclose is not null)

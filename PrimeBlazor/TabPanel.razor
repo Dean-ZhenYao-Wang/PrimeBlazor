@@ -8,6 +8,7 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Headertemplate { get; set; }
     [Parameter] public bool active { get; set; } = false;
+    [Parameter] public EventCallback<bool> activeChanged { get; set; }
     [CascadingParameter] public TabView? TabViewSet { get; set; }
     protected override void OnInitialized()
     {

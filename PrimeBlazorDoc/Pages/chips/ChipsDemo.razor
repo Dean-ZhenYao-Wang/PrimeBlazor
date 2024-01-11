@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <div class="content-section implementation">
+    <div class="content-section implementation p-fluid">
         <h3 class="first">Basic</h3>
         <Chips @bind-model="value1" />
 
@@ -23,11 +23,6 @@
     </div>
     <ChipsDoc />
 </div>
-<style>
-    .p-chips .p-inputtext {
-        width: 100%;
-    }
-</style>
 @code {
     private List<string> value1 = new List<string>();
     private List<string> value2 = new List<string>();

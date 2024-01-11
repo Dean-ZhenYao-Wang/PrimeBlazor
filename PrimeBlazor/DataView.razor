@@ -9,8 +9,8 @@
     }
     @if (paginatorTop)
     {
-        <Paginator @bind-rows="rows" @bind-first="firstRecord" totalRecords="getTotalRecords" pageLinkSize="pageLinkSize" template="paginatorTemplate" rowsPerPageOptions="rowsPerPageOptions"
-                   currentPageReportTemplate="currentPageReportTemplate" CssClass="@(paginatorTop?"p-paginator-top":null)">
+        <Paginator rows="rows" first="first" totalRecords="getTotalRecords" pageLinkSize="pageLinkSize" template="paginatorTemplate" rowsPerPageOptions="rowsPerPageOptions"
+                   currentPageReportTemplate="currentPageReportTemplate" CssClass="@(paginatorTop?"p-paginator-top":null)" pageChange="onPage">
             @if (paginatorLeftTemplate is not null)
             {
                 @paginatorLeftTemplate
@@ -25,16 +25,16 @@
         <div class="p-grid">
             @if (value is not null)
             {
-                foreach (TItem data in templateItems)
+                foreach (TItem item in items)
                 {
-                    if (listItemTemplate is not null && layout.Equals("list"))
+                    if (listTemplate is not null && layout.Equals("list"))
                     {
-                        @listItemTemplate(data)
+                        @listTemplate(item)
                         ;
                     }
-                    if (gridItemTemplate is not null && layout.Equals("grid"))
+                    if (gridTemplate is not null && layout.Equals("grid"))
                     {
-                        @gridItemTemplate(data)
+                        @gridTemplate(item)
                     }
                 }
             }
@@ -46,8 +46,8 @@
     </div>
     @if (paginatorBottom)
     {
-        <Paginator @bind-rows="rows" @bind-first="firstRecord" totalRecords="getTotalRecords" pageLinkSize="pageLinkSize" template="@paginatorTemplate" rowsPerPageOptions="rowsPerPageOptions"
-                   currentPageReportTemplate="currentPageReportTemplate" CssClass="@(paginatorBottom?"p-paginator-bottom":null)">
+        <Paginator rows="rows" first="first" totalRecords="getTotalRecords" pageLinkSize="pageLinkSize" template="@paginatorTemplate" rowsPerPageOptions="rowsPerPageOptions"
+                   currentPageReportTemplate="currentPageReportTemplate" CssClass="@(paginatorBottom?"p-paginator-bottom":null)" pageChange="onPage">
             @if (paginatorLeftTemplate is not null)
             {
                 @paginatorLeftTemplate
@@ -65,47 +65,58 @@
         </div>
     }
 </div>
+
 @code {
     [Parameter] public List<TItem>? value { get; set; } = null;
     [Parameter] public string layout { get; set; } = "list";
     [Parameter] public int rows { get; set; } = 0;
-    [Parameter] public int? first { get; set; } = null;
-    [Parameter] public int? totalRecords { get; set; } = null;
+    [Parameter] public EventCallback<int> rowsChanged { get; set; }
+    [Parameter] public int first { get; set; } = 0;
+    [Parameter] public EventCallback<int> firstChanged { get; set; }
+    [Parameter] public int totalRecords { get; set; } = 0;
     [Parameter] public bool paginator { get; set; } = false;
     [Parameter] public string paginatorPosition { get; set; } = "bottom";
     [Parameter] public bool alwaysShowPaginator { get; set; } = true;
-    [Parameter] public string paginatorTemplate { get; set; } = "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink";
+    [Parameter] public string paginatorTemplate { get; set; } = "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown";
     [Parameter] public int pageLinkSize { get; set; } = 5;
     [Parameter] public List<int> rowsPerPageOptions { get; set; } = new List<int>();
     [Parameter] public string currentPageReportTemplate { get; set; } = "({currentPage} of {totalPages})";
     [Parameter] public string emptyMessage { get; set; } = "No records found";
     [Parameter] public string? sortField { get; set; } = null;
     [Parameter] public int? sortOrder { get; set; } = null;
-    [Parameter] public bool lazy { get; set; } = false;
     [Parameter] public RenderFragment? headerTemplate { get; set; }
-    [Parameter] public RenderFragment<TItem>? listItemTemplate { get; set; }
-    [Parameter] public RenderFragment<TItem>? gridItemTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? listTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? gridTemplate { get; set; }
     [Parameter] public RenderFragment? footerTemplate { get; set; }
     [Parameter] public RenderFragment? paginatorLeftTemplate { get; set; }
     [Parameter] public RenderFragment? paginatorRightTemplate { get; set; }
-    private int firstRecord = 0;
-    protected override void OnInitialized()
+    [Parameter] public EventCallback<PageState> page { get; set; }
+    [Parameter] public bool lazy { get; set; } = false;
+    private int d_first;
+    private int d_rows;
+    protected override void OnAfterRender(bool firstRender)
     {
-        firstRecord = this.first != null ? this.first.Value : 0;
-    }
-    private List<TItem>? processData()
-    {
-        List<TItem>? data = this.value;
-
-        if (data != null && data.Count > 0)
+        if (firstRender)
         {
-            if (!string.IsNullOrWhiteSpace(this.sortField))
-            {
-                data = this.sort();
-            }
+            d_first = first;
+            d_rows = rows;
         }
-
-        return data;
+        else
+        {
+            if (d_first != first)
+                d_first = first;
+            if (d_rows != rows)
+                d_rows = rows;
+        }
+    }
+    private async Task onPage(PageState mouseEvent)
+    {
+        this.d_first = mouseEvent.first;
+        this.d_rows = mouseEvent.rows;
+        List<TItem>? data = this.value;
+        await firstChanged.InvokeAsync(this.d_first);
+        await rowsChanged.InvokeAsync(this.d_rows);
+        await page.InvokeAsync(mouseEvent);
     }
     private List<TItem>? sort()
     {
@@ -163,7 +174,7 @@
         get
         {
             if (this.totalRecords != null)
-                return this.totalRecords.Value;
+                return this.totalRecords;
             else
                 return this.value != null ? this.value.Count : 0;
         }
@@ -195,24 +206,26 @@
                 return false;
         }
     }
-    private List<TItem>? templateItems
+    private List<TItem>? items
     {
         get
         {
-            List<TItem>? value = this.processData();
             if (value != null && value.Count > 0)
             {
                 if (this.paginator)
                 {
-                    int rows = this.rows;
-                    int first = this.lazy ? 0 : this.firstRecord;
-                    int last = rows + first;
-                    List<TItem> items = new List<TItem>();
-                    for (int i = first; i < last; i++)
+                    List<TItem>? data = this.value;
+                    if (data != null && data.Count > 0 && !string.IsNullOrWhiteSpace(this.sortField))
                     {
-                        items.Add(value[i]);
+                        data = this.sort();
                     }
-                    return items;
+                    if (this.paginator)
+                    {
+                        int first = this.lazy ? 0 : this.d_first;
+                        return data.GetRange(first, first + this.d_rows);
+                    }
+                    else
+                        return data;
                 }
                 else
                     return value;

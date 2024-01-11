@@ -1,8 +1,10 @@
 <div class="@containerClass">
-    @foreach (var msg in Messages)
-    {
-        <ToastMessage @key="msg.id" message="msg" close="remove" />
-    }
+    <transition-group name="p-toast-message" tag="div">
+        @foreach (var msg in Messages)
+        {
+            <ToastMessage @key="msg.id" message="msg" close="remove" />
+        }
+    </transition-group>
 </div>
 @code {
     [Parameter] public string? group { get; set; }

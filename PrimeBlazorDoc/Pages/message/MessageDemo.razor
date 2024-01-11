@@ -17,13 +17,14 @@
         <h3>Dynamic</h3>
         <Button label="Show" onclick="addMessages" />
         <Button label="Clear" onclick="removeMessages" CssClass="p-button-secondary" />
-        @foreach (var msg in messages)
-        {
-            <Message severity="@msg.Severity" @key="msg.Content">@msg.Content</Message>
-        }
-
+        <transition-group name="p-messages" tag="div">
+            @foreach (var msg in messages)
+            {
+                <Message severity="@msg.Severity" @key="msg.Content">@msg.Content</Message>
+            }
+        </transition-group>
         <h3>Auto Dismiss</h3>
-        <Message severity="warn" life="5000" sticky="false">This message will hide in 5 seconds.</Message>
+        <Message severity="warn" life="10000" sticky="false">This message will hide in 5 seconds.</Message>
 
         <h3>Validation Message</h3>
         <div class="p-grid">
@@ -37,18 +38,9 @@
             </div>
         </div>
     </div>
-    <MessageDoc/>
+    <MessageDoc />
 </div>
 
-<style lang="scss">
-    button.p-button {
-        margin-right: .5em;
-    }
-
-    .p-inputtext {
-        margin-right: .25em;
-    }
-</style>
 @code {
     private List<Models.Message>? messages = new List<Models.Message>();
     private int count = 0;

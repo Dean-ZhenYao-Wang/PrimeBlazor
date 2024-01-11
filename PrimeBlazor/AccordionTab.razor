@@ -1,6 +1,7 @@
 ﻿@code {
     [Parameter] public string header { get; set; } = string.Empty;
     [Parameter] public bool active { get; set; }
+    [Parameter] public EventCallback<bool> activeChanged { get; set; }
     [Parameter] public bool disabled { get; set; }
     [Parameter] public RenderFragment<bool>? ChildContent { get; set; }
     [Parameter] public RenderFragment? Headertemplate { get; set; }
@@ -12,7 +13,7 @@
             if (!AccordionSet.IsTabAny(this))
             {
                 AccordionSet.addTab(this);
-            }      
+            }
         }
     }
 }

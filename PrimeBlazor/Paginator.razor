@@ -13,34 +13,33 @@
     {
         foreach (var item in templateItems)
         {
-            int i = templateItems.IndexOf(item);
             if (item.Equals("FirstPageLink"))
             {
-                <FirstPageLink @key="i" onclick="changePageToFirst" disabled="isFirstPage" />
+                <FirstPageLink @key="item" onclick="changePageToFirst" disabled="isFirstPage" />
             }
             else if (item.Equals("PrevPageLink"))
             {
-                <PrevPageLink @key="i" onclick="changePageToPrev" disabled="isFirstPage" />
+                <PrevPageLink @key="item" onclick="changePageToPrev" disabled="isFirstPage" />
             }
             else if (item.Equals("NextPageLink"))
             {
-                <NextPageLink @key="i" onclick="changePageToNext" disabled="isLastPage" />
+                <NextPageLink @key="item" onclick="changePageToNext" disabled="isLastPage" />
             }
             else if (item.Equals("LastPageLink"))
             {
-                <LastPageLink @key="i" onclick="changePageToLast" disabled="isLastPage" />
+                <LastPageLink @key="item" onclick="changePageToLast" disabled="isLastPage" />
             }
             else if (item.Equals("PageLinks"))
             {
-                <PageLinks @key="i" value="updatePageLinks" page="page" onclick="pageLinkClick" />
+                <PageLinks @key="item" value="pageLinks" page="page" onclick="changePageLink" />
             }
             else if (item.Equals("CurrentPageReport"))
             {
-                <CurrentPageReport @key="i" template="currentPageReportTemplate" page="page" pageCount="pageCount" />
+                <CurrentPageReport @key="item" template="currentPageReportTemplate" page="page" pageCount="pageCount" />
             }
-            else if (item.Equals("RowsPerPageDropdown"))
+            else if (item.Equals("RowsPerPageDropdown") && rowsPerPageOptions.Count > 0)
             {
-                <RowsPerPageDropdown @key="i" value="rows" options="rowsPerPageOptions" rowsChange="rowsChange" />
+                <RowsPerPageDropdown @key="item" rows="d_rows" value="rows" options="rowsPerPageOptions" rowsChange="onRowChange" />
             }
         }
     }
@@ -59,8 +58,8 @@
             return new PageState()
                 {
                     page = this.page,
-                    first = this.first,
-                    rows = this.rows
+                    first = this.d_first,
+                    rows = this.d_rows
                 };
         }
     }
@@ -78,6 +77,23 @@
     [Parameter] public string currentPageReportTemplate { get; set; } = "({currentPage} of {totalPages})";
     [Parameter] public EventCallback<PageState> pageChange { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; }
+    private int d_first;
+    private int d_rows;
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            d_first = first;
+            d_rows = rows;
+        }
+        else
+        {
+            if (d_first != first)
+                d_first = first;
+            if (d_rows != rows)
+                d_rows = rows;
+        }
+    }
     private List<string> templateItems
     {
         get
@@ -94,14 +110,14 @@
     {
         get
         {
-            return (int)(Math.Floor((double)this.first / this.rows));
+            return (int)(Math.Floor((double)this.d_first / this.d_rows));
         }
     }
     private int pageCount
     {
         get
         {
-            int count = (int)Math.Ceiling((double)this.totalRecords / this.rows);
+            int count = (int)Math.Ceiling((double)this.totalRecords / this.d_rows);
             return count == 0 ? 1 : count;
         }
     }
@@ -138,65 +154,66 @@
         }
     }
 
-    private List<int> updatePageLinks
+    private List<int> pageLinks
     {
         get
         {
-            var pageLinks = new List<int>();
+            var page_Links = new List<int>();
             var boundaries = this.calculatePageLinkBoundaries;
             var start = boundaries[0];
             var end = boundaries[1];
 
             for (var i = start; i <= end; i++)
             {
-                pageLinks.Add(i + 1);
+                page_Links.Add(i + 1);
             }
 
-            return pageLinks;
+            return page_Links;
         }
     }
-    private async Task changePage(int first, int rows)
+    private async Task changePage(int p)
     {
-        var pc = this.pageCount;
-        var p = (int)Math.Floor((double)first / rows);
-
-        if (p >= 0 && p < pc)
+        int pc = this.pageCount;
+        if (p > 0 && p < pc)
         {
-            PageState newPageState = new PageState()
+            this.d_first = this.d_rows * p;
+            PageState state = new PageState()
                 {
-                    first = first,
-                    rows = rows,
                     page = p,
+                    first = this.d_first,
+                    rows = this.d_rows,
                     pageCount = pc
-
                 };
-            await pageChange.InvokeAsync(newPageState);
-            await firstChanged.InvokeAsync(first);
-            await rowsChanged.InvokeAsync(rows);
+            await firstChanged.InvokeAsync(this.d_first);
+            await rowsChanged.InvokeAsync(this.d_rows);
+            await pageChange.InvokeAsync(state);
         }
     }
     private async Task changePageToFirst(MouseEventArgs mouseEvent)
     {
-        await this.changePage(0, this.rows);
+        if (!this.isFirstPage)
+            await this.changePage(0);
     }
     private async Task changePageToPrev(MouseEventArgs mouseEvent)
     {
-        await this.changePage(this.first - this.rows, this.rows);
+        await this.changePage(this.page-1);
     }
-    private async Task pageLinkClick(int value)
+    private async Task changePageLink(int value)
     {
-        await this.changePage((value - 1) * this.rows, this.rows);
+        await this.changePage(value - 1);
     }
     private async Task changePageToNext(MouseEventArgs mouseEvent)
     {
-        await this.changePage(this.first + this.rows, this.rows);
+        await this.changePage(this.page+1);
     }
     private async Task changePageToLast(MouseEventArgs mouseEvent)
     {
-        await this.changePage((this.pageCount - 1) * this.rows, this.rows);
+        if(!this.isLastPage)
+            await this.changePage(this.pageCount - 1);
     }
-    private async Task rowsChange(int value)
+    private async Task onRowChange(int value)
     {
-        await this.changePage(0, value);
+        this.d_rows = value;
+        await this.changePage(this.page);
     }
 }
