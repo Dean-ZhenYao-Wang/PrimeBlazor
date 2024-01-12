@@ -1,3 +1,4 @@
+@inject ToastEventBus toastEventBus
 <div class="@containerClass">
     <transition-group name="p-toast-message" tag="div">
         @foreach (var msg in Messages)
@@ -14,7 +15,7 @@
     {
         if (firstRender)
         {
-            ToastEventBus.on("add", (message) =>
+            toastEventBus.on("add", (message) =>
             {
                 Message obj = message as Message;
                 if (!string.IsNullOrWhiteSpace(this.group))
@@ -34,7 +35,7 @@
                     StateHasChanged();
                 }
             });
-            ToastEventBus.on("removeGroup", (group) =>
+            toastEventBus.on("removeGroup", (group) =>
             {
                 if (!string.IsNullOrWhiteSpace(this.group) && this.group.Equals(group.ToString()))
                 {
@@ -42,7 +43,7 @@
                     StateHasChanged();
                 }
             });
-            ToastEventBus.on("removeAllGroups", () =>
+            toastEventBus.on("removeAllGroups", () =>
             {
                 this.Messages.Clear();
                 StateHasChanged();

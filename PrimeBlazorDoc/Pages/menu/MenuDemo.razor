@@ -1,6 +1,7 @@
 ﻿@page "/menu"
 @inject IJSRuntime js
 @inject NavigationManager NavigationManager
+@inject ToastEventBus toastEvent
 <div>
     <div class="content-section introduction">
         <div class="feature-intro">
@@ -15,7 +16,7 @@
 
         <h3>Overlay</h3>
         <Button label="Toggle" onclick="jsToggle" />
-        <Menu @ref="menu" model="items" popup="true" />
+        <Menu model="items" popup="true" id="@menuId" />
     </div>
 
     <MenuDoc />
@@ -24,11 +25,13 @@
 @code {
     private static IJSRuntime JS;
     private static NavigationManager Navigation;
-    private Menu menu;
+    private static ToastEventBus toastEventBus;
+    private string menuId = Guid.NewGuid().ToString();
     protected override void OnInitialized()
     {
         JS = js;
         Navigation = NavigationManager;
+        toastEventBus = toastEvent;
     }
     private List<Menu> items = new List<Menu>(){
                new Menu() {
@@ -40,7 +43,7 @@
                             icon= "pi pi-refresh",
                             command = (CommandEventArgs commandEvent) =>
                             {
-                                ToastEventBus.add(new Message(){severity="success", summary="Updated", detail="Data Updated", life= 3000});
+                                toastEventBus.add(new Message(){severity="success", summary="Updated", detail="Data Updated",life= 3000});
                             }
                         },
                         new Menu(){
@@ -48,7 +51,7 @@
                             icon= "pi pi-times",
                             command= (CommandEventArgs commandEvent) =>
                             {
-                                ToastEventBus.add(new Message(){ severity= "warn", summary= "Delete", detail= "Data Deleted", life= 3000});
+                                toastEventBus.add(new Message(){ severity= "warn", summary= "Delete", detail= "Data Deleted", life= 3000});
                             }
                         }
                     }
@@ -90,10 +93,10 @@
     }
     private async Task jsToggle(MouseEventArgs mouseEvent)
     {
-        await JS.InvokeVoidAsync("MenuDemo.toggle", mouseEvent, this.menu.id);
+        await JS.InvokeVoidAsync("MenuDemo.toggle", mouseEvent, menuId);
     }
     private void save()
     {
-        ToastEventBus.add(new Message() { severity = "success", summary = "Success", detail = "Data Saved", life = 3000 });
+        toastEventBus.add(new Message() { severity = "success", summary = "Success", detail = "Data Saved", life = 3000 });
     }
 }

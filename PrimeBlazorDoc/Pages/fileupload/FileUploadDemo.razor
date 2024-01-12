@@ -1,4 +1,5 @@
 ﻿@page "/fileupload"
+@inject ToastEventBus toastEventBus
 <div>
     <div class="content-section introduction">
         <div class="feature-intro">
@@ -23,6 +24,6 @@
 @code {
     private void onUpload()
     {
-        ToastEventBus.add(new Message { severity = "info", summary = "Success", detail = "File Uploaded", life = 3000 });
+        toastEventBus.add(new Message { severity = "info", summary = "Success", detail = "File Uploaded", life = 3000 });
     }
 }

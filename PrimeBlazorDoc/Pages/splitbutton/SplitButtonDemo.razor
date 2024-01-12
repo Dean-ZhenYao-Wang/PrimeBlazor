@@ -1,6 +1,7 @@
 ﻿@page "/splitbutton"
 @inject IJSRuntime js
 @inject NavigationManager NavigationManager
+@inject ToastEventBus toastEvent
 <div>
     <div class="content-section introduction">
         <div class="feature-intro">
@@ -31,10 +32,12 @@
 @code {
     private static IJSRuntime JS;
     private static NavigationManager Navigation;
+    private static ToastEventBus toastEventBus;
     protected override void OnInitialized()
     {
         JS = js;
         Navigation = NavigationManager;
+        toastEventBus = toastEvent;
     }
     List<Menu> items = new List<Menu>()
     {
@@ -42,14 +45,14 @@
                     label= "Update",
                     icon= "pi pi-refresh",
                     command= (CommandEventArgs eventArgs) => {
-                        ToastEventBus.add(new Message(){severity="success", summary="Updated", detail="Data Updated", life= 3000});
+                        toastEventBus.add(new Message(){severity="success", summary="Updated", detail="Data Updated", life= 3000});
                     }
                 },
                new Menu() {
                     label= "Delete",
                     icon= "pi pi-times",
                     command= (CommandEventArgs eventArgs) => {
-                        ToastEventBus.add(new Message(){ severity= "warn", summary= "Delete", detail= "Data Deleted", life= 3000});
+                        toastEventBus.add(new Message(){ severity= "warn", summary= "Delete", detail= "Data Deleted", life= 3000});
                     }
                 },
              new Menu()   {
@@ -73,6 +76,6 @@
     };
     private void save()
     {
-        ToastEventBus.add(new Message { severity = "success", summary = "Success", detail = "Data Saved", life = 3000 });
+        toastEventBus.add(new Message { severity = "success", summary = "Success", detail = "Data Saved", life = 3000 });
     }
 }

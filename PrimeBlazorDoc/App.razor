@@ -1,5 +1,6 @@
 ﻿@inject NavigationManager navigationManager
 @implements IDisposable
+@inject ToastEventBus toastEventBus
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <div class="layout-wrapper">
@@ -39,7 +40,7 @@
         if (!currentRoute.Equals(e.Location))
         {
             this.sidebarActive = false;
-            ToastEventBus.removeAllGroups();
+            toastEventBus.removeAllGroups();
         }
         currentRoute = e.Location;
 
