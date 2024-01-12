@@ -11,10 +11,10 @@
         if (await dotNetHelper.invokeMethodAsync("getVisible")) {
             await Menu.hide(dotNetHelper);
         } else {
-            await Menu.show(event, dotNetHelper);
+            await Menu.show(event, dotNetHelper, commponentId);
         }
     }
-    static async show(event, dotNetHelper) {
+    static async show(event, dotNetHelper, commponentId) {
         await dotNetHelper.invokeMethodAsync("show");
         if (Menu.targetArray.some(m => m.id === commponentId)) {
             let targetObject = Menu.targetArray.find(m => m.id === commponentId);
@@ -44,13 +44,15 @@
     }
     static async alignOverlay(dotNetHelper, commponentId) {
         let container = await dotNetHelper.invokeMethodAsync("getContainer");
+        if (Menu.targetArray && Menu.targetArray.length > 0) {
+            let { target } = Menu.targetArray.find(m => m.id === commponentId);
+            if (target) {
+                window.DomHandler.absolutePosition(container, target);
 
-        let { target } = Menu.targetArray.find(m => m.id === commponentId);
-
-        window.DomHandler.absolutePosition(container, target);
-
-        if (window.DomHandler.getOffset(container).top < DomHandler.getOffset(target).top) {
-            window.DomHandler.addClass(container, 'p-overlaypanel-flipped');
+                if (window.DomHandler.getOffset(container).top < DomHandler.getOffset(target).top) {
+                    window.DomHandler.addClass(container, 'p-overlaypanel-flipped');
+                }
+            }
         }
     }
     static bindOutsideClickListener(dotNetHelper, commponentId) {
@@ -95,7 +97,7 @@
         return target && (target === event.target || target.contains(event.target));
     }
     static async appendContainer(dotNetHelper, container) {
-        let appendTo = await dotNetHelper.invokeMethodAsync("getVisible");
+        let appendTo = await dotNetHelper.invokeMethodAsync("getAppendTo");
         if (appendTo) {
             if (appendTo === 'body')
                 document.body.appendChild(container);
@@ -106,7 +108,7 @@
     static async restoreAppend(commponentId) {
         let { dotNetHelper } = Menu.dotNetHelperArray.find(m => m.id === commponentId);
         let container = await dotNetHelper.invokeMethodAsync("getContainer")
-        let appendTo = await dotNetHelper.invokeMethodAsync("getVisible");
+        let appendTo = await dotNetHelper.invokeMethodAsync("getAppendTo");
         if (container && appendTo) {
             if (appendTo === 'body')
                 document.body.removeChild(container);

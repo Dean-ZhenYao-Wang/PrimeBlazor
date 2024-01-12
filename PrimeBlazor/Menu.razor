@@ -1,19 +1,28 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
-<transition name="p-input-overlay" @enter="onEnter" @leave="onLeave">
-    <div ref="container" :class="containerClass" v-if="popup ? visible : true">
-        <ul class="p-menu-list p-reset">
-            <template v-for="item of model">
-                <template v-if="item.items">
-                    <li class="p-submenu-header " :key="item.label" v-if="item.items">{{item.label}}</li>
-                    <Menuitem v-for="child of item.items" :key="child.label" :item="child" @click="itemClick" />
-                </template>
-                <template v-else>
-                    <Menuitem :key="item.label" :item="item" @click="itemClick" />
-                </template>
-            </template>
-        </ul>
-    </div>
+<transition name="p-input-overlay" onmouseenter="Menu.onEnter('@id')" onmouseleave="Menu.onLeave('@id')">
+    @if (this.popup?visible:true)
+    {
+        <div @ref="container" class="@containerClass">
+            <ul class="p-menu-list p-reset">
+                @foreach(Menu item in model)
+                {
+                    if (item.items.Count > 0)
+                    {
+                        <li class="p-submenu-header " @key="item.label">@item.label</li>
+                        foreach(Menu child in item.items)
+                        {
+                            <Menuitem @key="child.label" item="child" click="itemClick" />
+                        }
+                    }
+                    else
+                    {
+                        <Menuitem @key="item.label" item="item" click="itemClick" />
+                    }
+                }
+            </ul>
+        </div>
+    }
 </transition>
 @code {
     [Parameter] public bool popup { get; set; } = false;
@@ -34,7 +43,7 @@
         {
             dotNetHelper = DotNetObjectReference.Create(this);
             module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/Menu.razor.js");
-           await JS.InvokeVoidAsync("Menu.OnAfterRenderAsync", dotNetHelper, id);
+            await JS.InvokeVoidAsync("Menu.OnAfterRenderAsync", dotNetHelper, id);
         }
     }
     async ValueTask IAsyncDisposable.DisposeAsync()

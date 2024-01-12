@@ -1,7 +1,7 @@
 <Dropdown TItem="option" value="rows" options="rowOptions" optionLabel="label" optionValue="value" input="onChange"></Dropdown>
 @code {
-    [Parameter]
-    public List<option> options { get; set; } = new List<option>();
+    [Parameter] public int value { get; set; }
+    [Parameter] public List<option> options { get; set; } = new List<option>();
     [Parameter] public option rows { get; set; }
     [Parameter] public EventCallback<int> rowsChanged { get; set; }
     private option? selectedRow = null;

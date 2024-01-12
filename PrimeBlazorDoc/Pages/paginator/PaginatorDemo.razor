@@ -9,7 +9,7 @@
 
     <div class="content-section implementation">
         <h3>Basic</h3>
-        <Paginator rows="10" totalRecords="totalRecords" rowsPerPageOptions="new List<int>(){10,20,30}"></Paginator>
+        <Paginator rows="10" totalRecords="totalRecords" rowsPerPageOptions="rowsPageOptions"></Paginator>
 
         <h3>Custom</h3>
         <Paginator @bind-first="first" rows="1" totalRecords="totalRecords2" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink">
@@ -40,6 +40,11 @@
     private int first = 0;
     private int totalRecords = 120;
     private int totalRecords2 = 12;
+    private List<RowsPerPageDropdown.option> rowsPageOptions = new List<RowsPerPageDropdown.option>(){
+        new RowsPerPageDropdown.option(){label="10",value= 10},
+        new RowsPerPageDropdown.option(){label="20",value= 20},
+        new RowsPerPageDropdown.option(){label="30",value= 30}
+    };
     private void reset()
     {
         this.first = 0;

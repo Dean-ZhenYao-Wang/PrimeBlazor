@@ -79,7 +79,7 @@
     [Parameter] public bool alwaysShowPaginator { get; set; } = true;
     [Parameter] public string paginatorTemplate { get; set; } = "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown";
     [Parameter] public int pageLinkSize { get; set; } = 5;
-    [Parameter] public List<int> rowsPerPageOptions { get; set; } = new List<int>();
+    [Parameter] public List<RowsPerPageDropdown.option> rowsPerPageOptions { get; set; } = new List<RowsPerPageDropdown.option>();
     [Parameter] public string currentPageReportTemplate { get; set; } = "({currentPage} of {totalPages})";
     [Parameter] public string emptyMessage { get; set; } = "No records found";
     [Parameter] public string? sortField { get; set; } = null;
