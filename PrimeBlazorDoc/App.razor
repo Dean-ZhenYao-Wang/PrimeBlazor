@@ -1,24 +1,7 @@
-﻿@inject NavigationManager navigationManager
-@implements IDisposable
-@inject ToastEventBus toastEventBus
-<Router AppAssembly="@typeof(App).Assembly">
+﻿<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <div class="layout-wrapper">
-            <AppTopBar menubuttonClick="onMenuButtonClick" />
-            <AppMenu active="sidebarActive"/>
-            <div class="layout-mask @(sidebarActive?"layout-mask-active":null)" @onclick="onMaskClick"></div>
-            <div class="layout-content">
-
-                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-
-                <AppFooter />
-                <Toast />
-                <Toast position="topleft" group="tl" />
-                <Toast position="bottomleft" group="bl" />
-                <Toast position="bottomright" group="br" />
-            </div>
-        </div>
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
         <PageTitle>Not found</PageTitle>
@@ -27,34 +10,3 @@
         </LayoutView>
     </NotFound>
 </Router>
-@code {
-    private string currentRoute;
-    private bool sidebarActive = false;
-    protected override void OnInitialized()
-    {
-        currentRoute = navigationManager.Uri;
-        navigationManager.LocationChanged += HandleLocationChanged;
-    }
-    private void HandleLocationChanged(object sender, LocationChangedEventArgs e)
-    {
-        if (!currentRoute.Equals(e.Location))
-        {
-            this.sidebarActive = false;
-            toastEventBus.removeAllGroups();
-        }
-        currentRoute = e.Location;
-
-    }
-    void IDisposable.Dispose()
-    {
-        navigationManager.LocationChanged -= HandleLocationChanged;
-    }
-    private void onMenuButtonClick(MouseEventArgs eventArgs)
-    {
-        this.sidebarActive = !this.sidebarActive;
-    }
-    private void onMaskClick(MouseEventArgs eventArgs)
-    {
-        this.sidebarActive = false;
-    }
-}

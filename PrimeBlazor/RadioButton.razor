@@ -2,7 +2,7 @@
 @inject IJSRuntime JS
 <div class="p-radiobutton p-component" @onclick="onClick">
     <div class="p-hidden-accessible">
-        <input @ref="inputElement" id="@inputId" type="radio" name="@name" checked="@isChecked" disabled="@disabled"  @onfocus="async(e)=>await onFocus(e)"  @onblur="async(e)=>await onBlur(e)"
+        <input @ref="inputElement" id="@id" type="radio" name="@name" checked="@isChecked" disabled="@disabled"  @onfocus="async(e)=>await onFocus(e)"  @onblur="async(e)=>await onBlur(e)"
                autocomplete="@autocomplete" autofocus="@autofocus">
     </div>
     <div ref="box" class="p-radiobutton-box p-component @(isChecked?"p-highlight":null) @(disabled?"p-disabled":null) @(focused?"p-focus":null)">
@@ -14,7 +14,7 @@
     [Parameter] public TItem? model { get; set; }
     [Parameter] public EventCallback<TItem?> modelChanged { get; set; }
     [Parameter] public string name { get; set; } = string.Empty;
-    [Parameter] public string inputId { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public string id { get; set; } = Guid.NewGuid().ToString();
     [Parameter] public bool autofocus { get; set; }
     [Parameter] public string autocomplete { get; set; } = string.Empty;
     [Parameter] public bool disabled { get; set; }

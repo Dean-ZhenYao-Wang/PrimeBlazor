@@ -1,3 +1,125 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager navigationManager
+@implements IDisposable
+@inject ToastEventBus toastEventBus
+@inject IJSRuntime JS
+@inject Service.EventBus eventBus
+@inject AppState appState
+<div class="layout-wrapper">
+    @if (newsActive)
+    {
+        <div class="layout-news">
+            <div class="layout-news-container" @onclick="redirect">
+                <img class="layout-news-logo ml-2" src="./assets/images/topbar-primeblocks-device.png">
+                <a href="https://www.primefaces.org/primeblocks-vue" target="_blank" tabindex="-1" class="layout-news-button">
+                    Read More
+                </a>
+                <a tabindex="0" class="layout-news-close" @onclick="hideNews" @onclick:stopPropagation="true">
+                    <i class="pi pi-times"></i>
+                </a>
+            </div>
+        </div>
+    }
+    <AppTopBar menubuttonClick="onMenuButtonClick" changeTheme="changeThemeEvent" theme="@theme" />
+    <AppMenu active="sidebarActive" />
+    <AppConfigurator changeTheme="changeThemeEvent" theme="@theme" />
+    <div class="layout-mask @(sidebarActive?"layout-mask-active":null)" @onclick="onMaskClick"></div>
+    <div class="layout-content">
+        <div class="layout-content-inner">
+            <article>
+                @Body
+            </article>
+            <AppFooter />
+        </div>
+    </div>
+    <Toast />
+    <Toast position="topleft" group="tl" />
+    <Toast position="bottomleft" group="bl" />
+    <Toast position="bottomright" group="br" />
+</div>
+<script>
+    window.isOutdatedIE = () => {
+        let ua = window.navigator.userAgent;
+        if (ua.indexOf('MSIE ') > 0 || ua.indexOf('Trident/') > 0) {
+            return true;
+        }
+        return false;
+    };
+    window.routeHandler = () => {
+        window.DomHandler.removeClass(document.body, 'blocked-scroll');
+    }
+    window.changeTheme = (theme, eventTheme) => {
+        let themeElement = document.getElementById('theme-link');
+        themeElement.setAttribute('href', themeElement.getAttribute('href').replace(theme, eventTheme));
+    }
+</script>
+<style lang="scss">
+    @@import './assets/styles/app/app.scss';
+</style>
+@code {
+    private string currentRoute;
+    private DotNetObjectReference<MainLayout>? dotNetHelper;
+    protected override void OnInitialized()
+    {
+        dotNetHelper = DotNetObjectReference.Create(this);
+        currentRoute = navigationManager.Uri;
+        navigationManager.LocationChanged += routeHandler;
+    }
+    void IDisposable.Dispose()
+    {
+        navigationManager.LocationChanged -= routeHandler;
+    }
 
-@Body
+    private bool sidebarActive = false;
+    private bool newsActive = false;
+    private string theme = "lara-light-blue";
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (await this.isOutdatedIE())
+            {
+                toastEventBus.add(new Message() { severity = "warn", summary = "Limited Functionality", detail = "Although PrimeVue supports IE11, ThemeSwitcher in this application cannot be not fully supported by your browser. Please use a modern browser for the best experience of the showcase." });
+            }
+        }
+    }
+    private async Task<bool> isOutdatedIE()
+    {
+        return await JS.InvokeAsync<bool>("isOutdatedIE");
+    }
+    private void routeHandler(object sender, LocationChangedEventArgs e)
+    {
+        this.sidebarActive = false;
+        JS.InvokeVoidAsync("routeHandler");
+        toastEventBus.removeAllGroups();
+    }
+    private async Task onMenuButtonClick(MouseEventArgs eventArgs)
+    {
+        this.sidebarActive = !this.sidebarActive;
+        await JS.InvokeVoidAsync("routeHandler");
+    }
+    private async Task onMaskClick(MouseEventArgs eventArgs)
+    {
+        this.sidebarActive = false;
+        await JS.InvokeVoidAsync("routeHandler");
+    }
+    private void hideNews(MouseEventArgs mouseEvent)
+    {
+        this.newsActive = false;
+    }
+    private async Task changeThemeEvent((string eventTheme, bool dark) args)
+    {
+        await JS.InvokeVoidAsync("changeTheme", dotNetHelper, this.theme, args.eventTheme);
+        this.theme = args.eventTheme;
+        eventBus.emit("change-theme", args);
+        appState.darkTheme = args.dark;
+        if (args.eventTheme.StartsWith("md"))
+        {
+            // this.$primevue.config.ripple = true;
+        }
+    }
+    private async Task redirect()
+    {
+        await JS.InvokeVoidAsync("setLocationHref", "https://www.primefaces.org/primeblocks-vue");
+    }
+}

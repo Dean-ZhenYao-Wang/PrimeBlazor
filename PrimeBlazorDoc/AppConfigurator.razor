@@ -1,0 +1,491 @@
+﻿@inject IJSRuntime JS
+@inject AppState appState
+@inject NavigationManager navigationManager
+@implements IAsyncDisposable
+@inject Service.EventBus eventBus
+<div class="@containerClass" @ref="el">
+    <div class="layout-config-content-wrapper">
+        <a href="#" class="layout-config-button" @onclick="toggleConfigurator" @onclick:preventDefault="true">
+            <i class="pi pi-cog"></i>
+        </a>
+        <a href="#" class="layout-config-close" @onclick="hideConfigurator" @onclick:preventDefault="true">
+            <i class="pi pi-times"></i>
+        </a>
+
+        <div class="layout-config-content">
+            <div>
+                <h4>Component Scale</h4>
+                <div class="config-scale">
+                    <Button icon="pi pi-minus" @onclick="decrementScale" CssClass="p-button-text" disabled="scale == scales[0]" />
+                    @foreach (int s in scales)
+                    {
+                        <i class="pi pi-circle-fill @(s==scale?"scale-active":null)" @key="s" />
+                    }
+                    <Button icon="pi pi-plus" @onclick="incrementScale" CssClass="p-button-text" disabled="scale == scales[scales.Length - 1]" />
+                </div>
+
+                <AppInputStyleSwitch />
+
+                <h4>Ripple Effect</h4>
+                <InputSwitch model="rippleActive" modelChanged="onRippleChange" />
+
+                <h4>Free Themes</h4>
+                <p>Built-in component themes created by the <a href="https://www.primefaces.org/designer/primevue">PrimeVue Theme Designer</a>.</p>
+
+                <h5>Bootstrap</h5>
+                <div class="grid free-themes">
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent("bootstrap4-light-blue")'>
+                            <img src="demo/images/themes/bootstrap4-light-blue.svg" alt="Bootstrap Light Blue" />
+                        </Button>
+                        <span>Blue</span>
+                    </div>
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent( "bootstrap4-light-purple")'>
+                            <img src="demo/images/themes/bootstrap4-light-purple.svg" alt="Bootstrap Light Blue" />
+                        </Button>
+                        <span>Purple</span>
+                    </div>
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent( "bootstrap4-dark-blue", true)'>
+                            <img src="demo/images/themes/bootstrap4-dark-blue.svg" alt="Bootstrap Dark Blue" />
+                        </Button>
+                        <span>Blue</span>
+                    </div>
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent("bootstrap4-dark-purple", true)'>
+                            <img src="demo/images/themes/bootstrap4-dark-purple.svg" alt="Bootstrap Dark Blue" />
+                        </Button>
+                        <span>Purple</span>
+                    </div>
+                </div>
+
+                <h5>Material Design</h5>
+                <div class="grid free-themes">
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent("md-light-indigo")'>
+                            <img src="demo/images/themes/md-light-indigo.svg" alt="Material Light Indigo" />
+                        </Button>
+                        <span>Indigo</span>
+                    </div>
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent("md-light-deeppurple")'>
+                            <img src="demo/images/themes/md-light-deeppurple.svg" alt="Material Light Deep Purple" />
+                        </Button>
+                        <span>Deep Purple</span>
+                    </div>
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent( "md-dark-indigo" , true)'>
+                            <img src="demo/images/themes/md-dark-indigo.svg" alt="Material Dark Indigo" />
+                        </Button>
+                        <span>Indigo</span>
+                    </div>
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent( "md-dark-deeppurple" , true)'>
+                            <img src="demo/images/themes/md-dark-deeppurple.svg" alt="Material Dark Deep Purple" />
+                        </Button>
+                        <span>Deep Purple</span>
+                    </div>
+                </div>
+
+                <h5>Material Design Compact</h5>
+                <div class="grid free-themes">
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent( "mdc-light-indigo")'>
+                            <img src="demo/images/themes/md-light-indigo.svg" alt="Material Compact Light Indigo" />
+                        </Button>
+                        <span>Indigo</span>
+                    </div>
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent("mdc-light-deeppurple")'>
+                            <img src="demo/images/themes/md-light-deeppurple.svg" alt="Material Compact Deep Purple" />
+                        </Button>
+                        <span>Deep Purple</span>
+                    </div>
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent("mdc-dark-indigo", true)'>
+                            <img src="demo/images/themes/md-dark-indigo.svg" alt="Material Compact Dark Indigo" />
+                        </Button>
+                        <span>Indigo</span>
+                    </div>
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent("mdc-dark-deeppurple", true)'>
+                            <img src="demo/images/themes/md-dark-deeppurple.svg" alt="Material Compact Dark Deep Purple" />
+                        </Button>
+                        <span>Deep Purple</span>
+                    </div>
+                </div>
+
+                <h5>Tailwind</h5>
+                <div class="grid free-themes">
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent("tailwind-light")'>
+                            <img src="demo/images/themes/tailwind-light.png" alt="Tailwind Light" />
+                        </Button>
+                        <span>Tailwind Light</span>
+                    </div>
+                </div>
+
+                <h5>Fluent UI</h5>
+                <div class="grid free-themes">
+                    <div class="col-3">
+                        <Button CssClass="p-link" onclick='()=>changeThemeEvent("fluent-light")'>
+                            <img src="demo/images/themes/fluent-light.png" alt="Fluent Light" />
+                        </Button>
+                        <span>Fluent Light</span>
+                    </div>
+                </div>
+
+                <h5 class="flex align-items-center">PrimeOne Design - 2022 <Tag CssClass="ml-3" value="NEW" rounded severity="success"></Tag></h5>
+                 <div class="grid free-themes">
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("lara-light-indigo")'>
+                             <img src="demo/images/themes/lara-light-indigo.png" alt="Lara Light Indigo" />
+                         </Button>
+                         <span>Lara Light Indigo</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("lara-light-blue")'>
+                             <img src="demo/images/themes/lara-light-blue.png" alt="Lara Light Blue" />
+                         </Button>
+                         <span>Lara Light Blue</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("lara-light-purple")'>
+                             <img src="demo/images/themes/lara-light-purple.png" alt="Lara Light Purple" />
+                         </Button>
+                         <span>Lara Light Purple</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("lara-light-teal")'>
+                             <img src="demo/images/themes/lara-light-teal.png" alt="Lara Light Teal" />
+                         </Button>
+                         <span>Lara Light Teal</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("lara-dark-indigo", true)'>
+                             <img src="demo/images/themes/lara-dark-indigo.png" alt="Lara Dark Indigo" />
+                         </Button>
+                         <span>Lara Dark Indigo</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("lara-dark-blue", true)'>
+                             <img src="demo/images/themes/lara-dark-blue.png" alt="Lara Dark Blue" />
+                         </Button>
+                         <span>Lara Dark Blue</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("lara-dark-purple", true)'>
+                             <img src="demo/images/themes/lara-dark-purple.png" alt="Lara Dark Purple" />
+                         </Button>
+                         <span>Lara Dark Purple</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("lara-dark-teal", true)'>
+                             <img src="demo/images/themes/lara-dark-teal.png" alt="Lara Dark Teal" />
+                         </Button>
+                         <span>Lara Dark Teal</span>
+                     </div>
+                 </div>
+
+                 <h5>PrimeOne Design - 2021</h5>
+                 <div class="grid free-themes">
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("saga-blue")'>
+                             <img src="demo/images/themes/saga-blue.png" alt="Saga Blue" />
+                         </Button>
+                         <span>Saga Blue</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("saga-green")'>
+                             <img src="demo/images/themes/saga-green.png" alt="Saga Green" />
+                         </Button>
+                         <span>Saga Green</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("saga-orange")'>
+                             <img src="demo/images/themes/saga-orange.png" alt="Saga Orange" />
+                         </Button>
+                         <span>Saga Orange</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("saga-purple")'>
+                             <img src="demo/images/themes/saga-purple.png" alt="Saga Purple" />
+                         </Button>
+                         <span>Saga Purple</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("vela-blue", true)'>
+                             <img src="demo/images/themes/vela-blue.png" alt="Vela Blue" />
+                         </Button>
+                         <span>Vela Blue</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("vela-green", true)'>
+                             <img src="demo/images/themes/vela-green.png" alt="Vela Green" />
+                         </Button>
+                         <span>Vela Green</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("vela-orange", true)'>
+                             <img src="demo/images/themes/vela-orange.png" alt="Vela Orange" />
+                         </Button>
+                         <span>Vela Orange</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("vela-purple", true)'>
+                             <img src="demo/images/themes/vela-purple.png" alt="Vela Purple" />
+                         </Button>
+                         <span>Vela Purple</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("arya-blue", true)'>
+                             <img src="demo/images/themes/arya-blue.png" alt="Arya Blue" />
+                         </Button>
+                         <span>Arya Blue</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("arya-green", true)'>
+                             <img src="demo/images/themes/arya-green.png" alt="Arya Green" />
+                         </Button>
+                         <span>Arya Green</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("arya-orange", true)'>
+                             <img src="demo/images/themes/arya-orange.png" alt="Arya Orange" />
+                         </Button>
+                         <span>Arya Orange</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("arya-purple", true)'>
+                             <img src="demo/images/themes/arya-purple.png" alt="Arya Purple" />
+                         </Button>
+                         <span>Arya Purple</span>
+                     </div>
+                 </div>
+
+                 <h4>Premium Themes</h4>
+                 <p>Premium themes are only available exclusively for <a href="https://www.primefaces.org/designer/primevue">PrimeVue Theme Designer</a> subscribers and therefore not included in PrimeNG core.</p>
+                 <div class="grid free-themes">
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("soho-light")'>
+                             <img src="demo/images/themes/soho-light.png" alt="Soho Light" />
+                         </Button>
+                         <span>Soho Light</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("soho-dark", true)'>
+                             <img src="demo/images/themes/soho-dark.png" alt="Soho Dark" />
+                         </Button>
+                         <span>Soho Dark</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("viva-light")'>
+                             <img src="demo/images/themes/viva-light.svg" alt="Viva Light" />
+                         </Button>
+                         <span>Viva Light</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("viva-dark", true)'>
+                             <img src="demo/images/themes/viva-dark.svg" alt="Viva Dark" />
+                         </Button>
+                         <span>Viva Dark</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("mira")'>
+                             <img src="demo/images/themes/mira.jpg" alt="Mira" />
+                         </Button>
+                         <span>Mira</span>
+                     </div>
+                     <div class="col-3">
+                         <Button CssClass="p-link" onclick='()=>changeThemeEvent("nano")'>
+                             <img src="demo/images/themes/nano.jpg" alt="Mira" />
+                         </Button>
+                         <span>Nano</span>
+                     </div>
+                 </div>
+
+                 <h4>Premium Vue-CLI Templates</h4>
+                 <p>Beautifully crafted premium <a href="https://cli.vuejs.org">Vue CLI</a> application templates by the PrimeTek design team.</p>
+                 <div class="grid premium-themes">
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/sakai-vue">
+                             <img alt="Sakai" src="./assets/images/layouts/sakai-vue.jpg">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/atlantis-vue">
+                             <img alt="Atlantis" src="./assets/images/layouts/atlantis-vue.jpg">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/freya-vue">
+                             <img alt="Freya" src="./assets/images/layouts/freya-vue.png">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/ultima-vue">
+                             <img alt="Ultima" src="./assets/images/layouts/ultima-vue.jpg">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/diamond-vue">
+                             <img alt="Diamond" src="./assets/images/layouts/diamond-vue.jpg">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/sapphire-vue">
+                             <img alt="Sapphire" src="./assets/images/layouts/sapphire-vue.jpg">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/serenity-vue">
+                             <img alt="Serenity" src="./assets/images/layouts/serenity-vue.jpg">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/babylon-vue">
+                             <img alt="Babylon" src="./assets/images/layouts/babylon-vue.jpg">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/avalon-vue">
+                             <img alt="Avalon" src="./assets/images/layouts/avalon-vue.jpg">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/apollo-vue">
+                             <img alt="Apollo" src="./assets/images/layouts/apollo-vue.jpg">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/roma-vue">
+                             <img alt="Roma" src="./assets/images/layouts/roma-vue.jpg">
+                         </a>
+                     </div>
+                     <div class="col-12 md:col-6">
+                         <a href="https://www.primefaces.org/layouts/prestige-vue">
+                             <img alt="Prestige" src="./assets/images/layouts/prestige-vue.jpg">
+                         </a>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+ @code {
+    private ElementReference el;
+    private DotNetObjectReference<AppConfigurator>? dotNetHelper;
+    private IJSObjectReference module;
+    private string currentRoute;
+    protected override async Task OnInitializedAsync()
+    {
+        dotNetHelper = DotNetObjectReference.Create(this);
+        currentRoute = navigationManager.Uri;
+        navigationManager.LocationChanged += routeHandler;
+        module = await JS.InvokeAsync<IJSObjectReference>("import", "./AppTopBar.razor.js");
+        await JS.InvokeVoidAsync("AppTopBar.OnInitialized", dotNetHelper);
+    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+            await module.DisposeAsync();
+        navigationManager.LocationChanged -= routeHandler;
+    }
+    private void routeHandler(object sender, LocationChangedEventArgs e)
+    {
+        if (this.active)
+        {
+            this.active = false;
+            this.unbindOutsideClickListener();
+        }
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        eventBus.on("change-theme", async (theme) =>
+        {
+            if (theme.ToString().Equals("nano"))
+                this.scale = 12;
+            else
+                this.scale = 14;
+            await this.applyScale();
+        });
+    }
+
+    [Parameter] public string theme { get; set; }
+    [Parameter] public string inputStyle { get; set; }
+    [Parameter] public EventCallback<(string theme, bool dark)> changeTheme { get; set; }
+    private bool active = false;
+    private int scale = 14;
+    private int[] scales = new int[] { 12, 13, 14, 15, 16 };
+    private string containerClass
+    {
+        get
+        {
+            string str = "layout-config";
+            if (this.active)
+                str += " layout-config-active";
+            return str;
+        }
+    }
+    private async Task toggleConfigurator()
+    {
+        this.active = !this.active;
+        if (this.active)
+            await this.bindOutsideClickListener();
+        else
+            await this.unbindOutsideClickListener();
+    }
+    private async Task bindOutsideClickListener()
+    {
+        await JS.InvokeVoidAsync("AppConfigurator.bindOutsideClickListener", this.el);
+    }
+    private async Task unbindOutsideClickListener()
+    {
+        await JS.InvokeVoidAsync("AppConfigurator.unbindOutsideClickListener");
+    }
+    [JSInvokable]
+    public bool getActive()
+    {
+        return this.active;
+    }
+    [JSInvokable]
+    public void setActive(bool value)
+    {
+        this.active = value;
+    }
+    private async Task hideConfigurator()
+    {
+        this.active = false;
+        await JS.InvokeVoidAsync("AppConfigurator.unbindOutsideClickListener");
+    }
+    private async Task decrementScale()
+    {
+        this.scale--;
+        await this.applyScale();
+    }
+    private async Task applyScale()
+    {
+        await JS.InvokeVoidAsync("AppConfigurator.applyScale", this.scale);
+    }
+    private async Task incrementScale()
+    {
+        this.scale++;
+        await this.applyScale();
+    }
+    private bool rippleActive
+    {
+        get
+        {
+            return appState.ripple;
+        }
+    }
+    private void onRippleChange(bool value)
+    {
+        appState.ripple = value;
+    }
+    private async Task changeThemeEvent(string theme, bool dark = false)
+    {
+        await changeTheme.InvokeAsync((theme, dark));
+    }
+}

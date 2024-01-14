@@ -1,0 +1,27 @@
+﻿@inject AppState appState
+<div class="app-inputstyleswitch">
+    <h4>Input Style</h4>
+    <div class="formgroup-inline">
+        <div class="field-radiobutton">
+            <RadioButton id="input_outlined" name="inputstyle" value='"outlined"' model="value" TItem=string input="onChange" />
+            <label for="input_outlined">Outlined</label>
+        </div>
+        <div class="field-radiobutton">
+            <RadioButton id="input_filled" name="inputstyle" value='"filled"' model="value" TItem=string input="onChange" />
+            <label for="input_filled">Filled</label>
+        </div>
+    </div>
+</div>
+@code {
+    private void onChange(string value)
+    {
+        appState.inpuStyle = value;
+    }
+    private string value
+    {
+        get
+        {
+            return appState.inpuStyle;
+        }
+    }
+}
