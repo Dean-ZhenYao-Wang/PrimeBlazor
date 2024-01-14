@@ -1,0 +1,60 @@
+<span class="@containerClass @CssClass">
+    @if (!string.IsNullOrWhiteSpace(icon))
+    {
+        <span class="@iconClass"></span>
+    }
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        <span class="p-tag-value">@value</span>
+    }
+</span>
+@code {
+    [Parameter] public string? value { get; set; } = null;
+    [Parameter] public string? severity { get; set; } = null;
+    [Parameter] public bool rounded { get; set; }
+    [Parameter] public string? icon { get; set; } = null;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+    private string containerClass
+    {
+        get
+        {
+            string str = "p-tag p-component";
+            if (!string.IsNullOrWhiteSpace(this.severity))
+            {
+                switch (this.severity)
+                {
+                    case "info":
+                        str += " p-tag-info";
+                        break;
+                    case "success":
+                        str += " p-tag-success";
+                        break;
+                    case "warning":
+                        str += " p-tag-warning";
+                        break;
+                    case "danger":
+                        str += " p-tag-danger";
+                        break;
+                }
+            }
+            if (this.rounded)
+                str += " p-tag-rounded";
+            return str;
+        }
+    }
+    private string? iconClass
+    {
+        get
+        {
+            string? str = null;
+            if (!string.IsNullOrWhiteSpace(this.icon))
+                str = "p-tag-icon";
+            return str;
+        }
+    }
+}
