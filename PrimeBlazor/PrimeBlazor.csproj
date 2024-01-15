@@ -12,6 +12,9 @@
 
   <ItemGroup>
     <None Include="wwwroot\.babelrc" />
+    <None Include="wwwroot\Common.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="wwwroot\webpack.config.js" />
   </ItemGroup>
 

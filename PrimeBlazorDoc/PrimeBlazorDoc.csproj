@@ -12,6 +12,71 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\assets\images\home\airbus.svg" />
+    <None Include="wwwroot\assets\images\home\amex.svg" />
+    <None Include="wwwroot\assets\images\home\bank-of-america.svg" />
+    <None Include="wwwroot\assets\images\home\ebay.svg" />
+    <None Include="wwwroot\assets\images\home\ford.svg" />
+    <None Include="wwwroot\assets\images\home\fox.svg" />
+    <None Include="wwwroot\assets\images\home\icon-pro-white.svg" />
+    <None Include="wwwroot\assets\images\home\icon-pro.svg" />
+    <None Include="wwwroot\assets\images\home\lufthansa.svg" />
+    <None Include="wwwroot\assets\images\home\mercedes.svg" />
+    <None Include="wwwroot\assets\images\home\nvidia.svg" />
+    <None Include="wwwroot\assets\images\home\sap.svg" />
+    <None Include="wwwroot\assets\images\home\unicredit.svg" />
+    <None Include="wwwroot\assets\images\home\verizon.svg" />
+    <None Include="wwwroot\assets\images\home\viacom.svg" />
+    <None Include="wwwroot\assets\images\home\vw.svg" />
+    <None Include="wwwroot\assets\images\layouts\themeswitcher-atlantis.svg" />
+    <None Include="wwwroot\assets\images\layouts\themeswitcher-sakai.svg" />
+    <None Include="wwwroot\assets\images\logo.svg" />
+    <None Include="wwwroot\assets\images\topbar-newyear-logo.svg" />
+    <None Include="wwwroot\assets\styles\app\app.scss" />
+    <None Include="wwwroot\assets\styles\app\_code.scss" />
+    <None Include="wwwroot\assets\styles\app\_config.scss" />
+    <None Include="wwwroot\assets\styles\app\_content.scss" />
+    <None Include="wwwroot\assets\styles\app\_core.scss" />
+    <None Include="wwwroot\assets\styles\app\_demo.scss" />
+    <None Include="wwwroot\assets\styles\app\_designer.scss" />
+    <None Include="wwwroot\assets\styles\app\_footer.scss" />
+    <None Include="wwwroot\assets\styles\app\_home.scss" />
+    <None Include="wwwroot\assets\styles\app\_menu.scss" />
+    <None Include="wwwroot\assets\styles\app\_news.scss" />
+    <None Include="wwwroot\assets\styles\app\_responsive.scss" />
+    <None Include="wwwroot\assets\styles\app\_topbar.scss" />
+    <None Include="wwwroot\assets\styles\layout\landing\_blocks.scss" />
+    <None Include="wwwroot\assets\styles\layout\landing\_features.scss" />
+    <None Include="wwwroot\assets\styles\layout\landing\_footer.scss" />
+    <None Include="wwwroot\assets\styles\layout\landing\_getstarted.scss" />
+    <None Include="wwwroot\assets\styles\layout\landing\_hero.scss" />
+    <None Include="wwwroot\assets\styles\layout\landing\_landing.scss" />
+    <None Include="wwwroot\assets\styles\layout\landing\_main.scss" />
+    <None Include="wwwroot\assets\styles\layout\landing\_templates.scss" />
+    <None Include="wwwroot\assets\styles\layout\landing\_themes.scss" />
+    <None Include="wwwroot\assets\styles\layout\landing\_users.scss" />
+    <None Include="wwwroot\assets\styles\layout\layout.scss" />
+    <None Include="wwwroot\assets\styles\layout\variables\landing\_dark.scss" />
+    <None Include="wwwroot\assets\styles\layout\variables\landing\_light.scss" />
+    <None Include="wwwroot\assets\styles\layout\variables\main\_dark.scss" />
+    <None Include="wwwroot\assets\styles\layout\variables\main\_light.scss" />
+    <None Include="wwwroot\assets\styles\layout\variables\_variables.scss" />
+    <None Include="wwwroot\assets\styles\layout\_code.scss" />
+    <None Include="wwwroot\assets\styles\layout\_config.scss" />
+    <None Include="wwwroot\assets\styles\layout\_content.scss" />
+    <None Include="wwwroot\assets\styles\layout\_core.scss" />
+    <None Include="wwwroot\assets\styles\layout\_doc.scss" />
+    <None Include="wwwroot\assets\styles\layout\_docsearch.scss" />
+    <None Include="wwwroot\assets\styles\layout\_footer.scss" />
+    <None Include="wwwroot\assets\styles\layout\_glow.scss" />
+    <None Include="wwwroot\assets\styles\layout\_mixins.scss" />
+    <None Include="wwwroot\assets\styles\layout\_news.scss" />
+    <None Include="wwwroot\assets\styles\layout\_responsive.scss" />
+    <None Include="wwwroot\assets\styles\layout\_sidebar.scss" />
+    <None Include="wwwroot\assets\styles\layout\_topbar.scss" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
   </ItemGroup>

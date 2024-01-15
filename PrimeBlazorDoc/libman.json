@@ -266,6 +266,13 @@
         "quill.snow.min.css",
         "quill.bubble.min.css"
       ]
+    },
+    {
+      "library": "prism@9000.0.1",
+      "destination": "wwwroot/prism/",
+      "files": [
+        "themes/prism-coy.min.css"
+      ]
     }
   ]
 }
