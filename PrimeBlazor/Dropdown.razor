@@ -406,7 +406,7 @@
     }
     private async Task bindOutsideClickListener()
     {
-        await module.InvokeVoidAsync("bindOutsideClickListener", Id, overlay, dotNetHelper);
+        await JS.InvokeVoidAsync("Dropdown.bindOutsideClickListener", Id, overlay, dotNetHelper);
     }
     [JSInvokable]
     public async Task setOverlayVisible(bool val)
@@ -415,7 +415,7 @@
     }
     private async Task unbindOutsideClickListener()
     {
-        await module.InvokeVoidAsync("unbindOutsideClickListener", Id);
+        await JS.InvokeVoidAsync("Dropdown.unbindOutsideClickListener", Id);
     }
     private async Task search(KeyboardEventArgs eventArgs)
     {

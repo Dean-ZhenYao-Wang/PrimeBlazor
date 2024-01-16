@@ -26,8 +26,8 @@
             thisCommponent.contains(event.target) || (overlay && overlay.contains(event.target)));
     }
     static isNavIconClicked(event) {
-        return (window.DomHandler.hasClass(event.target, 'p-datepicker-prev') || window.DomHandler.hasClass(event.target, 'p-datepicker-prev-icon')
-            || window.DomHandler.hasClass(event.target, 'p-datepicker-next') || window.DomHandler.hasClass(event.target, 'p-datepicker-next-icon'));
+        return (DomHandler.hasClass(event.target, 'p-datepicker-prev') || DomHandler.hasClass(event.target, 'p-datepicker-prev-icon')
+            || DomHandler.hasClass(event.target, 'p-datepicker-next') || DomHandler.hasClass(event.target, 'p-datepicker-next-icon'));
     }
     static enableModality(dotNetHelper, commponentId, overlay) {
         if (!Calendar.maskArray.some(o => o.id === commponentId)) {
@@ -35,7 +35,7 @@
             let maskId = commponentId + '_Mask';
             mask.setAttribute('id', maskId);
             mask.style.zIndex = String(parseInt(overlay.style.zIndex, 10) - 1);
-            window.DomHandler.addMultipleClasses(mask, 'p-component-overlay p-datepicker-mask p-datepicker-mask-scrollblocker');
+            DomHandler.addMultipleClasses(mask, 'p-component-overlay p-datepicker-mask p-datepicker-mask-scrollblocker');
 
             let maskClick = async () => {
                 await Calendar.disableModality(dotNetHelper, commponentId, maskId);
@@ -43,7 +43,7 @@
             mask.addEventListener('click', maskClick);
 
             document.body.appendChild(mask);
-            window.DomHandler.addClass(document.body, 'p-overflow-hidden');
+            DomHandler.addClass(document.body, 'p-overflow-hidden');
             Calendar.maskArray.push({ id: commponentId, mask: mask, maskClick: maskClick })
             return maskId;
         }
@@ -59,13 +59,13 @@
         let hasBlockerMasks;
         for (let i = 0; i < bodyChildren.length; i++) {
             let bodyChild = bodyChildren[i];
-            if (window.DomHandler.hasClass(bodyChild, 'p-datepicker-mask-scrollblocker')) {
+            if (DomHandler.hasClass(bodyChild, 'p-datepicker-mask-scrollblocker')) {
                 hasBlockerMasks = true;
                 break;
             }
         }
         if (!hasBlockerMasks) {
-            window.DomHandler.removeClass(document.body, 'p-overflow-hidden');
+            DomHandler.removeClass(document.body, 'p-overflow-hidden');
         }
         await dotNetHelper.invokeMethodAsync("setMaskIdNull");
     }

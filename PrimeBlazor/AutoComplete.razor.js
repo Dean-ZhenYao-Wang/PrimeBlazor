@@ -42,11 +42,11 @@
         }
     }
     static onOverlayEnter(overlay) {
-        overlay.style.zIndex = String(window.DomHandler.generateZIndex());
+        overlay.style.zIndex = String(DomHandler.generateZIndex());
     }
     static async onKeyDown(event, overlayVisible, overlay, suggestions, dotNetHelper, multiple, value, input) {
         if (overlayVisible) {
-            let highlightItem = window.DomHandler.findSingle(overlay, 'li.p-highlight');
+            let highlightItem = DomHandler.findSingle(overlay, 'li.p-highlight');
 
             switch (event.which) {
                 //down
@@ -54,13 +54,13 @@
                     if (highlightItem) {
                         let nextElement = highlightItem.nextElementSibling;
                         if (nextElement) {
-                            window.DomHandler.addClass(nextElement, 'p-highlight');
-                            window.DomHandler.removeClass(highlightItem, 'p-highlight');
-                            window.DomHandler.scrollInView(overlay, nextElement);
+                            DomHandler.addClass(nextElement, 'p-highlight');
+                            DomHandler.removeClass(highlightItem, 'p-highlight');
+                            DomHandler.scrollInView(overlay, nextElement);
                         }
                     }
                     else {
-                        window.DomHandler.addClass(overlay.firstChild.firstChild, 'p-highlight');
+                        DomHandler.addClass(overlay.firstChild.firstChild, 'p-highlight');
                     }
 
                     event.preventDefault();
@@ -71,9 +71,9 @@
                     if (highlightItem) {
                         let previousElement = highlightItem.previousElementSibling;
                         if (previousElement) {
-                            window.DomHandler.addClass(previousElement, 'p-highlight');
-                            window.DomHandler.removeClass(highlightItem, 'p-highlight');
-                            window.DomHandler.scrollInView(overlay, previousElement);
+                            DomHandler.addClass(previousElement, 'p-highlight');
+                            DomHandler.removeClass(highlightItem, 'p-highlight');
+                            DomHandler.scrollInView(overlay, previousElement);
                         }
                     }
 
@@ -83,7 +83,7 @@
                 //enter,tab
                 case 13:
                     if (highlightItem) {
-                        await dotNetHelper.invokeMethodAsync("selectItem", suggestions[window.DomHandler.index(highlightItem)]);
+                        await dotNetHelper.invokeMethodAsync("selectItem", suggestions[DomHandler.index(highlightItem)]);
                         await dotNetHelper.invokeMethodAsync("hideOverlay");
                     }
 
@@ -99,7 +99,7 @@
                 //tab
                 case 9:
                     if (highlightItem) {
-                        await dotNetHelper.invokeMethodAsync("selectItem", suggestions[window.DomHandler.index(highlightItem)]);
+                        await dotNetHelper.invokeMethodAsync("selectItem", suggestions[DomHandler.index(highlightItem)]);
                     }
 
                     await dotNetHelper.invokeMethodAsync("hideOverlay");

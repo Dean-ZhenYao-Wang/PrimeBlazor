@@ -105,16 +105,16 @@
     private ElementReference container;
     private async Task focus()
     {
-        await module.InvokeVoidAsync("focus",this.container);
+        await JS.InvokeVoidAsync("Dialog.focus", this.container);
     }
     [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
     private async Task enableModality()
     {
-        await module.InvokeVoidAsync("enableModality", this.Id,this.container);
+        await JS.InvokeVoidAsync("Dialog.enableModality", this.Id, this.container);
     }
     private async Task disableModality()
     {
-        await module.InvokeVoidAsync("disableModality", this.Id);
+        await JS.InvokeVoidAsync("Dialog.disableModality", this.Id);
     }
     private string containerClass
     {

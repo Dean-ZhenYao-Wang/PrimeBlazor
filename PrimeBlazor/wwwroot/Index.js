@@ -1,14 +1,21 @@
-﻿export * from './Utils'
+﻿import { ConnectedOverlayScrollHandler, DomHandler, ObjectUtils, UniqueComponentId, EventBus } from './Utils'
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
+import { default as ChartJs } from 'chart.js/auto';
+window.ConnectedOverlayScrollHandler = ConnectedOverlayScrollHandler;
+window.DomHandler = DomHandler;
+window.ObjectUtils = ObjectUtils;
+window.UniqueComponentId = UniqueComponentId;
+window.EventBus = EventBus;
 window.dayGridPlugin = dayGridPlugin;
 window.timeGridPlugin = timeGridPlugin;
 window.listPlugin = listPlugin;
 window.interactionPlugin = interactionPlugin;
 window.Calendar = Calendar;
+window.ChartJs = ChartJs;
 
 window.bodyEventListener = {
     eventHandlers: {},

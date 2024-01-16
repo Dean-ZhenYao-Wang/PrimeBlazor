@@ -1,49 +1,52 @@
-﻿var sidebarMask = [];
-var sidebarMaskClickListener = [];
-export function focus(container) {
-    let focusable = DomHandler.findSingle(container, 'input,button');
-    if (focusable) {
-        focusable.focus();
-    }
-}
-export function enableModality(id, container, dismissable, dotNetHelper) {
-    
-    if (!sidebarMask.some(d => d.id === id)) {
-        let mask = document.createElement('div');
-        mask.style.zIndex = String(parseInt(container.style.zIndex, 10) - 1);
-        window.DomHandler.addMultipleClasses(mask, 'p-component-overlay');
-        if (dismissable) {
-            bindMaskClickListener(id, dotNetHelper);
+﻿export default class Sidebar {
+    static sidebarMask = [];
+    static sidebarMaskClickListener = [];
+    static focus(container) {
+        let focusable = DomHandler.findSingle(container, 'input,button');
+        if (focusable) {
+            focusable.focus();
         }
-        document.body.appendChild(mask);
-        sidebarMask.push({id:id,mask:mask})
-        window.DomHandler.addClass(document.body, 'p-overflow-hidden');
+    }
+    static enableModality(id, container, dismissable, dotNetHelper) {
+
+        if (!Sidebar.sidebarMask.some(d => d.id === id)) {
+            let mask = document.createElement('div');
+            mask.style.zIndex = String(parseInt(container.style.zIndex, 10) - 1);
+            DomHandler.addMultipleClasses(mask, 'p-component-overlay');
+            if (dismissable) {
+                Sidebar.bindMaskClickListener(id, dotNetHelper);
+            }
+            document.body.appendChild(mask);
+            Sidebar.sidebarMask.push({ id: id, mask: mask })
+            DomHandler.addClass(document.body, 'p-overflow-hidden');
+        }
+    }
+    static disableModality(id) {
+        if (Sidebar.sidebarMask.some(d => d.id === id)) {
+            Sidebar.unbindMaskClickListener(id);
+            let { mask } = Sidebar.sidebarMask.find(d => d.id === id);
+            document.body.removeChild(mask);
+            DomHandler.removeClass(document.body, 'p-overflow-hidden');
+            Sidebar.sidebarMask = Sidebar.sidebarMask.filter(d => d.id !== id);
+        }
+    }
+    static bindMaskClickListener(id, dotNetHelper) {
+        if (!Sidebar.sidebarMaskClickListener.some(d => d.id === id)) {
+            let maskClick = async () => {
+                await dotNetHelper.invokeMethodAsync("hideEvent");
+            };
+            let { mask } = Sidebar.sidebarMask.find(d => d.id === id);
+            mask.addEventListener('click', maskClick);
+            Sidebar.sidebarMaskClickListener.push({ id: id, maskClick: maskClick });
+        }
+    }
+    static unbindMaskClickListener(id) {
+        if (Sidebar.sidebarMaskClickListener.some(d => d.id === id)) {
+            let { mask } = Sidebar.sidebarMask.find(d => d.id === id);
+            let { maskClick } = Sidebar.sidebarMaskClickListener.find(d => d.id === id);
+            mask.removeEventListener('click', maskClick);
+            Sidebar.sidebarMaskClickListener = Sidebar.sidebarMaskClickListener.filter(d => d.id !== id);
+        }
     }
 }
-export function disableModality(id) {
-    if (sidebarMask.some(d => d.id === id)) {
-        unbindMaskClickListener(id);
-        let { mask } = sidebarMask.find(d => d.id === id);
-        document.body.removeChild(mask);
-        window.DomHandler.removeClass(document.body, 'p-overflow-hidden');
-        sidebarMask = sidebarMask.filter(d => d.id !== id);
-    }
-}
-export function bindMaskClickListener(id,dotNetHelper) {
-    if (!sidebarMaskClickListener.some(d => d.id === id)) {
-        let maskClick =async () => {
-            await dotNetHelper.invokeMethodAsync("hideEvent");
-        };
-        let { mask } = sidebarMask.find(d => d.id === id);
-        mask.addEventListener('click', maskClick);
-        sidebarMaskClickListener.push({ id: id, maskClick: maskClick });
-    }
-}
-export function unbindMaskClickListener(id) {
-    if (sidebarMaskClickListener.some(d => d.id === id)) {
-        let { mask } = sidebarMask.find(d => d.id === id);
-        let { maskClick } = sidebarMaskClickListener.find(d => d.id === id);
-        mask.removeEventListener('click', maskClick);
-        sidebarMaskClickListener = sidebarMaskClickListener.filter(d => d.id !== id);
-    }
-}
+window.Sidebar = Sidebar;

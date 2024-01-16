@@ -35,7 +35,7 @@
         Menu.bindResizeListener(dotNetHelper, commponentId);
 
         if (await dotNetHelper.invokeMethodAsync("getAutoZIndex")) {
-            container.style.zIndex = String(await dotNetHelper.invokeMethodAsync("getBaseZIndex") + window.DomHandler.generateZIndex());
+            container.style.zIndex = String(await dotNetHelper.invokeMethodAsync("getBaseZIndex") + DomHandler.generateZIndex());
         }
     }
     static onLeave(commponentId) {
@@ -47,10 +47,10 @@
         if (Menu.targetArray && Menu.targetArray.length > 0) {
             let { target } = Menu.targetArray.find(m => m.id === commponentId);
             if (target) {
-                window.DomHandler.absolutePosition(container, target);
+                DomHandler.absolutePosition(container, target);
 
-                if (window.DomHandler.getOffset(container).top < DomHandler.getOffset(target).top) {
-                    window.DomHandler.addClass(container, 'p-overlaypanel-flipped');
+                if (DomHandler.getOffset(container).top < DomHandler.getOffset(target).top) {
+                    DomHandler.addClass(container, 'p-overlaypanel-flipped');
                 }
             }
         }
@@ -81,14 +81,14 @@
                     await dotNetHelper.invokeMethodAsync("setVisible", false)
                 }
             };
-            window.addEventListener('resize', resizeListener);
+            addEventListener('resize', resizeListener);
             Menu.resizeListener.push({ id: commponentId, resize: resizeListener });
         }
     }
     static unbindResizeListener(commponentId) {
         if (Menu.resizeListener.some(m => m.id == commponentId)) {
             let { resize } = Menu.resizeListener.find(m => m.id === commponentId);
-            window.removeEventListener('resize', resize);
+            removeEventListener('resize', resize);
             Menu.resizeListener = Menu.resizeListener.filter(m => m.id !== commponentId);
         }
     }

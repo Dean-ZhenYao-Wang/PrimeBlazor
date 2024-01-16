@@ -19,16 +19,16 @@
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/Chart.razor.js");
-            await module.InvokeVoidAsync("mounted", Id, canvas,type,data,options);
+            await JS.InvokeVoidAsync("Chart.mounted", Id, canvas, type, data, options);
         }
         else
         {
-            await module.InvokeVoidAsync("reinit", Id, canvas, type, data, options);
+            await JS.InvokeVoidAsync("Chart.reinit", Id, canvas, type, data, options);
         }
     }
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        await module.InvokeVoidAsync("beforeDestroy", Id);
+        await JS.InvokeVoidAsync("Chart.beforeDestroy", Id);
         if (module is not null)
             await module.DisposeAsync();
     }

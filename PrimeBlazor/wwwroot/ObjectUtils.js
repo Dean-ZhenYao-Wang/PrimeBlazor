@@ -262,4 +262,3 @@
         return false;
     }
 }
-window.ObjectUtils = ObjectUtils;

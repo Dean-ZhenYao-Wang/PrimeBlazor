@@ -35,7 +35,7 @@
     }
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        await module.InvokeVoidAsync("unbindMaskClickListener",this.Id);
+        await JS.InvokeVoidAsync("Sidebar.unbindMaskClickListener", this.Id);
         if (module is not null)
             await module.DisposeAsync();
     }
@@ -73,16 +73,16 @@
     private ElementReference container;
     private async Task focus()
     {
-        await module.InvokeVoidAsync("focus", this.container);
+        await JS.InvokeVoidAsync("Sidebar.focus", this.container);
     }
     [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
     private async Task enableModality()
     {
-        await module.InvokeVoidAsync("enableModality", this.Id, this.container, this.dismissable, this.dotNetHelper);
+        await JS.InvokeVoidAsync("Sidebar.enableModality", this.Id, this.container, this.dismissable, this.dotNetHelper);
     }
     private async Task disableModality()
     {
-        await module.InvokeVoidAsync("disableModality", this.Id);
+        await JS.InvokeVoidAsync("Sidebar.disableModality", this.Id);
     }
     private string containerClass
     {

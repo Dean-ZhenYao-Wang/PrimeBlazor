@@ -15,7 +15,7 @@
         module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/PrimeBlazor/FullCalendar.razor.js");
         if (firstRender)
         {
-            await module.InvokeVoidAsync("mounted", Id, el, options, events);
+            await JS.InvokeVoidAsync("FullCalendar.mounted", Id, el, options, events);
             oldEvents = events;
             oldOptions = options;
         }
@@ -24,19 +24,19 @@
             if ((oldEvents == null && events != null) || (oldEvents != null && events == null) || (oldEvents.Except(events).Any()))
             {
                 oldEvents = events;
-                await module.InvokeVoidAsync("events", Id, this.events);
+                await JS.InvokeVoidAsync("FullCalendar.events", Id, this.events);
             }
             if ((oldOptions == null && options != null) || (oldOptions != null && options == null) || (!oldOptions.GetHashCode().Equals(options.GetHashCode())))
             {
                 oldOptions = options;
-                await module.InvokeVoidAsync("options", Id, this.options);
+                await JS.InvokeVoidAsync("FullCalendar.options", Id, this.options);
             }
-            await module.InvokeVoidAsync("updated", Id, el, options, events);
+            await JS.InvokeVoidAsync("FullCalendar.updated", Id, el, options, events);
         }
     }
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        await module.InvokeVoidAsync("beforeDestroy", Id);
+        await JS.InvokeVoidAsync("FullCalendar.beforeDestroy", Id);
         if (module is not null)
             await module.DisposeAsync();
     }

@@ -598,4 +598,3 @@
         element.style.disaply = disaply;
     }
 }
-window.DomHandler = DomHandler;

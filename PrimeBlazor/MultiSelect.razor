@@ -309,11 +309,11 @@
     private ElementReference? overlay;
     private async Task bindOutsideClickListener()
     {
-        await module.InvokeVoidAsync("bindOutsideClickListener", Id, container, overlay, dotNetHelper);
+        await JS.InvokeVoidAsync("MultiSelect.bindOutsideClickListener", Id, container, overlay, dotNetHelper);
     }
     private async Task unbindOutsideClickListener()
     {
-        await module.InvokeVoidAsync("unbindOutsideClickListener", Id);
+        await JS.InvokeVoidAsync("MultiSelect.unbindOutsideClickListener", Id);
     }
     [JSInvokable]
     public async Task setOverlayVisible(bool val)

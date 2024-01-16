@@ -1,37 +1,41 @@
-﻿import ("/_content/PrimeBlazor/Chart.js/chart.min.js")
-var primeCharts = [];
-export function mounted(id, canvas, type, data, options) {
-    initChart(id, canvas, type, data, options);
-}
-export function initChart(id, canvas, type, data, options) {
-    let chart = new ChartJS(canvas, {
-        type: type,
-        data: data,
-        options: options
-    });
-    primeCharts.push({ id: id, chart: chart })
-}
-export function getBase64Image(id) {
-    let { chart } = primeCharts.find(c => c.id === id);
-    return chart.toBase64Image();
-}
-export function refresh(id) {
-    let { chart } = primeCharts.find(c => c.id === id);
-    if (chart) {
-        chart.update();
+﻿var primeCharts = [];
+
+export default class Chart {
+    static primeCharts = [];
+    static mounted(id, canvas, type, data, options) {
+        Chart.initChart(id, canvas, type, data, options);
+    }
+    static initChart(id, canvas, type, data, options) {
+        let chart = new ChartJs(canvas, {
+            type: type,
+            data: data,
+            options: options
+        });
+        Chart.primeCharts.push({ id: id, chart: chart })
+    }
+    static getBase64Image(id) {
+        let { chart } = Chart.primeCharts.find(c => c.id === id);
+        return chart.toBase64Image();
+    }
+    static refresh(id) {
+        let { chart } = Chart.primeCharts.find(c => c.id === id);
+        if (chart) {
+            chart.update();
+        }
+    }
+    static reinit(id, canvas, type, data, options) {
+        let { chart } = Chart.primeCharts.find(c => c.id === id);
+        if (chart) {
+            chart.destroy();
+            Chart.initChart(id, canvas, type, data, options);
+        }
+    }
+    static beforeDestroy(id) {
+        let { chart } = Chart.primeCharts.find(c => c.id === id);
+        if (chart) {
+            chart.destroy();
+            Chart.primeCharts = Chart.primeCharts.filter(c => c.id !== id);
+        }
     }
 }
-export function reinit(id, canvas, type, data, options) {
-    let { chart } = primeCharts.find(c => c.id === id);
-    if (chart) {
-        chart.destroy();
-        initChart(id, canvas, type, data, options);
-    }
-}
-export function beforeDestroy(id) {
-    let { chart } = primeCharts.find(c => c.id === id);
-    if (chart) {
-        chart.destroy();
-        primeCharts = primeCharts.filter(c => c.id !== id);
-    }
-}
+window.Chart = Chart;
