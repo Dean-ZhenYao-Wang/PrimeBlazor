@@ -1,6 +1,6 @@
 ﻿@typeparam TItem
-<div class="p-selectbutton p-buttonset p-component p-buttonset">
-    @foreach(var option in options)
+<div class="@containerClass">
+    @foreach (var option in options)
     {
         int i = options.IndexOf(option);
         <div @key="getOptionLabel(option)" aria-label="@getOptionLabel(option)"
@@ -10,7 +10,7 @@
              @onkeydown:stopPropagation="true"
              tabindex="@(isOptionDisabled(option) ? null : 0)" @onfocus="async(e)=>await onFocus(e,i)" @onblur="async(e)=>await onBlur(e)"
              class="p-button p-component p-button-text-only @(isSelected(option)?"p-highlight":null) @(isOptionDisabled(option)?"p-disabled":null) @(i==focusedIndex?"p-focus":null)">
-            @if(OptionTemplate is not null)
+            @if (OptionTemplate is not null)
             {
                 @OptionTemplate(option)
             }
@@ -24,21 +24,21 @@
 
 @code {
     [Parameter] public TItem? model { get; set; }
-    [Parameter]public EventCallback<TItem> modelChanged{ get; set; }
-    [Parameter] public List<TItem> ? models { get; set; }
-    [Parameter]public EventCallback<List<TItem>> modelsChanged{ get; set; }
+    [Parameter] public EventCallback<TItem> modelChanged { get; set; }
+    [Parameter] public List<TItem>? models { get; set; }
+    [Parameter] public EventCallback<List<TItem>> modelsChanged { get; set; }
     [Parameter] public List<TItem> options { get; set; } = new List<TItem>();
-    [Parameter]public bool disabled{ get; set; }
-    [Parameter]public string? dataKey{ get; set; }
+    [Parameter] public bool disabled { get; set; }
+    [Parameter] public string? dataKey { get; set; }
     [Parameter] public string name { get; set; } = string.Empty;
-    [Parameter]public bool multiple{ get; set; }
-    [Parameter]public string? optionLabel{ get; set; }
-    [Parameter]public string? optionValue{ get; set; }
-    [Parameter]public string? optionDisabled{ get; set; }
-    [Parameter]public RenderFragment<TItem>? OptionTemplate{ get; set; }
-    [Parameter]public EventCallback<FocusEventArgs> focus{ get; set; }
-    [Parameter]public EventCallback<FocusEventArgs> blur{ get; set; }
-    private int focusedIndex=-1;
+    [Parameter] public bool multiple { get; set; }
+    [Parameter] public string? optionLabel { get; set; }
+    [Parameter] public string? optionValue { get; set; }
+    [Parameter] public string? optionDisabled { get; set; }
+    [Parameter] public RenderFragment<TItem>? OptionTemplate { get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> focus { get; set; }
+    [Parameter] public EventCallback<FocusEventArgs> blur { get; set; }
+    private int focusedIndex = -1;
     private string getOptionLabel(TItem option)
     {
         return (string)ObjectUtils.ResolveFieldData(option, this.optionLabel);
@@ -51,18 +51,19 @@
     {
         return !string.IsNullOrWhiteSpace(this.optionDisabled) ? (bool)ObjectUtils.ResolveFieldData(option, this.optionDisabled) : false;
     }
-    private async Task onOptionSelect(EventArgs eventArgs,TItem option,int index)
+    private async Task onOptionSelect(EventArgs eventArgs, TItem option, int index)
     {
         if (this.disabled || this.isOptionDisabled(option))
         {
             return;
         }
-        if(this.multiple)
+        if (this.multiple)
             await this.onOptionSelectMultiple(option);
         else
             await this.onOptionSelectSingle(option);
-    } 
-    private async Task onOptionSelectMultiple(TItem option) {
+    }
+    private async Task onOptionSelectMultiple(TItem option)
+    {
         bool selected = this.isSelected(option);
         object optionValue = this.getOptionValue(option);
         List<TItem>? newValue = new List<TItem>();
@@ -82,7 +83,7 @@
         await modelsChanged.InvokeAsync(newValue);
     }
     private async Task onOptionSelectSingle(TItem option)
-    { 
+    {
         bool selected = this.isSelected(option);
         object optionValue = this.getOptionValue(option);
         TItem newValue = selected ? default(TItem) : (TItem)optionValue;
@@ -96,9 +97,9 @@
         {
             if (string.IsNullOrWhiteSpace(this.optionValue))
             {
-                if(this.models is not null && this.models.Count > 0)
+                if (this.models is not null && this.models.Count > 0)
                 {
-                    foreach(var val in this.models)
+                    foreach (var val in this.models)
                     {
                         bool tif = val.Equals(option);
                         if (tif)
@@ -111,15 +112,17 @@
             }
             else
             {
-                if(this.models is not null && this.models.Count > 0)
+                if (this.models is not null && this.models.Count > 0)
                 {
-                    foreach(var model in this.models)
+                    foreach (var model in this.models)
                     {
                         var type = model.GetType();
                         var properties = type.GetProperties();
-                        foreach (var val in properties) {
+                        foreach (var val in properties)
+                        {
                             bool tif = ObjectUtils.Equals(val.GetValue(this.model), optionValue, this.dataKey);
-                            if (tif) {
+                            if (tif)
+                            {
                                 selected = true;
                                 break;
                             }
@@ -136,14 +139,14 @@
         }
         return selected;
     }
-    private async Task keyDown(KeyboardEventArgs eventArgs,TItem option,int index)
+    private async Task keyDown(KeyboardEventArgs eventArgs, TItem option, int index)
     {
-        if (eventArgs.Key.Equals("Enter")||eventArgs.Key.Equals("Space"))
+        if (eventArgs.Key.Equals("Enter") || eventArgs.Key.Equals("Space"))
         {
             await this.onOptionSelect(eventArgs, option, index);
         }
     }
-    private async Task onFocus(FocusEventArgs eventArgs,int index)
+    private async Task onFocus(FocusEventArgs eventArgs, int index)
     {
         this.focusedIndex = index;
         await focus.InvokeAsync(eventArgs);
@@ -152,5 +155,12 @@
     {
         this.focusedIndex = -1;
         await blur.InvokeAsync(eventArgs);
+    }
+    private string containerClass
+    {
+        get
+        {
+            return "p-selectbutton p-buttonset p-component p-buttonset-" + (this.options.Count > 0 ? this.options.Count : 0);
+        }
     }
 }
