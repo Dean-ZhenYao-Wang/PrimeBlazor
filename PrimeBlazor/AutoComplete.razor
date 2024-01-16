@@ -160,11 +160,11 @@
     public string Id { get; set; } = Guid.NewGuid().ToString();
     private async Task bindOutsideClickListener()
     {
-        await module.InvokeVoidAsync("bindOutsideClickListener", this.Id, this.overlayVisible, this.overlay, this.multiple, this.inputRef, this.dropdownButton, this.inputMultiple, this.multiContainer);
+        await JS.InvokeVoidAsync("AutoComplete.bindOutsideClickListener", this.Id, this.overlayVisible, this.overlay, this.multiple, this.inputRef, this.dropdownButton,  this.multiContainer);
     }
     private async Task unbindOutsideClickListener()
     {
-        await module.InvokeVoidAsync("unbindOutsideClickListener", this.Id);
+        await JS.InvokeVoidAsync("AutoComplete.unbindOutsideClickListener", this.Id);
     }
     [Parameter] public EventCallback<string> dropdownClick { get; set; }
     private async Task onDropdownClick(MouseEventArgs eventArgs)
@@ -246,7 +246,7 @@
     }
     private async Task onKeyDown(KeyboardEventArgs eventArgs)
     {
-        await module.InvokeVoidAsync("onKeyDown", this.overlayVisible, this.overlay, this.suggestions[0], this.dotNetHelper, this.multiple, this.model, this.inputRef);
+        await JS.InvokeVoidAsync("AutoComplete.onKeyDown", this.overlayVisible, this.overlay, this.suggestions[0], this.dotNetHelper, this.multiple, this.model, this.inputRef);
     }
     private object getItemContent(object item)
     {
