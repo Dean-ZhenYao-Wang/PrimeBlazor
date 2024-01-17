@@ -39,7 +39,7 @@
             }
             else if (item.Equals("RowsPerPageDropdown") && rowsPerPageOptions.Count > 0)
             {
-                <RowsPerPageDropdown @key="item" rows="new RowsPerPageDropdown.option(){label=d_rows.ToString(),value=d_rows}" value="rows" options="rowsPerPageOptions" rowsChanged="onRowChange" />
+                <RowsPerPageDropdown @key="item" rows="new RowsPerPageDropdown.Option(){label=d_rows.ToString(),value=d_rows}" value="rows" options="rowsPerPageOptions" rowsChanged="onRowChange" />
             }
         }
     }
@@ -72,7 +72,7 @@
     [Parameter] public int first { get; set; } = 0;
     [Parameter] public EventCallback<int> firstChanged { get; set; }
     [Parameter] public int pageLinkSize { get; set; } = 5;
-    [Parameter] public List<RowsPerPageDropdown.option> rowsPerPageOptions { get; set; } = new List<RowsPerPageDropdown.option>();
+    [Parameter] public List<RowsPerPageDropdown.Option> rowsPerPageOptions { get; set; } = new List<RowsPerPageDropdown.Option>();
     [Parameter] public string template { get; set; } = "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown";
     [Parameter] public string currentPageReportTemplate { get; set; } = "({currentPage} of {totalPages})";
     [Parameter] public EventCallback<PageState> pageChange { get; set; }

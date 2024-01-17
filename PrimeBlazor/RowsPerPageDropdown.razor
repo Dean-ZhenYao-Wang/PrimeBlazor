@@ -1,27 +1,27 @@
-<Dropdown TItem="option" value="rows" options="rowOptions" optionLabel="label" optionValue="value" input="onChange"></Dropdown>
+<Dropdown TItem="Option" value="rows" options="rowOptions" optionLabel="label" optionValue="value" input="onChange"></Dropdown>
 @code {
     [Parameter] public int value { get; set; }
-    [Parameter] public List<option> options { get; set; } = new List<option>();
-    [Parameter] public option rows { get; set; }
+    [Parameter] public List<Option> options { get; set; } = new List<Option>();
+    [Parameter] public Option rows { get; set; }
     [Parameter] public EventCallback<int> rowsChanged { get; set; }
-    private option? selectedRow = null;
+    private Option? selectedRow = null;
     public async Task onChange(ChangeEventArgs data)
     {
         await rowsChanged.InvokeAsync((int)data.Value);
     }
-    private List<option> rowOptions
+    private List<Option> rowOptions
     {
         get
         {
-            List<option> newOptions = new List<option>();
+            List<Option> newOptions = new List<Option>();
             foreach (var option in this.options)
             {
-                newOptions.Add(new option() { label = option.ToString(), value = (int)(object)option });
+                newOptions.Add(new Option() { label = option.ToString(), value = (int)(object)option });
             }
             return newOptions;
         }
     }
-    public class option
+    public class Option
     {
         public string label { get; set; }
         public int value { get; set; }
